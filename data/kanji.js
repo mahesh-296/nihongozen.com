@@ -1,11 +1,9 @@
-
 /* =====================================================================
    data/kanji.js  —  NihongoZen Kanji Data
    Extracted from page.tsx — Vanilla JS (no React, no imports)
    Structure: { id, kanji, reading, meaning, kun, on, example, exampleMeaning, learned }
    Loaded by index.html BEFORE js/core.js
    ===================================================================== */
-
 const kanjiData = {
   N5: [
     { id:'k-N5-001',kanji:'人',reading:'ひと・ジン',meaning:'person',kun:'ひと',on:'ジン・ニン',example:'人 (ひと) person',exampleMeaning:'person.',learned:false },
@@ -2264,5 +2262,17 @@ const kanjiData = {
 };
 
 
-/* ─── Global expose — pages.js uses window.kanjiData ─── */
+/* ─── Global expose ───
+   pages.js uses:  KanjiData  (object by level, e.g. KanjiData.N5)
+                   AllKanji   (flat array of every kanji entry)
+   index.html also reads: window.kanjiData (kept for backward compat)
+   ─────────────────── */
 window.kanjiData = kanjiData;
+window.KanjiData  = kanjiData;
+window.AllKanji   = [].concat(
+  kanjiData.N5,
+  kanjiData.N4,
+  kanjiData.N3,
+  kanjiData.N2,
+  kanjiData.N1
+);
