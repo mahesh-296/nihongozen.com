@@ -199,14 +199,14 @@ window._nzAddXP = async (amount) => {
 <!-- ══════════════════════════════════════════════════════════
      APP JS — loaded after auth guard sets up globals
 ═══════════════════════════════════════════════════════════ -->
-<script src="js/core.js"></script>
-<script src="nz-data.js"></script>
-<script src="nz-kana.js"></script>
-<script src="nz-vocab-module.js"></script>
-<script src="js/pomodoro.js"></script>
-<script src="nz-pages.js"></script>
+<script src="js/core.js" defer></script>
+<script src="js/nz-data.js" defer></script>
+<script src="js/nz-kana.js" defer></script>
+<script src="js/nz-vocab-module.js" defer></script>
+<script src="js/pomodoro.js" defer></script>
+<script src="js/nz-pages.js" defer></script>
 
-<script>
+<script defer>
 'use strict';
 
 /* ── Bootstrap function called by auth guard after user confirmed ── */
