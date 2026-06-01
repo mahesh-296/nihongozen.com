@@ -32,8 +32,8 @@ function H(s) {
 }
 
 function jlptColor(lv) {
-  return { N5: 'var(--jlpt-n5)', N4: 'var(--jlpt-n4)', N3: 'var(--jlpt-n3)',
-           N2: 'var(--jlpt-n2)', N1: 'var(--jlpt-n1)' }[lv] || 'var(--primary)';
+  return { N5: 'var(--n5)', N4: 'var(--n4)', N3: 'var(--n3)',
+           N2: 'var(--n2)', N1: 'var(--n1)' }[lv] || 'var(--primary)';
 }
 
 function speak(text, rate) {
@@ -80,7 +80,7 @@ function pctBar(val, max, color, height) {
 /* ────────────────────────────────────────────────────────────────
    ROUTER
 ──────────────────────────────────────────────────────────────── */
-var Router = (function () {
+var NzRouter = (function () {
   var _routes = {};
   return {
     register: function (name, fn) { _routes[name] = fn; },
@@ -107,7 +107,7 @@ var Router = (function () {
         _routes[name]();
       } else {
         setHTML('<div style="padding:48px;text-align:center;' +
-          'color:var(--muted-foreground);">Page not found.</div>');
+          'color:var(--fg-muted);">Page not found.</div>');
       }
     }
   };
@@ -121,42 +121,42 @@ var NZ_CSS = [
 '*,*::before,*::after{box-sizing:border-box;}',
 
 /* Sidebar */
-'#nz-sb{position:fixed;top:0;left:0;bottom:0;width:250px;background:var(--background-secondary);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:200;overflow-y:auto;transition:transform .25s ease;}',
-'#nz-main{margin-left:250px;min-height:100vh;background:var(--background);}',
-'#nz-topbar{display:none;position:sticky;top:0;z-index:100;height:54px;background:var(--background-secondary);border-bottom:1px solid var(--border);padding:0 16px;align-items:center;justify-content:space-between;}',
+'#nz-sb{position:fixed;top:0;left:0;bottom:0;width:250px;background:var(--bg-secondary);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:200;overflow-y:auto;transition:transform .25s ease;}',
+'#nz-main{margin-left:250px;min-height:100vh;background:var(--bg);}',
+'#nz-topbar{display:none;position:sticky;top:0;z-index:100;height:54px;background:var(--bg-secondary);border-bottom:1px solid var(--border);padding:0 16px;align-items:center;justify-content:space-between;}',
 '#nz-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:199;}',
 '@media(max-width:768px){#nz-sb{transform:translateX(-100%);}#nz-sb.open{transform:translateX(0);}#nz-main{margin-left:0!important;}#nz-topbar{display:flex!important;}#nz-overlay.open{display:block!important;}}',
 
 /* Logo */
 '.nz-sb-top{display:flex;align-items:center;gap:10px;padding:18px 18px 14px;border-bottom:1px solid var(--border);flex-shrink:0;}',
 '.nz-logomark{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,var(--primary),#B02050);display:flex;align-items:center;justify-content:center;font-family:"Noto Serif JP",serif;font-size:15px;color:#fff;font-weight:700;box-shadow:0 0 16px rgba(232,68,106,.35);flex-shrink:0;}',
-'.nz-logoname{font-weight:800;font-size:16px;color:var(--foreground);letter-spacing:-.3px;}',
+'.nz-logoname{font-weight:800;font-size:16px;color:var(--fg);letter-spacing:-.3px;}',
 
 /* User card */
 '.nz-sb-user{padding:14px 16px;border-bottom:1px solid var(--border);flex-shrink:0;}',
-'.nz-sb-uname{font-size:13px;font-weight:700;color:var(--foreground);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}',
-'.nz-sb-uemail{font-size:11px;color:var(--muted-foreground);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px;}',
+'.nz-sb-uname{font-size:13px;font-weight:700;color:var(--fg);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}',
+'.nz-sb-uemail{font-size:11px;color:var(--fg-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px;}',
 '.nz-sb-stats3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-top:12px;}',
 '.nz-sb-stat{background:var(--card-elevated);border:1px solid var(--border);border-radius:8px;padding:8px 5px;text-align:center;}',
 '.nz-sb-stat-v{font-size:13px;font-weight:800;display:block;}',
-'.nz-sb-stat-l{font-size:9px;color:var(--muted-foreground);display:block;margin-top:1px;}',
+'.nz-sb-stat-l{font-size:9px;color:var(--fg-muted);display:block;margin-top:1px;}',
 
 /* Nav */
 '.nz-sb-nav{padding:10px;flex:1;}',
-'.nz-sb-sect{font-size:10px;font-weight:700;color:var(--foreground-subtle);text-transform:uppercase;letter-spacing:.08em;padding:0 8px;margin-bottom:5px;display:block;}',
+'.nz-sb-sect{font-size:10px;font-weight:700;color:var(--fg-subtle);text-transform:uppercase;letter-spacing:.08em;padding:0 8px;margin-bottom:5px;display:block;}',
 '.nz-navlink{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:10px;text-decoration:none;margin-bottom:2px;transition:background .15s;}',
 '.nz-navlink:hover{background:var(--card-elevated);}',
 '.nz-navlink.nz-active{background:var(--card-elevated);}',
-'.nz-navlink.nz-active .nz-navlabel{color:var(--foreground)!important;}',
+'.nz-navlink.nz-active .nz-navlabel{color:var(--fg)!important;}',
 '.nz-navicon{font-size:17px;line-height:1;width:22px;text-align:center;flex-shrink:0;}',
-'.nz-navlabel{font-size:13px;font-weight:600;color:var(--muted-foreground);}',
+'.nz-navlabel{font-size:13px;font-weight:600;color:var(--fg-muted);}',
 '.nz-jbadge{font-size:10px;font-weight:800;padding:2px 6px;border-radius:5px;font-family:"JetBrains Mono",monospace;flex-shrink:0;}',
 
 /* Footer */
 '.nz-sb-foot{padding:12px 16px;border-top:1px solid var(--border);flex-shrink:0;}',
-'.nz-signout-btn{width:100%;padding:9px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--muted-foreground);font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;transition:all .2s;}',
-'.nz-signout-btn:hover{background:var(--card-elevated);color:var(--foreground);}',
-'.nz-menu-btn{background:none;border:none;color:var(--foreground);cursor:pointer;font-size:20px;padding:4px;}',
+'.nz-signout-btn{width:100%;padding:9px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--fg-muted);font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;transition:all .2s;}',
+'.nz-signout-btn:hover{background:var(--card-elevated);color:var(--fg);}',
+'.nz-menu-btn{background:none;border:none;color:var(--fg);cursor:pointer;font-size:20px;padding:4px;}',
 
 /* Pages */
 '.nz-page{max-width:1400px;margin:0 auto;padding:28px 24px;}',
@@ -176,7 +176,7 @@ var NZ_CSS = [
 '.nz-btn:disabled{opacity:.45;cursor:not-allowed;}',
 '.nz-btn-pri{background:var(--primary);color:#fff;}',
 '.nz-btn-pri:hover{opacity:.88;}',
-'.nz-btn-ghost{background:var(--card-elevated);color:var(--foreground);border:1px solid var(--border);}',
+'.nz-btn-ghost{background:var(--card-elevated);color:var(--fg);border:1px solid var(--border);}',
 '.nz-btn-ghost:hover{border-color:var(--primary);color:var(--primary);}',
 
 /* Kanji grid cells */
@@ -196,7 +196,7 @@ var NZ_CSS = [
 '.sc-line.active{background:var(--primary-dim);border-left-color:var(--primary);}',
 
 /* Quiz options */
-'.q-opt{padding:11px 14px;border-radius:10px;border:1px solid var(--border);background:var(--card-elevated);color:var(--foreground);font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;text-align:left;display:flex;align-items:center;gap:7px;transition:all .15s;width:100%;}',
+'.q-opt{padding:11px 14px;border-radius:10px;border:1px solid var(--border);background:var(--card-elevated);color:var(--fg);font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;text-align:left;display:flex;align-items:center;gap:7px;transition:all .15s;width:100%;}',
 '.q-opt:not([disabled]):hover{border-color:var(--primary);color:var(--primary);}',
 
 /* Kanji modal */
@@ -207,7 +207,7 @@ var NZ_CSS = [
 '.timer-ring{transition:stroke-dashoffset .8s ease;}',
 
 /* CSS variable aliases for VocabPage IIFE which uses --fg / --fg-muted */
-':root{--fg:var(--foreground);--fg-muted:var(--muted-foreground);--fg-subtle:var(--foreground-subtle);}'
+':root{--fg:var(--fg);--fg-muted:var(--fg-muted);--fg-subtle:var(--fg-subtle);}'
 ].join('\n');
 
 /* ────────────────────────────────────────────────────────────────
@@ -244,7 +244,7 @@ function renderShell() {
         '</div>' +
         '<div class="nz-sb-stats3">' +
           '<div class="nz-sb-stat">' +
-            '<span class="nz-sb-stat-v" style="color:var(--foreground)">Lv.' + level + '</span>' +
+            '<span class="nz-sb-stat-v" style="color:var(--fg)">Lv.' + level + '</span>' +
             '<span class="nz-sb-stat-l">Level</span>' +
           '</div>' +
           '<div class="nz-sb-stat">' +
@@ -291,7 +291,7 @@ function renderShell() {
           '<div class="nz-logomark" ' +
             'style="width:28px;height:28px;border-radius:7px;font-size:13px;">禅</div>' +
           '<span style="font-weight:700;font-size:15px;' +
-            'color:var(--foreground);">NihongoZen</span>' +
+            'color:var(--fg);">NihongoZen</span>' +
         '</div>' +
         makeAvatar(photo, name, 32, 13) +
       '</div>' +
@@ -315,7 +315,7 @@ function renderShell() {
     if (!el) return;
     e.preventDefault();
     if (window.innerWidth < 769) nzToggleSidebar();
-    Router.go(el.dataset.route);
+    NzRouter.go(el.dataset.route);
   });
 }
 
@@ -372,9 +372,9 @@ Pages.dashboard = function () {
     '<div style="display:flex;align-items:center;gap:16px;margin-bottom:26px;flex-wrap:wrap;">' +
       ava +
       '<div style="flex:1;min-width:0;">' +
-        '<h1 style="font-size:24px;font-weight:800;color:var(--foreground);margin:0 0 5px;' +
+        '<h1 style="font-size:24px;font-weight:800;color:var(--fg);margin:0 0 5px;' +
           'letter-spacing:-.5px;">Welcome back, ' + H(name) + ' 👋</h1>' +
-        '<p style="font-size:13px;color:var(--muted-foreground);margin:0;">' +
+        '<p style="font-size:13px;color:var(--fg-muted);margin:0;">' +
           'Level ' + level + ' · ' + xp + ' XP · ' + streak + ' day streak 🔥</p>' +
       '</div>' +
       '<div style="display:flex;gap:8px;flex-wrap:wrap;">' +
@@ -386,12 +386,12 @@ Pages.dashboard = function () {
     /* XP card */
     '<div class="nz-card" style="padding:20px;margin-bottom:18px;">' +
       '<div style="display:flex;justify-content:space-between;margin-bottom:8px;">' +
-        '<span style="font-size:13px;font-weight:700;color:var(--foreground);">Daily XP Goal</span>' +
-        '<span style="font-size:13px;color:var(--muted-foreground);">' + xp + ' / ' + xpGoal + ' XP</span>' +
+        '<span style="font-size:13px;font-weight:700;color:var(--fg);">Daily XP Goal</span>' +
+        '<span style="font-size:13px;color:var(--fg-muted);">' + xp + ' / ' + xpGoal + ' XP</span>' +
       '</div>' +
       pctBar(xp, xpGoal, 'linear-gradient(90deg,var(--primary),#F05578)', 8) +
       '<div style="margin-top:10px;">' +
-        '<div style="font-size:11px;color:var(--muted-foreground);margin-bottom:4px;">' +
+        '<div style="font-size:11px;color:var(--fg-muted);margin-bottom:4px;">' +
           'Level ' + level + ' progress · ' + lvXP + ' / ' + lvReq + ' XP' +
         '</div>' +
         pctBar(lvXP, lvReq, 'var(--accent)', 5) +
@@ -402,28 +402,28 @@ Pages.dashboard = function () {
     '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(165px,1fr));' +
       'gap:11px;margin-bottom:24px;">' +
       dashStat('🔥', 'Streak',   streak + ' days',           'var(--accent)') +
-      dashStat('漢', 'Kanji',    (d.kanjiCount||0)+'/'+tKanji,'var(--jlpt-n4)') +
-      dashStat('語', 'Vocab',    (d.vocabMastered||0)+'/'+tVocab,'var(--jlpt-n5)') +
-      dashStat('📝', 'Lessons',  (d.lessonsCompleted||0)+' done','var(--jlpt-n3)') +
-      dashStat('🎯', 'Accuracy', (d.quizAccuracy||0)+'%',    'var(--jlpt-n2)') +
-      dashStat('文', 'Grammar',  tGram+' patterns',           'var(--jlpt-n1)') +
+      dashStat('漢', 'Kanji',    (d.kanjiCount||0)+'/'+tKanji,'var(--n4)') +
+      dashStat('語', 'Vocab',    (d.vocabMastered||0)+'/'+tVocab,'var(--n5)') +
+      dashStat('📝', 'Lessons',  (d.lessonsCompleted||0)+' done','var(--n3)') +
+      dashStat('🎯', 'Accuracy', (d.quizAccuracy||0)+'%',    'var(--n2)') +
+      dashStat('文', 'Grammar',  tGram+' patterns',           'var(--n1)') +
     '</div>' +
 
     /* Study modules */
-    '<h2 style="font-size:15px;font-weight:700;color:var(--foreground);margin:0 0 13px;">' +
+    '<h2 style="font-size:15px;font-weight:700;color:var(--fg);margin:0 0 13px;">' +
       'Study Modules</h2>' +
     '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(195px,1fr));' +
       'gap:11px;margin-bottom:24px;">' +
-      dashMod('漢','Kanji',    'kanji',    tKanji+' characters · N5–N1', 'var(--jlpt-n4)') +
-      dashMod('語','Vocabulary','vocab',   tVocab+' words · 77 categories','var(--jlpt-n5)') +
-      dashMod('文','Grammar',  'grammar',  tGram+' patterns · N5–N3',   'var(--jlpt-n3)') +
-      dashMod('🎧','Listening','listening',dialogues.length+' dialogues','var(--jlpt-n2)') +
-      dashMod('📖','Reading',  'reading',  passages.length+' passages',  'var(--jlpt-n1)') +
+      dashMod('漢','Kanji',    'kanji',    tKanji+' characters · N5–N1', 'var(--n4)') +
+      dashMod('語','Vocabulary','vocab',   tVocab+' words · 77 categories','var(--n5)') +
+      dashMod('文','Grammar',  'grammar',  tGram+' patterns · N5–N3',   'var(--n3)') +
+      dashMod('🎧','Listening','listening',dialogues.length+' dialogues','var(--n2)') +
+      dashMod('📖','Reading',  'reading',  passages.length+' passages',  'var(--n1)') +
       dashMod('あ','Kana Chart','kana',    'Hiragana · Katakana · Combinations','var(--primary)') +
     '</div>' +
 
     /* JLPT buttons */
-    '<h2 style="font-size:15px;font-weight:700;color:var(--foreground);margin:0 0 13px;">' +
+    '<h2 style="font-size:15px;font-weight:700;color:var(--fg);margin:0 0 13px;">' +
       'JLPT Practice</h2>' +
     '<div style="display:flex;gap:9px;flex-wrap:wrap;">' +
       ['N5','N4','N3','N2','N1'].map(function (lv) {
@@ -447,9 +447,9 @@ function dashStat(icon, label, value, color) {
       'font-size:17px;font-family:\'Noto Serif JP\',serif;color:' + color + ';flex-shrink:0;">' +
       icon + '</div>' +
     '<div>' +
-      '<div style="font-size:17px;font-weight:800;color:var(--foreground);letter-spacing:-.3px;">' +
+      '<div style="font-size:17px;font-weight:800;color:var(--fg);letter-spacing:-.3px;">' +
         value + '</div>' +
-      '<div style="font-size:11px;color:var(--muted-foreground);margin-top:1px;">' +
+      '<div style="font-size:11px;color:var(--fg-muted);margin-top:1px;">' +
         label + '</div>' +
     '</div>' +
     '</div>';
@@ -460,9 +460,9 @@ function dashMod(icon, title, route, sub, color) {
     color + ';" onclick="Router.go(\'' + route + '\')">' +
     '<div style="font-size:27px;color:' + color + ';font-family:\'Noto Serif JP\',serif;' +
       'margin-bottom:9px;">' + icon + '</div>' +
-    '<div style="font-size:15px;font-weight:700;color:var(--foreground);margin-bottom:4px;">' +
+    '<div style="font-size:15px;font-weight:700;color:var(--fg);margin-bottom:4px;">' +
       title + '</div>' +
-    '<div style="font-size:12px;color:var(--muted-foreground);">' + sub + '</div>' +
+    '<div style="font-size:12px;color:var(--fg-muted);">' + sub + '</div>' +
     '</div>';
 }
 
@@ -501,9 +501,9 @@ Pages.kanji = function () {
         '<span style="font-family:\'Noto Serif JP\',serif;font-size:27px;line-height:1;' +
           'color:' + color + ';">' + H(k.kanji) + '</span>' +
         '<span style="font-family:\'JetBrains Mono\',monospace;font-size:9px;' +
-          'color:var(--muted-foreground);text-align:center;">' +
+          'color:var(--fg-muted);text-align:center;">' +
           H(k.reading.split('・')[0]) + '</span>' +
-        '<span style="font-size:9px;color:var(--foreground-subtle);text-align:center;">' +
+        '<span style="font-size:9px;color:var(--fg-subtle);text-align:center;">' +
           H(k.meaning.split('/')[0]) + '</span>' +
         '</button>';
     }).join('');
@@ -531,7 +531,7 @@ Pages.kanji = function () {
       '<div class="nz-modal-box">' +
         '<button onclick="this.closest(\'.nz-overlay-bg\').remove()" ' +
           'style="position:absolute;top:12px;right:14px;background:none;border:none;' +
-          'color:var(--muted-foreground);cursor:pointer;font-size:22px;line-height:1;">×</button>' +
+          'color:var(--fg-muted);cursor:pointer;font-size:22px;line-height:1;">×</button>' +
 
         /* Kanji + reading + meaning */
         '<div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:18px;">' +
@@ -545,8 +545,8 @@ Pages.kanji = function () {
               'border-radius:5px;font-family:\'JetBrains Mono\',monospace;margin-bottom:6px;">' +
               H(activeTab) + '</span>' +
             '<p style="font-family:\'JetBrains Mono\',monospace;font-size:13px;' +
-              'color:var(--muted-foreground);margin:0 0 4px;">' + H(k.reading) + '</p>' +
-            '<p style="font-size:14px;font-weight:700;color:var(--foreground);margin:0;">' +
+              'color:var(--fg-muted);margin:0 0 4px;">' + H(k.reading) + '</p>' +
+            '<p style="font-size:14px;font-weight:700;color:var(--fg);margin:0;">' +
               H(k.meaning) + '</p>' +
           '</div>' +
         '</div>' +
@@ -563,15 +563,15 @@ Pages.kanji = function () {
         '<div class="nz-cardu" style="padding:12px;margin-bottom:13px;">' +
           '<div style="display:flex;justify-content:space-between;align-items:center;' +
             'margin-bottom:7px;">' +
-            '<span style="font-size:10px;color:var(--muted-foreground);' +
+            '<span style="font-size:10px;color:var(--fg-muted);' +
               'text-transform:uppercase;letter-spacing:.06em;">Example</span>' +
             '<button onclick="speak(\'' + H(k.example) + '\')" ' +
               'style="background:none;border:none;cursor:pointer;font-size:12px;' +
               'color:var(--primary);">🔊 Read aloud</button>' +
           '</div>' +
           '<p style="font-family:\'Noto Sans JP\',sans-serif;font-size:14px;' +
-            'color:var(--foreground);margin:0 0 4px;">' + H(k.example) + '</p>' +
-          '<p style="font-size:12px;color:var(--muted-foreground);font-style:italic;margin:0;">' +
+            'color:var(--fg);margin:0 0 4px;">' + H(k.example) + '</p>' +
+          '<p style="font-size:12px;color:var(--fg-muted);font-style:italic;margin:0;">' +
             H(k.exampleMeaning) + '</p>' +
         '</div>' +
 
@@ -610,7 +610,7 @@ Pages.kanji = function () {
   function kanjiCell(label, val, canSpeak) {
     return '<div class="nz-cardu" style="padding:11px;">' +
       '<div style="display:flex;justify-content:space-between;margin-bottom:3px;">' +
-        '<span style="font-size:10px;color:var(--muted-foreground);">' + label + '</span>' +
+        '<span style="font-size:10px;color:var(--fg-muted);">' + label + '</span>' +
         (canSpeak && val && val !== '—'
           ? '<button onclick="speak(\'' + H(val) + '\')" ' +
             'style="background:none;border:none;cursor:pointer;color:var(--primary);' +
@@ -618,7 +618,7 @@ Pages.kanji = function () {
           : '') +
       '</div>' +
       '<span style="font-family:\'JetBrains Mono\',monospace;font-size:12px;' +
-        'color:var(--foreground);">' + H(val) + '</span>' +
+        'color:var(--fg);">' + H(val) + '</span>' +
       '</div>';
   }
 
@@ -633,7 +633,7 @@ Pages.kanji = function () {
       var c   = jlptColor(tab);
       var act = tab === t;
       btn.style.background   = act ? c + '18' : 'transparent';
-      btn.style.color        = act ? c : 'var(--muted-foreground)';
+      btn.style.color        = act ? c : 'var(--fg-muted)';
       btn.style.borderBottom = act ? '2px solid ' + c : '2px solid transparent';
     });
     renderGrid();
@@ -642,9 +642,9 @@ Pages.kanji = function () {
   setHTML(
     '<div class="nz-page nz-fadein">' +
     '<div style="margin-bottom:20px;">' +
-      '<h1 style="font-size:22px;font-weight:800;color:var(--foreground);margin:0 0 4px;' +
+      '<h1 style="font-size:22px;font-weight:800;color:var(--fg);margin:0 0 4px;' +
         'letter-spacing:-.4px;">漢字 Kanji Study</h1>' +
-      '<p style="font-size:13px;color:var(--muted-foreground);margin:0;">' +
+      '<p style="font-size:13px;color:var(--fg-muted);margin:0;">' +
         'Master kanji characters from N5 to N1 level</p>' +
     '</div>' +
 
@@ -660,23 +660,23 @@ Pages.kanji = function () {
             'cursor:pointer;border:none;' +
             'border-bottom:2px solid ' + (act ? c : 'transparent') + ';' +
             'background:' + (act ? c + '18' : 'transparent') + ';' +
-            'color:' + (act ? c : 'var(--muted-foreground)') + ';' +
+            'color:' + (act ? c : 'var(--fg-muted)') + ';' +
             'transition:all .15s;">' + t + '</button>';
         }).join('') +
       '</div>' +
 
       '<div style="position:relative;flex:1;max-width:270px;">' +
         '<span style="position:absolute;left:11px;top:50%;transform:translateY(-50%);' +
-          'color:var(--muted-foreground);font-size:13px;pointer-events:none;">🔍</span>' +
+          'color:var(--fg-muted);font-size:13px;pointer-events:none;">🔍</span>' +
         '<input id="kj-search" type="text" placeholder="Search kanji, meaning…" ' +
           'oninput="nzKanjiSearch(this.value)" ' +
           'style="width:100%;padding:10px 14px 10px 34px;border-radius:10px;' +
-          'border:1px solid var(--border);background:var(--card);color:var(--foreground);' +
+          'border:1px solid var(--border);background:var(--card);color:var(--fg);' +
           'font-size:13px;font-family:inherit;outline:none;box-sizing:border-box;" ' +
           'onfocus="this.style.borderColor=\'var(--primary)\'" ' +
           'onblur="this.style.borderColor=\'var(--border)\'">' +
       '</div>' +
-      '<span id="kj-cnt" style="font-size:12px;color:var(--muted-foreground);' +
+      '<span id="kj-cnt" style="font-size:12px;color:var(--fg-muted);' +
         'margin-left:auto;"></span>' +
     '</div>' +
 
@@ -699,7 +699,7 @@ Pages.vocab = function () {
     VocabPage.mount('nz-vocab-root');
   } else {
     $id('nz-vocab-root').innerHTML =
-      '<div style="padding:40px;text-align:center;color:var(--muted-foreground);">' +
+      '<div style="padding:40px;text-align:center;color:var(--fg-muted);">' +
       'Vocabulary module loading…</div>';
   }
 };
@@ -729,15 +729,15 @@ Pages.grammar = function () {
       if (isOpen) {
         body =
           '<div class="gr-body">' +
-            '<p style="font-size:13px;color:var(--muted-foreground);line-height:1.65;' +
+            '<p style="font-size:13px;color:var(--fg-muted);line-height:1.65;' +
               'margin:16px 0 12px;">' + H(g.explanation) + '</p>' +
             '<div class="nz-cardu" style="padding:12px;margin-bottom:13px;">' +
-              '<p style="font-size:10px;color:var(--muted-foreground);' +
+              '<p style="font-size:10px;color:var(--fg-muted);' +
                 'text-transform:uppercase;letter-spacing:.06em;margin:0 0 5px;">Structure</p>' +
               '<p style="font-family:\'JetBrains Mono\',monospace;font-size:13px;' +
-                'color:var(--foreground);margin:0;">' + H(g.structure) + '</p>' +
+                'color:var(--fg);margin:0;">' + H(g.structure) + '</p>' +
             '</div>' +
-            '<p style="font-size:10px;font-weight:700;color:var(--muted-foreground);' +
+            '<p style="font-size:10px;font-weight:700;color:var(--fg-muted);' +
               'text-transform:uppercase;letter-spacing:.06em;margin:0 0 8px;">Examples</p>' +
             '<div style="display:flex;flex-direction:column;gap:8px;">' +
               g.examples.map(function (ex) {
@@ -746,8 +746,8 @@ Pages.grammar = function () {
                   'border:1px solid var(--border);">' +
                   '<div style="flex:1;">' +
                     '<p style="font-family:\'Noto Sans JP\',sans-serif;font-size:13px;' +
-                      'color:var(--foreground);margin:0 0 3px;">' + H(ex.jp) + '</p>' +
-                    '<p style="font-size:12px;color:var(--muted-foreground);' +
+                      'color:var(--fg);margin:0 0 3px;">' + H(ex.jp) + '</p>' +
+                    '<p style="font-size:12px;color:var(--fg-muted);' +
                       'font-style:italic;margin:0;">' + H(ex.en) + '</p>' +
                   '</div>' +
                   '<button onclick="speak(\'' + H(ex.jp) + '\')" ' +
@@ -769,16 +769,16 @@ Pages.grammar = function () {
             '<div>' +
               '<div style="display:flex;align-items:center;gap:8px;">' +
                 '<span style="font-family:\'Noto Sans JP\',sans-serif;font-size:16px;' +
-                  'font-weight:700;color:var(--foreground);">' + H(g.pattern) + '</span>' +
+                  'font-weight:700;color:var(--fg);">' + H(g.pattern) + '</span>' +
                 '<button onclick="event.stopPropagation();speak(\'' + H(g.pattern) + '\')" ' +
                   'style="background:none;border:none;cursor:pointer;color:var(--primary);' +
                   'font-size:12px;padding:2px 4px;">🔊</button>' +
               '</div>' +
-              '<p style="font-size:11px;color:var(--muted-foreground);margin:0;">' +
+              '<p style="font-size:11px;color:var(--fg-muted);margin:0;">' +
                 H(g.title) + '</p>' +
             '</div>' +
           '</div>' +
-          '<span style="color:var(--muted-foreground);font-size:15px;flex-shrink:0;">' +
+          '<span style="color:var(--fg-muted);font-size:15px;flex-shrink:0;">' +
             (isOpen ? '▲' : '▼') + '</span>' +
         '</button>' +
         body +
@@ -804,7 +804,7 @@ Pages.grammar = function () {
       var c   = l === 'All' ? 'var(--primary)' : jlptColor(l);
       var act = l === lv;
       btn.style.background  = act ? (l === 'All' ? 'var(--primary)' : c + '18') : 'var(--card-elevated)';
-      btn.style.color       = act ? (l === 'All' ? '#fff' : c) : 'var(--muted-foreground)';
+      btn.style.color       = act ? (l === 'All' ? '#fff' : c) : 'var(--fg-muted)';
       btn.style.borderColor = act ? (l === 'All' ? 'var(--primary)' : c) : 'var(--border)';
     });
     renderCards();
@@ -813,9 +813,9 @@ Pages.grammar = function () {
   setHTML(
     '<div class="nz-page nz-fadein">' +
     '<div style="margin-bottom:20px;">' +
-      '<h1 style="font-size:22px;font-weight:800;color:var(--foreground);margin:0 0 4px;' +
+      '<h1 style="font-size:22px;font-weight:800;color:var(--fg);margin:0 0 4px;' +
         'letter-spacing:-.4px;">文法 Grammar</h1>' +
-      '<p style="font-size:13px;color:var(--muted-foreground);margin:0;">' +
+      '<p style="font-size:13px;color:var(--fg-muted);margin:0;">' +
         'Master Japanese grammar patterns from N5 to N1</p>' +
     '</div>' +
     '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;">' +
@@ -826,7 +826,7 @@ Pages.grammar = function () {
           'style="padding:9px 18px;border-radius:10px;font-size:13px;font-weight:700;' +
           'font-family:inherit;cursor:pointer;transition:all .15s;' +
           'background:' + (act ? 'var(--primary)' : 'var(--card-elevated)') + ';' +
-          'color:' + (act ? '#fff' : 'var(--muted-foreground)') + ';' +
+          'color:' + (act ? '#fff' : 'var(--fg-muted)') + ';' +
           'border:1px solid ' + (act ? 'var(--primary)' : 'var(--border)') + ';">' +
           lv + '</button>';
       }).join('') +
@@ -851,9 +851,9 @@ Pages.listening = function () {
     setHTML(
       '<div class="nz-page nz-fadein">' +
       '<div style="margin-bottom:20px;">' +
-        '<h1 style="font-size:22px;font-weight:800;color:var(--foreground);margin:0 0 4px;' +
+        '<h1 style="font-size:22px;font-weight:800;color:var(--fg);margin:0 0 4px;' +
           'letter-spacing:-.4px;">聴解 Listening</h1>' +
-        '<p style="font-size:13px;color:var(--muted-foreground);margin:0;">' +
+        '<p style="font-size:13px;color:var(--fg-muted);margin:0;">' +
           'Practice listening comprehension with real dialogues</p>' +
       '</div>' +
       '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(265px,1fr));' +
@@ -868,14 +868,14 @@ Pages.listening = function () {
                 'background:' + c + '18;border:1px solid ' + c + ';' +
                 'padding:2px 8px;border-radius:5px;' +
                 'font-family:\'JetBrains Mono\',monospace;">' + dlg.level + '</span>' +
-              '<span style="font-size:11px;color:var(--muted-foreground);">' +
+              '<span style="font-size:11px;color:var(--fg-muted);">' +
                 dlg.lineCount + ' lines</span>' +
             '</div>' +
-            '<h3 style="font-size:15px;font-weight:700;color:var(--foreground);' +
+            '<h3 style="font-size:15px;font-weight:700;color:var(--fg);' +
               'margin:0 0 3px;">' + H(dlg.topic) + '</h3>' +
             '<p style="font-family:\'Noto Sans JP\',sans-serif;font-size:12px;' +
-              'color:var(--muted-foreground);margin:0 0 7px;">' + H(dlg.topicJp) + '</p>' +
-            '<p style="font-size:12px;color:var(--foreground-subtle);margin:0 0 15px;">' +
+              'color:var(--fg-muted);margin:0 0 7px;">' + H(dlg.topicJp) + '</p>' +
+            '<p style="font-size:12px;color:var(--fg-subtle);margin:0 0 15px;">' +
               H(dlg.preview) + '</p>' +
             '<button class="nz-btn" style="width:100%;justify-content:center;' +
               'background:' + c + ';color:#fff;">🎧 Start Listening</button>' +
@@ -905,10 +905,10 @@ Pages.listening = function () {
       '<div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">' +
         lvBadge(c, dlg.level) +
         '<div>' +
-          '<h1 style="font-size:20px;font-weight:800;color:var(--foreground);margin:0 0 2px;">' +
+          '<h1 style="font-size:20px;font-weight:800;color:var(--fg);margin:0 0 2px;">' +
             H(dlg.topic) + '</h1>' +
           '<p style="font-family:\'Noto Sans JP\',sans-serif;font-size:12px;' +
-            'color:var(--muted-foreground);margin:0;">' + H(dlg.topicJp) + '</p>' +
+            'color:var(--fg-muted);margin:0;">' + H(dlg.topicJp) + '</p>' +
         '</div>' +
       '</div>' +
 
@@ -921,9 +921,9 @@ Pages.listening = function () {
               'background:var(--primary-dim);display:flex;align-items:center;' +
               'justify-content:center;font-size:15px;">🎙️</div>' +
             '<div>' +
-              '<p style="font-size:13px;font-weight:700;color:var(--foreground);margin:0;">' +
+              '<p style="font-size:13px;font-weight:700;color:var(--fg);margin:0;">' +
                 'Dialogue Script</p>' +
-              '<p style="font-size:11px;color:var(--muted-foreground);margin:0;">' +
+              '<p style="font-size:11px;color:var(--fg-muted);margin:0;">' +
                 'Web Speech API</p>' +
             '</div>' +
           '</div>' +
@@ -936,12 +936,12 @@ Pages.listening = function () {
               '<div style="flex-shrink:0;padding-top:1px;">' +
                 '<span style="font-size:10px;font-weight:600;padding:2px 8px;' +
                   'border-radius:20px;background:var(--card);border:1px solid var(--border);' +
-                  'color:var(--muted-foreground);">' + H(ln.speaker) + '</span>' +
+                  'color:var(--fg-muted);">' + H(ln.speaker) + '</span>' +
               '</div>' +
               '<div style="flex:1;min-width:0;">' +
                 '<p style="font-family:\'Noto Sans JP\',sans-serif;font-size:13px;' +
-                  'color:var(--foreground);margin:0 0 3px;">' + H(ln.jp) + '</p>' +
-                '<p style="font-size:12px;color:var(--muted-foreground);' +
+                  'color:var(--fg);margin:0 0 3px;">' + H(ln.jp) + '</p>' +
+                '<p style="font-size:12px;color:var(--fg-muted);' +
                   'font-style:italic;margin:0;">' + H(ln.en) + '</p>' +
               '</div>' +
               '<button onclick="speak(\'' + H(ln.jp) + '\')" ' +
@@ -954,7 +954,7 @@ Pages.listening = function () {
 
       /* Key phrases */
       '<div class="nz-card" style="padding:20px;margin-bottom:13px;">' +
-        '<h3 style="font-size:13px;font-weight:700;color:var(--foreground);' +
+        '<h3 style="font-size:13px;font-weight:700;color:var(--fg);' +
           'margin:0 0 11px;">Key Phrases</h3>' +
         '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(185px,1fr));' +
           'gap:9px;">' +
@@ -990,7 +990,7 @@ Pages.listening = function () {
       }
       isPlaying = true;
       var btn = $id('li-play-btn');
-      if (btn) { btn.textContent = '⏹ Stop'; btn.style.background = 'var(--jlpt-n3)'; }
+      if (btn) { btn.textContent = '⏹ Stop'; btn.style.background = 'var(--n3)'; }
 
       for (var i = 0; i < dlg.script.length; i++) {
         if (!isPlaying) break;
@@ -1023,9 +1023,9 @@ Pages.reading = function () {
     setHTML(
       '<div class="nz-page nz-fadein">' +
       '<div style="margin-bottom:20px;">' +
-        '<h1 style="font-size:22px;font-weight:800;color:var(--foreground);margin:0 0 4px;' +
+        '<h1 style="font-size:22px;font-weight:800;color:var(--fg);margin:0 0 4px;' +
           'letter-spacing:-.4px;">読解 Reading</h1>' +
-        '<p style="font-size:13px;color:var(--muted-foreground);margin:0;">' +
+        '<p style="font-size:13px;color:var(--fg-muted);margin:0;">' +
           'Improve reading comprehension with graded passages</p>' +
       '</div>' +
       '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(265px,1fr));' +
@@ -1040,14 +1040,14 @@ Pages.reading = function () {
                 'background:' + c + '18;border:1px solid ' + c + ';' +
                 'padding:2px 8px;border-radius:5px;' +
                 'font-family:\'JetBrains Mono\',monospace;">' + p.level + '</span>' +
-              '<span style="font-size:11px;color:var(--muted-foreground);">' +
+              '<span style="font-size:11px;color:var(--fg-muted);">' +
                 p.wordCount + ' words</span>' +
             '</div>' +
-            '<h3 style="font-size:15px;font-weight:700;color:var(--foreground);' +
+            '<h3 style="font-size:15px;font-weight:700;color:var(--fg);' +
               'margin:0 0 3px;">' + H(p.title) + '</h3>' +
             '<p style="font-family:\'Noto Sans JP\',sans-serif;font-size:12px;' +
-              'color:var(--muted-foreground);margin:0 0 7px;">' + H(p.titleJp) + '</p>' +
-            '<p style="font-size:12px;color:var(--foreground-subtle);margin:0 0 15px;">' +
+              'color:var(--fg-muted);margin:0 0 7px;">' + H(p.titleJp) + '</p>' +
+            '<p style="font-size:12px;color:var(--fg-subtle);margin:0 0 15px;">' +
               p.difficulty + ' · ' + p.lines.length + ' sentences</p>' +
             '<button class="nz-btn" style="width:100%;justify-content:center;' +
               'background:' + c + ';color:#fff;">📖 Start Reading</button>' +
@@ -1079,10 +1079,10 @@ Pages.reading = function () {
       '<div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">' +
         lvBadge(c, p.level) +
         '<div>' +
-          '<h1 style="font-size:20px;font-weight:800;color:var(--foreground);margin:0 0 2px;">' +
+          '<h1 style="font-size:20px;font-weight:800;color:var(--fg);margin:0 0 2px;">' +
             H(p.title) + '</h1>' +
           '<p style="font-family:\'Noto Sans JP\',sans-serif;font-size:12px;' +
-            'color:var(--muted-foreground);margin:0;">' + H(p.titleJp) + '</p>' +
+            'color:var(--fg-muted);margin:0;">' + H(p.titleJp) + '</p>' +
         '</div>' +
       '</div>' +
 
@@ -1103,15 +1103,15 @@ Pages.reading = function () {
             'margin-bottom:6px;border-left:3px solid transparent;transition:all .2s;">' +
             '<div style="flex:1;">' +
               '<p style="font-family:\'Noto Sans JP\',sans-serif;font-size:15px;' +
-                'color:var(--foreground);line-height:1.7;margin:0 0 3px;">' +
+                'color:var(--fg);line-height:1.7;margin:0 0 3px;">' +
                 H(ln.jp) + '</p>' +
-              (vis ? '<p style="font-size:12px;color:var(--muted-foreground);' +
+              (vis ? '<p style="font-size:12px;color:var(--fg-muted);' +
                 'font-style:italic;margin:0;">' + H(ln.en) + '</p>' : '') +
             '</div>' +
             '<div style="display:flex;gap:3px;flex-shrink:0;margin-top:2px;">' +
               '<button onclick="nzRdToggleLine(\'' + H(ln.id) + '\')" ' +
                 'style="background:none;border:none;cursor:pointer;' +
-                'color:var(--muted-foreground);font-size:13px;padding:3px 5px;" ' +
+                'color:var(--fg-muted);font-size:13px;padding:3px 5px;" ' +
                 'title="Toggle translation">' +
                 (visLines.has(ln.id) ? '🙈' : '👁') + '</button>' +
               '<button onclick="speak(\'' + H(ln.jp) + '\')" ' +
@@ -1124,7 +1124,7 @@ Pages.reading = function () {
 
       /* Key vocabulary */
       '<div class="nz-card" style="padding:20px;margin-bottom:13px;">' +
-        '<h3 style="font-size:13px;font-weight:700;color:var(--foreground);' +
+        '<h3 style="font-size:13px;font-weight:700;color:var(--fg);' +
           'margin:0 0 11px;">Key Vocabulary</h3>' +
         '<div style="display:flex;flex-wrap:wrap;gap:8px;">' +
           p.vocab.map(function (v) {
@@ -1136,8 +1136,8 @@ Pages.reading = function () {
               'onmouseover="this.style.borderColor=\'var(--primary)\'" ' +
               'onmouseout="this.style.borderColor=\'var(--border)\'">' +
               '<span style="font-family:\'Noto Sans JP\',sans-serif;font-size:13px;' +
-                'font-weight:700;color:var(--foreground);">' + H(v.jp) + '</span>' +
-              '<span style="font-size:11px;color:var(--muted-foreground);">' +
+                'font-weight:700;color:var(--fg);">' + H(v.jp) + '</span>' +
+              '<span style="font-size:11px;color:var(--fg-muted);">' +
                 H(v.en) + '</span>' +
               '<span style="color:var(--primary);font-size:12px;">🔊</span>' +
               '</button>';
@@ -1173,7 +1173,7 @@ Pages.reading = function () {
       }
       isPlaying = true;
       var btn = $id('rd-play-btn');
-      if (btn) { btn.textContent = '⏹ Stop'; btn.style.background = 'var(--jlpt-n3)'; }
+      if (btn) { btn.textContent = '⏹ Stop'; btn.style.background = 'var(--n3)'; }
 
       for (var i = 0; i < p.lines.length; i++) {
         if (!isPlaying) break;
@@ -1202,9 +1202,9 @@ Pages.kana = function () {
   setHTML(
     '<div class="nz-page nz-fadein">' +
     '<div style="margin-bottom:20px;">' +
-      '<h1 style="font-size:22px;font-weight:800;color:var(--foreground);margin:0 0 4px;' +
+      '<h1 style="font-size:22px;font-weight:800;color:var(--fg);margin:0 0 4px;' +
         'letter-spacing:-.4px;">かな Kana Chart</h1>' +
-      '<p style="font-size:13px;color:var(--muted-foreground);margin:0;">' +
+      '<p style="font-size:13px;color:var(--fg-muted);margin:0;">' +
         'Hiragana · Katakana · Dakuten · Combinations — ' +
         'click any character to hear it</p>' +
     '</div>' +
@@ -1245,10 +1245,10 @@ Pages.jlptLevel = function (lvl) {
           'background:' + color + '18;border:1px solid ' + color + ';' +
           'padding:4px 14px;border-radius:8px;' +
           'font-family:\'JetBrains Mono\',monospace;">' + lv + '</span>' +
-        '<h1 style="font-size:22px;font-weight:800;color:var(--foreground);' +
+        '<h1 style="font-size:22px;font-weight:800;color:var(--fg);' +
           'margin:0;letter-spacing:-.4px;">JLPT ' + lv + ' Practice</h1>' +
       '</div>' +
-      '<p style="font-size:13px;color:var(--muted-foreground);margin:0;">' + H(desc) + '</p>' +
+      '<p style="font-size:13px;color:var(--fg-muted);margin:0;">' + H(desc) + '</p>' +
     '</div>' +
 
     /* Section cards */
@@ -1263,7 +1263,7 @@ Pages.jlptLevel = function (lvl) {
 
     /* Kanji preview */
     (kList.length ?
-      '<h2 style="font-size:15px;font-weight:700;color:var(--foreground);' +
+      '<h2 style="font-size:15px;font-weight:700;color:var(--fg);' +
         'margin:0 0 11px;">Kanji Preview</h2>' +
       '<div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:22px;">' +
         kList.slice(0, 32).map(function (k) {
@@ -1278,7 +1278,7 @@ Pages.jlptLevel = function (lvl) {
               'this.style.transform=\'\'">' +
             '<span style="font-family:\'Noto Serif JP\',serif;font-size:20px;color:' +
               color + ';">' + H(k.kanji) + '</span>' +
-            '<span style="font-size:8px;color:var(--muted-foreground);">' +
+            '<span style="font-size:8px;color:var(--fg-muted);">' +
               H(k.reading.split('・')[0]) + '</span>' +
             '</button>';
         }).join('') +
@@ -1286,14 +1286,14 @@ Pages.jlptLevel = function (lvl) {
           ? '<button onclick="Router.go(\'kanji\')" ' +
             'style="width:50px;height:50px;border-radius:10px;background:var(--card);' +
             'border:1px dashed var(--border);cursor:pointer;font-size:11px;' +
-            'color:var(--muted-foreground);">+' + (kList.length - 32) + '</button>'
+            'color:var(--fg-muted);">+' + (kList.length - 32) + '</button>'
           : '') +
       '</div>'
     : '') +
 
     /* Grammar preview */
     (gList.length ?
-      '<h2 style="font-size:15px;font-weight:700;color:var(--foreground);' +
+      '<h2 style="font-size:15px;font-weight:700;color:var(--fg);' +
         'margin:0 0 11px;">Grammar Patterns</h2>' +
       '<div style="display:flex;flex-direction:column;gap:8px;margin-bottom:22px;">' +
         gList.map(function (g) {
@@ -1305,7 +1305,7 @@ Pages.jlptLevel = function (lvl) {
             'onmouseout="this.style.borderColor=\'var(--border)\'">' +
             '<span style="font-family:\'Noto Sans JP\',sans-serif;font-size:15px;' +
               'font-weight:700;color:' + color + ';">' + H(g.pattern) + '</span>' +
-            '<span style="font-size:12px;color:var(--muted-foreground);flex:1;">' +
+            '<span style="font-size:12px;color:var(--fg-muted);flex:1;">' +
               H(g.title) + '</span>' +
             '<button onclick="event.stopPropagation();speak(\'' + H(g.pattern) + '\')" ' +
               'style="background:none;border:none;cursor:pointer;color:var(--primary);' +
@@ -1324,9 +1324,9 @@ function jlptSect(icon, title, sub, route, color) {
     'onclick="Router.go(\'' + route + '\')">' +
     '<div style="font-size:26px;color:' + color + ';font-family:\'Noto Serif JP\',serif;' +
       'margin-bottom:9px;">' + icon + '</div>' +
-    '<div style="font-size:15px;font-weight:700;color:var(--foreground);' +
+    '<div style="font-size:15px;font-weight:700;color:var(--fg);' +
       'margin-bottom:4px;">' + title + '</div>' +
-    '<div style="font-size:12px;color:var(--muted-foreground);">' + sub + '</div>' +
+    '<div style="font-size:12px;color:var(--fg-muted);">' + sub + '</div>' +
     '</div>';
 }
 
@@ -1354,9 +1354,9 @@ Pages.timer = function () {
     setHTML(
       '<div class="nz-page nz-fadein" style="max-width:480px;">' +
       '<div style="margin-bottom:20px;">' +
-        '<h1 style="font-size:22px;font-weight:800;color:var(--foreground);margin:0 0 4px;' +
+        '<h1 style="font-size:22px;font-weight:800;color:var(--fg);margin:0 0 4px;' +
           'letter-spacing:-.4px;">⏱ Focus Timer</h1>' +
-        '<p style="font-size:13px;color:var(--muted-foreground);margin:0;">' +
+        '<p style="font-size:13px;color:var(--fg-muted);margin:0;">' +
           'Pomodoro-style study sessions</p>' +
       '</div>' +
 
@@ -1368,7 +1368,7 @@ Pages.timer = function () {
             'style="padding:9px 18px;border-radius:10px;font-size:13px;font-weight:700;' +
             'font-family:inherit;cursor:pointer;transition:all .15s;' +
             'background:' + (act ? 'var(--primary)' : 'var(--card-elevated)') + ';' +
-            'color:' + (act ? '#fff' : 'var(--muted-foreground)') + ';' +
+            'color:' + (act ? '#fff' : 'var(--fg-muted)') + ';' +
             'border:1px solid ' + (act ? 'var(--primary)' : 'var(--border)') + ';">' +
             (m === 'focus' ? '🎯 Focus 25m' : m === 'short' ? '☕ Short 5m' : '🌿 Long 15m') +
             '</button>';
@@ -1390,9 +1390,9 @@ Pages.timer = function () {
           '<div style="position:absolute;inset:0;display:flex;flex-direction:column;' +
             'align-items:center;justify-content:center;">' +
             '<span id="nz-timer-disp" style="font-size:38px;font-weight:800;' +
-              'color:var(--foreground);font-variant-numeric:tabular-nums;' +
+              'color:var(--fg);font-variant-numeric:tabular-nums;' +
               'font-family:\'JetBrains Mono\',monospace;">' + fmt(remaining) + '</span>' +
-            '<span style="font-size:12px;color:var(--muted-foreground);margin-top:4px;">' +
+            '<span style="font-size:12px;color:var(--fg-muted);margin-top:4px;">' +
               (mode === 'focus' ? 'Focus Time' :
                mode === 'short' ? 'Short Break' : 'Long Break') + '</span>' +
           '</div>' +
@@ -1449,9 +1449,9 @@ Pages.progress = function () {
   setHTML(
     '<div class="nz-page nz-fadein">' +
     '<div style="margin-bottom:20px;">' +
-      '<h1 style="font-size:22px;font-weight:800;color:var(--foreground);margin:0 0 4px;' +
+      '<h1 style="font-size:22px;font-weight:800;color:var(--fg);margin:0 0 4px;' +
         'letter-spacing:-.4px;">📊 Progress</h1>' +
-      '<p style="font-size:13px;color:var(--muted-foreground);margin:0;">' +
+      '<p style="font-size:13px;color:var(--fg-muted);margin:0;">' +
         'Track your Japanese learning journey</p>' +
     '</div>' +
 
@@ -1464,16 +1464,16 @@ Pages.progress = function () {
           'display:flex;align-items:center;justify-content:center;' +
           'font-size:22px;font-weight:800;color:#fff;">' + (d.level || 1) + '</div>' +
         '<div style="flex:1;">' +
-          '<div style="font-size:18px;font-weight:800;color:var(--foreground);">' +
+          '<div style="font-size:18px;font-weight:800;color:var(--fg);">' +
             'Level ' + (d.level || 1) + '</div>' +
-          '<div style="font-size:13px;color:var(--muted-foreground);">' +
+          '<div style="font-size:13px;color:var(--fg-muted);">' +
             (d.levelXP || 0) + ' / ' + (d.levelXPRequired || 200) +
             ' XP to next level</div>' +
         '</div>' +
         '<div style="text-align:right;">' +
           '<div style="font-size:24px;font-weight:800;color:var(--accent);">' +
             '🔥 ' + (d.streak || 1) + '</div>' +
-          '<div style="font-size:11px;color:var(--muted-foreground);">Day Streak</div>' +
+          '<div style="font-size:11px;color:var(--fg-muted);">Day Streak</div>' +
         '</div>' +
       '</div>' +
       progressRow('Level Progress', d.levelXP || 0, d.levelXPRequired || 200, 'var(--accent)') +
@@ -1481,17 +1481,17 @@ Pages.progress = function () {
     '</div>' +
 
     /* Content progress */
-    '<h2 style="font-size:15px;font-weight:700;color:var(--foreground);' +
+    '<h2 style="font-size:15px;font-weight:700;color:var(--fg);' +
       'margin:0 0 12px;">Content Progress</h2>' +
     '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));' +
       'gap:12px;margin-bottom:20px;">' +
-      progressCard('漢 Kanji',     d.kanjiCount       || 0, tKanji, 'var(--jlpt-n4)') +
-      progressCard('語 Vocabulary',d.vocabMastered    || 0, tVocab, 'var(--jlpt-n5)') +
-      progressCard('文 Grammar',   d.lessonsCompleted || 0, tGram,  'var(--jlpt-n3)') +
+      progressCard('漢 Kanji',     d.kanjiCount       || 0, tKanji, 'var(--n4)') +
+      progressCard('語 Vocabulary',d.vocabMastered    || 0, tVocab, 'var(--n5)') +
+      progressCard('文 Grammar',   d.lessonsCompleted || 0, tGram,  'var(--n3)') +
     '</div>' +
 
     /* Kanji by JLPT */
-    '<h2 style="font-size:15px;font-weight:700;color:var(--foreground);' +
+    '<h2 style="font-size:15px;font-weight:700;color:var(--fg);' +
       'margin:0 0 12px;">Kanji by JLPT Level</h2>' +
     '<div class="nz-card" style="padding:20px;">' +
       ['N5','N4','N3','N2','N1'].map(function (lv) {
@@ -1500,7 +1500,7 @@ Pages.progress = function () {
         return '<div style="margin-bottom:13px;">' +
           '<div style="display:flex;justify-content:space-between;margin-bottom:5px;">' +
             '<span style="font-size:13px;font-weight:700;color:' + c + ';">' + lv + '</span>' +
-            '<span style="font-size:12px;color:var(--muted-foreground);">' +
+            '<span style="font-size:12px;color:var(--fg-muted);">' +
               cnt + ' characters</span>' +
           '</div>' +
           pctBar(cnt, cnt, c + '55', 6) +
@@ -1516,7 +1516,7 @@ function progressRow(label, val, max, color) {
   var p = Math.min(100, Math.round(val / Math.max(max, 1) * 100));
   return '<div style="margin-bottom:11px;">' +
     '<div style="display:flex;justify-content:space-between;margin-bottom:5px;">' +
-      '<span style="font-size:12px;color:var(--muted-foreground);">' + label + '</span>' +
+      '<span style="font-size:12px;color:var(--fg-muted);">' + label + '</span>' +
       '<span style="font-size:12px;color:' + color + ';font-weight:700;">' +
         val + ' / ' + max + '</span>' +
     '</div>' +
@@ -1529,11 +1529,11 @@ function progressCard(label, val, max, color) {
   return '<div class="nz-card" style="padding:18px;">' +
     '<div style="display:flex;justify-content:space-between;align-items:center;' +
       'margin-bottom:10px;">' +
-      '<span style="font-size:13px;font-weight:700;color:var(--foreground);">' + label + '</span>' +
+      '<span style="font-size:13px;font-weight:700;color:var(--fg);">' + label + '</span>' +
       '<span style="font-size:11px;color:' + color + ';font-weight:700;">' + p + '%</span>' +
     '</div>' +
     pctBar(val, max, color, 6) +
-    '<div style="font-size:12px;color:var(--muted-foreground);margin-top:8px;">' +
+    '<div style="font-size:12px;color:var(--fg-muted);margin-top:8px;">' +
       val + ' / ' + max + ' completed</div>' +
     '</div>';
 }
@@ -1569,9 +1569,9 @@ Pages.profile = function () {
   setHTML(
     '<div class="nz-page nz-fadein" style="max-width:540px;">' +
     '<div style="margin-bottom:20px;">' +
-      '<h1 style="font-size:22px;font-weight:800;color:var(--foreground);margin:0 0 4px;' +
+      '<h1 style="font-size:22px;font-weight:800;color:var(--fg);margin:0 0 4px;' +
         'letter-spacing:-.4px;">👤 Profile</h1>' +
-      '<p style="font-size:13px;color:var(--muted-foreground);margin:0;">' +
+      '<p style="font-size:13px;color:var(--fg-muted);margin:0;">' +
         'Your account and learning statistics</p>' +
     '</div>' +
 
@@ -1580,9 +1580,9 @@ Pages.profile = function () {
       'align-items:center;gap:20px;flex-wrap:wrap;">' +
       ava +
       '<div>' +
-        '<div style="font-size:20px;font-weight:800;color:var(--foreground);' +
+        '<div style="font-size:20px;font-weight:800;color:var(--fg);' +
           'margin-bottom:4px;">' + H(name) + '</div>' +
-        '<div style="font-size:13px;color:var(--muted-foreground);' +
+        '<div style="font-size:13px;color:var(--fg-muted);' +
           'margin-bottom:9px;">' + H(email) + '</div>' +
         '<span style="display:inline-flex;align-items:center;gap:6px;' +
           'padding:3px 10px;border-radius:20px;' +
@@ -1595,7 +1595,7 @@ Pages.profile = function () {
 
     /* Account details */
     '<div class="nz-card" style="padding:20px;margin-bottom:14px;">' +
-      '<h3 style="font-size:13px;font-weight:700;color:var(--foreground);' +
+      '<h3 style="font-size:13px;font-weight:700;color:var(--fg);' +
         'margin:0 0 12px;">Account Details</h3>' +
       profileRow('Display Name',   name,          false) +
       profileRow('Email',          email  || '—', false) +
@@ -1607,7 +1607,7 @@ Pages.profile = function () {
 
     /* Learning stats */
     '<div class="nz-card" style="padding:20px;margin-bottom:15px;">' +
-      '<h3 style="font-size:13px;font-weight:700;color:var(--foreground);' +
+      '<h3 style="font-size:13px;font-weight:700;color:var(--fg);' +
         'margin:0 0 12px;">Learning Stats</h3>' +
       profileRow('Level',          'Level '+(d.level||1),         false) +
       profileRow('Total XP',       (d.xp||0)+' XP',               false) +
@@ -1629,9 +1629,9 @@ Pages.profile = function () {
 function profileRow(label, val, mono) {
   return '<div style="display:flex;justify-content:space-between;align-items:center;' +
     'padding:11px 0;border-bottom:1px solid var(--border);">' +
-    '<span style="font-size:13px;color:var(--muted-foreground);">' + label + '</span>' +
+    '<span style="font-size:13px;color:var(--fg-muted);">' + label + '</span>' +
     '<span style="font-size:' + (mono ? '11px' : '13px') + ';font-weight:600;' +
-      'color:var(--foreground);' +
+      'color:var(--fg);' +
       (mono ? 'font-family:\'JetBrains Mono\',monospace;word-break:break-all;' +
               'text-align:right;max-width:210px;' : '') + '">' +
       H(val) + '</span>' +
@@ -1644,10 +1644,10 @@ function profileRow(label, val, mono) {
 function backBtn(fn, label) {
   return '<button onclick="' + fn + '()" ' +
     'style="display:flex;align-items:center;gap:6px;background:none;border:none;' +
-    'color:var(--muted-foreground);cursor:pointer;font-size:13px;font-weight:600;' +
+    'color:var(--fg-muted);cursor:pointer;font-size:13px;font-weight:600;' +
     'font-family:inherit;padding:0;margin-bottom:20px;" ' +
-    'onmouseover="this.style.color=\'var(--foreground)\'" ' +
-    'onmouseout="this.style.color=\'var(--muted-foreground)\'">← ' + label + '</button>';
+    'onmouseover="this.style.color=\'var(--fg)\'" ' +
+    'onmouseout="this.style.color=\'var(--fg-muted)\'">← ' + label + '</button>';
 }
 
 function lvBadge(color, lv) {
@@ -1663,8 +1663,8 @@ function phraseCard(p) {
     'border:1px solid var(--border);">' +
     '<div>' +
       '<p style="font-family:\'Noto Sans JP\',sans-serif;font-size:13px;font-weight:700;' +
-        'color:var(--foreground);margin:0 0 2px;">' + H(p.jp) + '</p>' +
-      '<p style="font-size:11px;color:var(--muted-foreground);margin:0;">' + H(p.en) + '</p>' +
+        'color:var(--fg);margin:0 0 2px;">' + H(p.jp) + '</p>' +
+      '<p style="font-size:11px;color:var(--fg-muted);margin:0;">' + H(p.en) + '</p>' +
     '</div>' +
     '<button onclick="speak(\'' + H(p.jp) + '\')" ' +
       'style="background:none;border:none;cursor:pointer;color:var(--primary);' +
@@ -1677,24 +1677,24 @@ function quizBlock(quiz, answers, showResults, score, ansFn, checkFn, retryFn) {
   return '<div class="nz-card" style="padding:20px;">' +
     '<div style="display:flex;justify-content:space-between;align-items:center;' +
       'margin-bottom:15px;">' +
-      '<h3 style="font-size:13px;font-weight:700;color:var(--foreground);' +
+      '<h3 style="font-size:13px;font-weight:700;color:var(--fg);' +
         'margin:0;">Comprehension Quiz</h3>' +
       (showResults
         ? '<span style="font-size:13px;font-weight:700;color:' +
-          (score === quiz.length ? 'var(--jlpt-n5)' : 'var(--primary)') + ';">' +
+          (score === quiz.length ? 'var(--n5)' : 'var(--primary)') + ';">' +
           score + '/' + quiz.length + ' correct</span>'
         : '') +
     '</div>' +
     quiz.map(function (q) {
       return '<div style="margin-bottom:15px;">' +
-        '<p style="font-size:13px;font-weight:700;color:var(--foreground);' +
+        '<p style="font-size:13px;font-weight:700;color:var(--fg);' +
           'margin:0 0 9px;">' + H(q.question) + '</p>' +
         '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">' +
           q.options.map(function (opt, i) {
             var chosen  = answers[q.id] === i;
             var correct = i === q.answer;
-            var bg = 'var(--card-elevated)', bc = 'var(--border)', cl = 'var(--foreground)';
-            if (showResults && correct)            { bg = 'var(--jlpt-n5-dim)'; bc = 'var(--jlpt-n5)'; cl = 'var(--jlpt-n5)'; }
+            var bg = 'var(--card-elevated)', bc = 'var(--border)', cl = 'var(--fg)';
+            if (showResults && correct)            { bg = 'var(--n5-dim)'; bc = 'var(--n5)'; cl = 'var(--n5)'; }
             if (showResults && chosen && !correct) { bg = 'var(--primary-dim)'; bc = 'var(--primary)'; cl = 'var(--primary)'; }
             else if (!showResults && chosen)       { bg = 'var(--primary-dim)'; bc = 'var(--primary)'; cl = 'var(--primary)'; }
             var icon = '';
@@ -1738,7 +1738,7 @@ function speakAsync(text, rate, pauseAfter) {
 /* ────────────────────────────────────────────────────────────────
    EXPORTS
 ──────────────────────────────────────────────────────────────── */
-window.Router      = Router;
+window.Router      = NzRouter;
 window.Pages       = Pages;
 window.renderShell = renderShell;
 window.speak       = speak;
