@@ -101,7 +101,6 @@ onAuthStateChanged(auth, async (user) => {
   clearTimeout(fallback);
 
   if (!user) {
-    // Not logged in → go to login
     window.location.replace("login.html");
     return;
   }
@@ -152,12 +151,12 @@ onAuthStateChanged(auth, async (user) => {
   // Sync State with real Firestore data
   const d = window._nzUserData;
   if (window.State) {
-    State.state.xpToday  = d.xp       || 0;
-    State.state.xpGoal   = d.xpGoal   || 500;
-    State.state.streak   = d.streak   || 1;
-    State.state.level    = d.level     || 1;
-    State.state.totalXP  = d.xp       || 0;
-    State.state.nextLevelXP = d.levelXPRequired || 200;
+    State.state.xpToday     = d.xp               || 0;
+    State.state.xpGoal      = d.xpGoal            || 500;
+    State.state.streak      = d.streak             || 1;
+    State.state.level       = d.level              || 1;
+    State.state.totalXP     = d.xp               || 0;
+    State.state.nextLevelXP = d.levelXPRequired   || 200;
   }
 
   // ── Hide loading screen and launch the app ──────────────────
@@ -182,14 +181,14 @@ window._nzAddXP = async (amount) => {
   const userRef = doc(db, "users", user.uid);
   const snap = await getDoc(userRef); if (!snap.exists()) return;
   const d = snap.data();
-  const newXP = (d.xp||0)+amount;
-  const newLvlXP = (d.levelXP||0)+amount;
-  const req = d.levelXPRequired||200;
-  const lvlUp = newLvlXP >= req;
+  const newXP    = (d.xp    || 0) + amount;
+  const newLvlXP = (d.levelXP || 0) + amount;
+  const req      = d.levelXPRequired || 200;
+  const lvlUp    = newLvlXP >= req;
   await updateDoc(userRef, {
-    xp: newXP,
-    levelXP: lvlUp ? newLvlXP - req : newLvlXP,
-    level: lvlUp ? (d.level||1)+1 : (d.level||1)
+    xp:       newXP,
+    levelXP:  lvlUp ? newLvlXP - req : newLvlXP,
+    level:    lvlUp ? (d.level || 1) + 1 : (d.level || 1)
   });
   const fresh = await getDoc(userRef);
   document.dispatchEvent(new CustomEvent("nz:xpUpdated", { detail: fresh.data() }));
@@ -197,13 +196,19 @@ window._nzAddXP = async (amount) => {
 </script>
 
 <!-- ══════════════════════════════════════════════════════════
-     DATA — Modular data files (loaded before app JS)
-     Folder structure: data/kanji.js, data/vocab.js, etc.
+     DATA FILES
+     Har naya data file yahan add karo — pages.js se pehle load hoga
+     Format: <script src="data/FILENAME.js"></script>
 ═══════════════════════════════════════════════════════════ -->
 <script src="data/kanji.js"></script>
+<!-- <script src="data/vocab.js"></script>    add when ready -->
+<!-- <script src="data/grammar.js"></script>  add when ready -->
+<!-- <script src="data/kana.js"></script>     add when ready -->
+<!-- <script src="data/listening.js"></script>add when ready -->
+<!-- <script src="data/reading.js"></script>  add when ready -->
 
 <!-- ══════════════════════════════════════════════════════════
-     APP JS — loaded after auth guard sets up globals
+     APP JS — loaded after auth guard + data files
 ═══════════════════════════════════════════════════════════ -->
 <script src="js/core.js"></script>
 <script src="js/data.js"></script>
@@ -213,12 +218,10 @@ window._nzAddXP = async (amount) => {
 <script>
 'use strict';
 
-/* ── Bootstrap function called by auth guard after user confirmed ── */
-window._nzBootstrap = function() {
-  // Build shell with real user data
+/* ── Bootstrap — called by auth guard after user is confirmed ── */
+window._nzBootstrap = function () {
   renderShell();
 
-  // Register all routes
   Router.register('dashboard', ()  => Pages.dashboard());
   Router.register('kanji',     ()  => Pages.kanji());
   Router.register('vocab',     (p) => Pages.vocab(p));
@@ -235,13 +238,11 @@ window._nzBootstrap = function() {
   Router.register('jlpt-n2',   ()  => Pages.jlptLevel('n2'));
   Router.register('jlpt-n1',   ()  => Pages.jlptLevel('n1'));
 
-  // Navigate to hash route or dashboard
-  const startPage = window.location.hash.replace('#','') || 'dashboard';
+  const startPage = window.location.hash.replace('#', '') || 'dashboard';
   Router.go(startPage);
 
-  // Handle browser back/forward
   window.addEventListener('popstate', () => {
-    const hash = window.location.hash.replace('#','') || 'dashboard';
+    const hash = window.location.hash.replace('#', '') || 'dashboard';
     Router.go(hash);
   });
 };
