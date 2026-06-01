@@ -305,7 +305,7 @@ function renderShell() {
   if (!$id('nz-page-styles')) {
     var s = document.createElement('style');
     s.id  = 'nz-page-styles';
-    s.textContent = NZ_CSS;
+    s.textContent = Array.isArray(NZ_CSS) ? NZ_CSS.join('\n') : NZ_CSS;
     document.head.appendChild(s);
   }
 
