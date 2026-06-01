@@ -200,9 +200,11 @@ window._nzAddXP = async (amount) => {
      APP JS — loaded after auth guard sets up globals
 ═══════════════════════════════════════════════════════════ -->
 <script src="js/core.js"></script>
-<script src="js/data.js"></script>
+<script src="nz-data.js"></script>
+<script src="nz-kana.js"></script>
+<script src="nz-vocab-module.js"></script>
 <script src="js/pomodoro.js"></script>
-<script src="js/pages.js"></script>
+<script src="nz-pages.js"></script>
 
 <script>
 'use strict';
@@ -215,7 +217,7 @@ window._nzBootstrap = function() {
   // Register all routes
   Router.register('dashboard', ()  => Pages.dashboard());
   Router.register('kanji',     ()  => Pages.kanji());
-  Router.register('vocab',     (p) => Pages.vocab(p));
+  Router.register('vocab',     ()  => Pages.vocab());
   Router.register('grammar',   ()  => Pages.grammar());
   Router.register('listening', ()  => Pages.listening());
   Router.register('reading',   ()  => Pages.reading());
