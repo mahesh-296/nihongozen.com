@@ -5,6 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <meta name="description" content="NihongoZen — Japanese Language Learning Platform"/>
 <meta name="theme-color" content="#0F0F14"/>
+<meta http-equiv="Content-Security-Policy"
+  content="default-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com;
+           style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+           script-src 'self' 'unsafe-inline';
+           img-src 'self' data:;
+           font-src https://fonts.gstatic.com;
+           media-src 'self';"/>
 <title>NihongoZen — Japanese Learning</title>
 
 <!-- Google Fonts -->
@@ -16,189 +23,10 @@
 <link rel="stylesheet" href="css/tokens.css"/>
 <link rel="stylesheet" href="css/layout.css"/>
 <link rel="stylesheet" href="css/components.css"/>
-
-<style>
-  /* Auth loading screen — shown until Firebase confirms user */
-  #auth-loading {
-    position: fixed; inset: 0; z-index: 9999;
-    background: #0F0F14;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    gap: 16px;
-    transition: opacity 0.4s ease;
-  }
-  #auth-loading.fade-out { opacity: 0; pointer-events: none; }
-  .auth-logo-mark {
-    width: 52px; height: 52px; border-radius: 14px;
-    background: linear-gradient(135deg, #E8446A, #B02050);
-    display: flex; align-items: center; justify-content: center;
-    font-family: 'Noto Serif JP', serif;
-    font-size: 24px; color: #fff; font-weight: 700;
-    box-shadow: 0 0 32px rgba(232,68,106,0.4);
-    animation: authPulse 1.8s ease-in-out infinite;
-  }
-  .auth-loading-text {
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    font-size: 13px; color: #8888A0;
-  }
-  .auth-loading-dots::after {
-    content: ''; animation: dots 1.5s steps(3,end) infinite;
-  }
-  @keyframes authPulse {
-    0%,100% { box-shadow: 0 0 20px rgba(232,68,106,0.3); }
-    50%      { box-shadow: 0 0 40px rgba(232,68,106,0.6); }
-  }
-  @keyframes dots {
-    0%   { content: '.'; }
-    33%  { content: '..'; }
-    66%  { content: '...'; }
-  }
-</style>
 </head>
 <body>
 
-<!-- Auth Loading Screen -->
-<div id="auth-loading">
-  <div class="auth-logo-mark">禅</div>
-  <p class="auth-loading-text">Checking authentication<span class="auth-loading-dots"></span></p>
-</div>
-
-<!-- ══════════════════════════════════════════════════════════
-     FIREBASE AUTH GUARD
-     Runs BEFORE app JS. Checks auth, redirects if not logged in,
-     then fires "nz:userReady" so the app can render with real user data.
-═══════════════════════════════════════════════════════════ -->
-<script type="module">
-import { initializeApp }
-  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import {
-  getAuth, onAuthStateChanged, signOut
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import {
-  getFirestore, doc, getDoc, setDoc, updateDoc, serverTimestamp
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-const firebaseConfig = {
-  apiKey:            "AIzaSyCP2Uwo1lx996q0l3nkC7RhAesVuIHEXiA",
-  authDomain:        "nihongo-zen-cd97d.firebaseapp.com",
-  projectId:         "nihongo-zen-cd97d",
-  storageBucket:     "nihongo-zen-cd97d.firebasestorage.app",
-  messagingSenderId: "513320956483",
-  appId:             "1:513320956483:web:a1069825e0df3587f65af6",
-  measurementId:     "G-1WTJ5ML3R2"
-};
-
-const app  = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db   = getFirestore(app);
-
-// Safety fallback — if Firebase is slow/offline, redirect after 6s
-const fallback = setTimeout(() => {
-  window.location.replace("login.html");
-}, 6000);
-
-onAuthStateChanged(auth, async (user) => {
-  clearTimeout(fallback);
-
-  if (!user) {
-    // Not logged in → go to login
-    window.location.replace("login.html");
-    return;
-  }
-
-  // ── Expose globally so pages.js can use real user data ──────
-  window._nzAuth    = auth;
-  window._nzDb      = db;
-  window._nzUser    = user;
-  window._nzSignOut = () =>
-    signOut(auth).then(() => window.location.replace("login.html"));
-
-  // ── Create or update Firestore user document ────────────────
-  const userRef  = doc(db, "users", user.uid);
-  const userSnap = await getDoc(userRef);
-
-  if (!userSnap.exists()) {
-    await setDoc(userRef, {
-      uid:              user.uid,
-      displayName:      user.displayName || "Learner",
-      email:            user.email       || "",
-      photoURL:         user.photoURL    || "",
-      phone:            user.phoneNumber || "",
-      xp:               0,
-      xpGoal:           500,
-      streak:           1,
-      kanjiCount:       0,
-      lessonsCompleted: 0,
-      vocabMastered:    0,
-      quizAccuracy:     0,
-      level:            1,
-      levelXP:          0,
-      levelXPRequired:  200,
-      weeklyKanji:      0,
-      weeklyLessons:    0,
-      weeklyVocab:      0,
-      weeklyAccuracyDelta: 0,
-      lastLogin:        serverTimestamp(),
-      createdAt:        serverTimestamp()
-    });
-  } else {
-    await updateDoc(userRef, { lastLogin: serverTimestamp() });
-  }
-
-  // ── Load fresh user data ────────────────────────────────────
-  const freshSnap = await getDoc(userRef);
-  window._nzUserData = freshSnap.data();
-
-  // Sync State with real Firestore data
-  const d = window._nzUserData;
-  if (window.State) {
-    State.state.xpToday  = d.xp       || 0;
-    State.state.xpGoal   = d.xpGoal   || 500;
-    State.state.streak   = d.streak   || 1;
-    State.state.level    = d.level     || 1;
-    State.state.totalXP  = d.xp       || 0;
-    State.state.nextLevelXP = d.levelXPRequired || 200;
-  }
-
-  // ── Hide loading screen and launch the app ──────────────────
-  const loadingEl = document.getElementById("auth-loading");
-  if (loadingEl) {
-    loadingEl.classList.add("fade-out");
-    setTimeout(() => loadingEl.remove(), 400);
-  }
-
-  // Fire event for any listeners
-  document.dispatchEvent(new CustomEvent("nz:userReady", {
-    detail: { user, data: window._nzUserData }
-  }));
-
-  // Bootstrap the SPA
-  window._nzBootstrap();
-});
-
-// ── XP helper ───────────────────────────────────────────────
-window._nzAddXP = async (amount) => {
-  const user = auth.currentUser; if (!user) return;
-  const userRef = doc(db, "users", user.uid);
-  const snap = await getDoc(userRef); if (!snap.exists()) return;
-  const d = snap.data();
-  const newXP = (d.xp||0)+amount;
-  const newLvlXP = (d.levelXP||0)+amount;
-  const req = d.levelXPRequired||200;
-  const lvlUp = newLvlXP >= req;
-  await updateDoc(userRef, {
-    xp: newXP,
-    levelXP: lvlUp ? newLvlXP - req : newLvlXP,
-    level: lvlUp ? (d.level||1)+1 : (d.level||1)
-  });
-  const fresh = await getDoc(userRef);
-  document.dispatchEvent(new CustomEvent("nz:xpUpdated", { detail: fresh.data() }));
-};
-</script>
-
-<!-- ══════════════════════════════════════════════════════════
-     APP JS — loaded after auth guard sets up globals
-═══════════════════════════════════════════════════════════ -->
+<!-- All JS (order matters) -->
 <script src="js/core.js"></script>
 <script src="js/data.js"></script>
 <script src="js/pomodoro.js"></script>
@@ -206,10 +34,14 @@ window._nzAddXP = async (amount) => {
 
 <script>
 'use strict';
+/* =========================================================
+   APP BOOTSTRAP
+   ========================================================= */
+(function init() {
+  // Ensure demo session
+  Session.ensureDemo();
 
-/* ── Bootstrap function called by auth guard after user confirmed ── */
-window._nzBootstrap = function() {
-  // Build shell with real user data
+  // Build shell
   renderShell();
 
   // Register all routes
@@ -229,17 +61,15 @@ window._nzBootstrap = function() {
   Router.register('jlpt-n2',   ()  => Pages.jlptLevel('n2'));
   Router.register('jlpt-n1',   ()  => Pages.jlptLevel('n1'));
 
-  // Navigate to hash route or dashboard
-  const startPage = window.location.hash.replace('#','') || 'dashboard';
-  Router.go(startPage);
+  // Load dashboard on start
+  Router.go('dashboard');
 
-  // Handle browser back/forward
+  // Handle browser back/forward (hash-based routing)
   window.addEventListener('popstate', () => {
     const hash = window.location.hash.replace('#','') || 'dashboard';
     Router.go(hash);
   });
-};
+})();
 </script>
-
 </body>
 </html>
