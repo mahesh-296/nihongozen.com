@@ -209,8 +209,16 @@ window._nzAddXP = async (amount) => {
 <script defer>
 'use strict';
 
+/* Mark that all defer scripts have finished executing */
+window._nzReady = true;
+
 /* ── Bootstrap function called by auth guard after user confirmed ── */
 window._nzBootstrap = function() {
+  /* Safety: if defer scripts haven't finished yet, wait for them */
+  if (!window._nzReady || typeof renderShell !== 'function') {
+    setTimeout(window._nzBootstrap, 50);
+    return;
+  }
   // Build shell with real user data
   renderShell();
 
