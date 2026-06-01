@@ -197,6 +197,12 @@ window._nzAddXP = async (amount) => {
 </script>
 
 <!-- ══════════════════════════════════════════════════════════
+     DATA — Modular data files (loaded before app JS)
+     Folder structure: data/kanji.js, data/vocab.js, etc.
+═══════════════════════════════════════════════════════════ -->
+<script src="data/kanji.js"></script>
+
+<!-- ══════════════════════════════════════════════════════════
      APP JS — loaded after auth guard sets up globals
 ═══════════════════════════════════════════════════════════ -->
 <script src="js/core.js"></script>
