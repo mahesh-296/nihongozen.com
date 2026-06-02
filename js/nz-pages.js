@@ -378,8 +378,8 @@ Pages.dashboard = function () {
           'Level ' + level + ' · ' + xp + ' XP · ' + streak + ' day streak 🔥</p>' +
       '</div>' +
       '<div style="display:flex;gap:8px;flex-wrap:wrap;">' +
-        '<button class="nz-btn nz-btn-pri" onclick="Router.go(\'kanji\')">漢 Study Kanji</button>' +
-        '<button class="nz-btn nz-btn-ghost" onclick="Router.go(\'vocab\')">語 Vocabulary</button>' +
+        '<button class="nz-btn nz-btn-pri" onclick="window.Router.go(\'kanji\')">漢 Study Kanji</button>' +
+        '<button class="nz-btn nz-btn-ghost" onclick="window.Router.go(\'vocab\')">語 Vocabulary</button>' +
       '</div>' +
     '</div>' +
 
@@ -430,7 +430,7 @@ Pages.dashboard = function () {
         var c  = jlptColor(lv);
         var lb = {N5:'Beginner',N4:'Elementary',N3:'Intermediate',
                   N2:'Upper-Int.',N1:'Advanced'}[lv];
-        return '<button class="nz-btn" onclick="Router.go(\'jlpt-' + lv.toLowerCase() + '\')" ' +
+        return '<button class="nz-btn" onclick="window.Router.go(\'jlpt-' + lv.toLowerCase() + '\')" ' +
           'style="background:' + c + '18;color:' + c + ';border:1px solid ' + c + ';' +
           'font-weight:800;">' + lv + ' — ' + lb + '</button>';
       }).join('') +
@@ -457,7 +457,7 @@ function dashStat(icon, label, value, color) {
 
 function dashMod(icon, title, route, sub, color) {
   return '<div class="nz-card nz-hoverable" style="padding:20px;border-top:3px solid ' +
-    color + ';" onclick="Router.go(\'' + route + '\')">' +
+    color + ';" onclick="window.Router.go(\'' + route + '\')">' +
     '<div style="font-size:27px;color:' + color + ';font-family:\'Noto Serif JP\',serif;' +
       'margin-bottom:9px;">' + icon + '</div>' +
     '<div style="font-size:15px;font-weight:700;color:var(--fg);margin-bottom:4px;">' +
@@ -1267,7 +1267,7 @@ Pages.jlptLevel = function (lvl) {
         'margin:0 0 11px;">Kanji Preview</h2>' +
       '<div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:22px;">' +
         kList.slice(0, 32).map(function (k) {
-          return '<button onclick="Router.go(\'kanji\')" ' +
+          return '<button onclick="window.Router.go(\'kanji\')" ' +
             'style="width:50px;height:50px;border-radius:10px;background:var(--card);' +
             'border:1px solid var(--border);cursor:pointer;display:flex;' +
             'flex-direction:column;align-items:center;justify-content:center;' +
@@ -1283,7 +1283,7 @@ Pages.jlptLevel = function (lvl) {
             '</button>';
         }).join('') +
         (kList.length > 32
-          ? '<button onclick="Router.go(\'kanji\')" ' +
+          ? '<button onclick="window.Router.go(\'kanji\')" ' +
             'style="width:50px;height:50px;border-radius:10px;background:var(--card);' +
             'border:1px dashed var(--border);cursor:pointer;font-size:11px;' +
             'color:var(--fg-muted);">+' + (kList.length - 32) + '</button>'
@@ -1300,7 +1300,7 @@ Pages.jlptLevel = function (lvl) {
           return '<div style="display:flex;align-items:center;gap:12px;padding:13px 16px;' +
             'border-radius:10px;background:var(--card);border:1px solid var(--border);' +
             'cursor:pointer;transition:all .15s;" ' +
-            'onclick="Router.go(\'grammar\')" ' +
+            'onclick="window.Router.go(\'grammar\')" ' +
             'onmouseover="this.style.borderColor=\'' + color + '\'" ' +
             'onmouseout="this.style.borderColor=\'var(--border)\'">' +
             '<span style="font-family:\'Noto Sans JP\',sans-serif;font-size:15px;' +
@@ -1321,7 +1321,7 @@ Pages.jlptLevel = function (lvl) {
 
 function jlptSect(icon, title, sub, route, color) {
   return '<div class="nz-card nz-hoverable" style="padding:20px;" ' +
-    'onclick="Router.go(\'' + route + '\')">' +
+    'onclick="window.Router.go(\'' + route + '\')">' +
     '<div style="font-size:26px;color:' + color + ';font-family:\'Noto Serif JP\',serif;' +
       'margin-bottom:9px;">' + icon + '</div>' +
     '<div style="font-size:15px;font-weight:700;color:var(--fg);' +
