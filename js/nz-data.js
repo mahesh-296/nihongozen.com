@@ -1,4 +1,4 @@
-const kanjiData = {
+var kanjiData = {
   N5: [
     { id:'k-N5-001',kanji:'人',reading:'ひと・ジン',meaning:'person',kun:'ひと',on:'ジン・ニン',example:'人 (ひと) person',exampleMeaning:'person.',learned:false },
     { id:'k-N5-002',kanji:'一',reading:'ひと・イチ',meaning:'one',kun:'ひと-つ',on:'イチ・イツ',example:'一 (ひとつ) one',exampleMeaning:'one.',learned:false },
@@ -2255,7 +2255,7 @@ const kanjiData = {
   ]
 };
 
-const grammarPoints = [
+var grammarPoints = [
   {
     id: 'g-001',
     pattern: '〜は〜です',
@@ -2336,7 +2336,7 @@ const grammarPoints = [
   },
 ];
 
-const VocabPageWords = [
+var VocabPageWords = [
   {id:'v-0001',jp:'挨拶する',romaji:'aisatsu suru',en:'to greet',category:'Greetings',color:'var(--n5)'},
   {id:'v-0002',jp:'元気？',romaji:'genki?',en:'How are you?',category:'Greetings',color:'var(--n5)'},
   {id:'v-0003',jp:'さようなら',romaji:'sayōnara',en:'goodbye',category:'Greetings',color:'var(--n5)'},
@@ -4443,9 +4443,9 @@ const VocabPageWords = [
   {id:'v-2104',jp:'鉱山労働者',romaji:'kōzan rōdō sha',en:'miner',category:'Natural Resources',color:'var(--n2)'}
 ];
 
-const VocabPageCategories = ['All', 'Greetings', 'Questions', 'Function Words', 'Numbers', 'Colors', 'Weekdays', 'Time', 'Months', 'Seasons', 'Verbs', 'Travel', 'Money', 'Communication', 'Restaurant', 'Language', 'Food', 'Meat', 'Seafood', 'Groceries', 'Drinks', 'Vegetables', 'Fruits', 'Sweets', 'Spices', 'Family', 'Body', 'Health', 'Home', 'Kitchen', 'Appliances', 'Space', 'Geography', 'Weather', 'Animals', 'Birds', 'Insects', 'Plants', 'Countries', 'Personal Info', 'Time Expressions', 'Telling Time', 'Math', 'Weather Phrases', 'Signs', 'Holidays', 'Directions', 'Transport Phrases', 'Travel Phrases', 'Tickets', 'Airport', 'Taxi', 'Banking', 'Post Office', 'Phone', 'Internet', 'Shopping Phrases', 'Shop Types', 'Hairdresser', 'Hotel', 'Camping', 'Pronouns', 'Units Of Measurement', 'Containers', 'Airplane', 'Train', 'City', 'Shopping', 'Clothing', 'Footwear', 'Personal Care & Cosmetics', 'Watches & Clocks', 'Stationery', 'Friends', 'Bathroom', 'Sea', 'Nature', 'Natural Resources'];
+var VocabPageCategories = ['All', 'Greetings', 'Questions', 'Function Words', 'Numbers', 'Colors', 'Weekdays', 'Time', 'Months', 'Seasons', 'Verbs', 'Travel', 'Money', 'Communication', 'Restaurant', 'Language', 'Food', 'Meat', 'Seafood', 'Groceries', 'Drinks', 'Vegetables', 'Fruits', 'Sweets', 'Spices', 'Family', 'Body', 'Health', 'Home', 'Kitchen', 'Appliances', 'Space', 'Geography', 'Weather', 'Animals', 'Birds', 'Insects', 'Plants', 'Countries', 'Personal Info', 'Time Expressions', 'Telling Time', 'Math', 'Weather Phrases', 'Signs', 'Holidays', 'Directions', 'Transport Phrases', 'Travel Phrases', 'Tickets', 'Airport', 'Taxi', 'Banking', 'Post Office', 'Phone', 'Internet', 'Shopping Phrases', 'Shop Types', 'Hairdresser', 'Hotel', 'Camping', 'Pronouns', 'Units Of Measurement', 'Containers', 'Airplane', 'Train', 'City', 'Shopping', 'Clothing', 'Footwear', 'Personal Care & Cosmetics', 'Watches & Clocks', 'Stationery', 'Friends', 'Bathroom', 'Sea', 'Nature', 'Natural Resources'];
 
-const dialogues = [
+var dialogues = [
   {
     id: 'dlg-001',
     level: 'N5',
@@ -4521,7 +4521,7 @@ const dialogues = [
   },
 ];
 
-const passages = [
+var passages = [
   {
     id: 'r-001',
     level: 'N5',
