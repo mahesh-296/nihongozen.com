@@ -223,30 +223,30 @@ window._nzBootstrap = function() {
   renderShell();
 
   // Register all routes
-  Router.register('dashboard', ()  => Pages.dashboard());
-  Router.register('kanji',     ()  => Pages.kanji());
-  Router.register('vocab',     ()  => Pages.vocab());
-  Router.register('grammar',   ()  => Pages.grammar());
-  Router.register('listening', ()  => Pages.listening());
-  Router.register('reading',   ()  => Pages.reading());
-  Router.register('kana',      ()  => Pages.kana());
-  Router.register('progress',  ()  => Pages.progress());
-  Router.register('timer',     ()  => Pages.timer());
-  Router.register('profile',   ()  => Pages.profile());
-  Router.register('jlpt-n5',   ()  => Pages.jlptLevel('n5'));
-  Router.register('jlpt-n4',   ()  => Pages.jlptLevel('n4'));
-  Router.register('jlpt-n3',   ()  => Pages.jlptLevel('n3'));
-  Router.register('jlpt-n2',   ()  => Pages.jlptLevel('n2'));
-  Router.register('jlpt-n1',   ()  => Pages.jlptLevel('n1'));
+  window.Router.register('dashboard', ()  => Pages.dashboard());
+  window.Router.register('kanji',     ()  => Pages.kanji());
+  window.Router.register('vocab',     ()  => Pages.vocab());
+  window.Router.register('grammar',   ()  => Pages.grammar());
+  window.Router.register('listening', ()  => Pages.listening());
+  window.Router.register('reading',   ()  => Pages.reading());
+  window.Router.register('kana',      ()  => Pages.kana());
+  window.Router.register('progress',  ()  => Pages.progress());
+  window.Router.register('timer',     ()  => Pages.timer());
+  window.Router.register('profile',   ()  => Pages.profile());
+  window.Router.register('jlpt-n5',   ()  => Pages.jlptLevel('n5'));
+  window.Router.register('jlpt-n4',   ()  => Pages.jlptLevel('n4'));
+  window.Router.register('jlpt-n3',   ()  => Pages.jlptLevel('n3'));
+  window.Router.register('jlpt-n2',   ()  => Pages.jlptLevel('n2'));
+  window.Router.register('jlpt-n1',   ()  => Pages.jlptLevel('n1'));
 
   // Navigate to hash route or dashboard
   const startPage = window.location.hash.replace('#','') || 'dashboard';
-  Router.go(startPage);
+  window.Router.go(startPage);
 
   // Handle browser back/forward
   window.addEventListener('popstate', () => {
     const hash = window.location.hash.replace('#','') || 'dashboard';
-    Router.go(hash);
+    window.Router.go(hash);
   });
 };
 </script>
