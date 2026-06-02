@@ -71,10 +71,8 @@ function makeAvatar(photo, name, size, fontSize) {
 function pctBar(val, max, color, height) {
   var p = Math.min(100, Math.round(val / Math.max(max, 1) * 100));
   height = height || 6;
-  return '<div style="height:' + height + 'px;background:var(--card-elevated);' +
-    'border-radius:' + Math.floor(height / 2) + 'px;overflow:hidden;">' +
-    '<div style="height:100%;width:' + p + '%;background:' + color + ';' +
-    'border-radius:' + Math.floor(height / 2) + 'px;transition:width .6s;"></div></div>';
+  return '<div class="progress-track" style="height:' + height + 'px;">' +
+    '<div class="progress-fill nz-barfi" style="width:' + p + '%;height:' + height + 'px;background:' + color + ';"></div></div>';
 }
 
 /* ────────────────────────────────────────────────────────────────
@@ -116,99 +114,317 @@ var NzRouter = (function () {
 /* ────────────────────────────────────────────────────────────────
    STYLES  (injected once into <head>)
 ──────────────────────────────────────────────────────────────── */
-var NZ_CSS = [
-/* Reset */
-'*,*::before,*::after{box-sizing:border-box;}',
+var NZ_CSS = `
+/* ── Shell structure ── */
+#nz-sb {
+  position: fixed; top: 0; left: 0; bottom: 0;
+  width: var(--sidebar-width);
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  z-index: 200; overflow-y: auto; overflow-x: hidden;
+  transition: transform .28s var(--ease);
+}
+#nz-main {
+  margin-left: var(--sidebar-width);
+  min-height: 100vh;
+  background: var(--bg);
+}
+#nz-topbar {
+  display: none;
+  position: sticky; top: 0; z-index: 100;
+  height: var(--topbar-height);
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+  padding: 0 16px;
+  align-items: center;
+  justify-content: space-between;
+}
+#nz-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.7);
+  z-index: 199;
+}
+@media (max-width: 1024px) {
+  #nz-sb { transform: translateX(-100%); }
+  #nz-sb.open { transform: translateX(0); }
+  #nz-main { margin-left: 0 !important; }
+  #nz-topbar { display: flex !important; }
+  #nz-overlay.open { display: block !important; }
+}
 
-/* Sidebar */
-'#nz-sb{position:fixed;top:0;left:0;bottom:0;width:250px;background:var(--bg-secondary);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:200;overflow-y:auto;transition:transform .25s ease;}',
-'#nz-main{margin-left:250px;min-height:100vh;background:var(--bg);}',
-'#nz-topbar{display:none;position:sticky;top:0;z-index:100;height:54px;background:var(--bg-secondary);border-bottom:1px solid var(--border);padding:0 16px;align-items:center;justify-content:space-between;}',
-'#nz-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:199;}',
-'@media(max-width:768px){#nz-sb{transform:translateX(-100%);}#nz-sb.open{transform:translateX(0);}#nz-main{margin-left:0!important;}#nz-topbar{display:flex!important;}#nz-overlay.open{display:block!important;}}',
+/* ── Sidebar logo ── */
+.nz-sb-top {
+  display: flex; align-items: center; gap: 10px;
+  padding: 16px 16px 14px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.nz-logomark {
+  width: 32px; height: 32px; border-radius: 8px; flex-shrink: 0;
+  background: linear-gradient(135deg, var(--primary), #B02050);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-jp); font-size: 14px;
+  color: #fff; font-weight: 700;
+  box-shadow: 0 0 18px rgba(232,68,106,.3);
+}
+.nz-logoname {
+  font-weight: 700; font-size: 15px;
+  color: var(--fg); letter-spacing: -.3px;
+}
 
-/* Logo */
-'.nz-sb-top{display:flex;align-items:center;gap:10px;padding:18px 18px 14px;border-bottom:1px solid var(--border);flex-shrink:0;}',
-'.nz-logomark{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,var(--primary),#B02050);display:flex;align-items:center;justify-content:center;font-family:"Noto Serif JP",serif;font-size:15px;color:#fff;font-weight:700;box-shadow:0 0 16px rgba(232,68,106,.35);flex-shrink:0;}',
-'.nz-logoname{font-weight:800;font-size:16px;color:var(--fg);letter-spacing:-.3px;}',
+/* ── Sidebar user card ── */
+.nz-sb-user {
+  padding: 14px 14px 12px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.nz-sb-uname {
+  font-size: 13px; font-weight: 700; color: var(--fg);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.nz-sb-uemail {
+  font-size: 11px; color: var(--fg-muted);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  margin-top: 1px;
+}
+.nz-sb-stats3 {
+  display: grid; grid-template-columns: 1fr 1fr 1fr;
+  gap: 7px; margin-top: 12px;
+}
+.nz-sb-stat {
+  background: var(--card-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 8px 4px; text-align: center;
+}
+.nz-sb-stat-v {
+  font-size: 12px; font-weight: 800;
+  font-family: var(--font-mono); display: block;
+}
+.nz-sb-stat-l {
+  font-size: 9px; color: var(--fg-muted);
+  display: block; margin-top: 1px;
+}
 
-/* User card */
-'.nz-sb-user{padding:14px 16px;border-bottom:1px solid var(--border);flex-shrink:0;}',
-'.nz-sb-uname{font-size:13px;font-weight:700;color:var(--fg);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}',
-'.nz-sb-uemail{font-size:11px;color:var(--fg-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px;}',
-'.nz-sb-stats3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-top:12px;}',
-'.nz-sb-stat{background:var(--card-elevated);border:1px solid var(--border);border-radius:8px;padding:8px 5px;text-align:center;}',
-'.nz-sb-stat-v{font-size:13px;font-weight:800;display:block;}',
-'.nz-sb-stat-l{font-size:9px;color:var(--fg-muted);display:block;margin-top:1px;}',
+/* ── Sidebar nav ── */
+.nz-sb-nav { padding: 8px; flex: 1; }
+.nz-sb-sect {
+  font-size: 10px; font-weight: 600; color: var(--fg-subtle);
+  text-transform: uppercase; letter-spacing: .1em;
+  padding: 12px 10px 5px;
+  font-family: var(--font-mono); display: block;
+}
+.nz-navlink {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 10px; border-radius: var(--radius);
+  text-decoration: none; margin-bottom: 2px;
+  transition: background var(--duration-fast) var(--ease);
+  border-left: 2px solid transparent;
+}
+.nz-navlink:hover { background: var(--card-elevated); }
+.nz-navlink.nz-active {
+  background: var(--primary-dim);
+  border-left-color: var(--primary);
+}
+.nz-navlink.nz-active .nz-navlabel { color: var(--primary) !important; }
+.nz-navicon {
+  font-size: 16px; line-height: 1; width: 20px;
+  text-align: center; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.nz-navlabel { font-size: 13px; font-weight: 500; color: var(--fg-muted); }
+.nz-jbadge {
+  font-size: 10px; font-weight: 700;
+  padding: 2px 6px; border-radius: 4px;
+  font-family: var(--font-mono); flex-shrink: 0;
+}
 
-/* Nav */
-'.nz-sb-nav{padding:10px;flex:1;}',
-'.nz-sb-sect{font-size:10px;font-weight:700;color:var(--fg-subtle);text-transform:uppercase;letter-spacing:.08em;padding:0 8px;margin-bottom:5px;display:block;}',
-'.nz-navlink{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:10px;text-decoration:none;margin-bottom:2px;transition:background .15s;}',
-'.nz-navlink:hover{background:var(--card-elevated);}',
-'.nz-navlink.nz-active{background:var(--card-elevated);}',
-'.nz-navlink.nz-active .nz-navlabel{color:var(--fg)!important;}',
-'.nz-navicon{font-size:17px;line-height:1;width:22px;text-align:center;flex-shrink:0;}',
-'.nz-navlabel{font-size:13px;font-weight:600;color:var(--fg-muted);}',
-'.nz-jbadge{font-size:10px;font-weight:800;padding:2px 6px;border-radius:5px;font-family:"JetBrains Mono",monospace;flex-shrink:0;}',
+/* ── Sidebar footer ── */
+.nz-sb-foot {
+  padding: 10px 14px;
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.nz-signout-btn {
+  width: 100%; padding: 8px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: transparent; color: var(--fg-muted);
+  font-size: 12px; font-weight: 600; font-family: inherit;
+  cursor: pointer; transition: all var(--duration-fast);
+}
+.nz-signout-btn:hover { background: var(--card-elevated); color: var(--fg); }
+.nz-menu-btn {
+  background: none; border: none;
+  color: var(--fg); cursor: pointer;
+  font-size: 20px; padding: 4px;
+}
 
-/* Footer */
-'.nz-sb-foot{padding:12px 16px;border-top:1px solid var(--border);flex-shrink:0;}',
-'.nz-signout-btn{width:100%;padding:9px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--fg-muted);font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;transition:all .2s;}',
-'.nz-signout-btn:hover{background:var(--card-elevated);color:var(--fg);}',
-'.nz-menu-btn{background:none;border:none;color:var(--fg);cursor:pointer;font-size:20px;padding:4px;}',
+/* ── Page wrapper ── */
+.nz-page {
+  max-width: 1200px; margin: 0 auto;
+  padding: 28px 28px 48px;
+}
+@media (max-width: 768px) { .nz-page { padding: 18px 16px 48px; } }
+.nz-fadein { opacity: 0; animation: fadeUp .35s var(--ease) forwards; }
 
-/* Pages */
-'.nz-page{max-width:1400px;margin:0 auto;padding:28px 24px;}',
-'@media(max-width:768px){.nz-page{padding:18px 14px;}}',
-'.nz-fadein{opacity:0;animation:nzFadeIn .35s ease forwards;}',
-'@keyframes nzFadeIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}',
+/* ── Buttons ── */
+.nz-btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 9px 18px; border-radius: var(--radius);
+  border: none; font-size: 13px; font-weight: 600;
+  font-family: inherit; cursor: pointer;
+  transition: all var(--duration-fast) var(--ease);
+  white-space: nowrap;
+}
+.nz-btn:active { transform: scale(.97); }
+.nz-btn:disabled { opacity: .45; cursor: not-allowed; pointer-events: none; }
+.nz-btn-pri { background: var(--primary); color: #fff; }
+.nz-btn-pri:hover { background: var(--primary-hover); }
+.nz-btn-ghost {
+  background: var(--card-elevated); color: var(--fg);
+  border: 1px solid var(--border);
+}
+.nz-btn-ghost:hover { border-color: var(--primary); color: var(--primary); }
 
-/* Cards */
-'.nz-card{background:var(--card);border:1px solid var(--border);border-radius:14px;}',
-'.nz-cardu{background:var(--card-elevated);border:1px solid var(--border);border-radius:10px;}',
-'.nz-hoverable{transition:transform .2s,box-shadow .2s;cursor:pointer;}',
-'.nz-hoverable:hover{transform:translateY(-3px);box-shadow:0 8px 28px rgba(0,0,0,.35);}',
+/* ── Stat + module cards ── */
+.nz-stat-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 16px;
+  display: flex; align-items: center; gap: 13px;
+  transition: transform var(--duration) var(--ease), box-shadow var(--duration) var(--ease);
+}
+.nz-stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+.nz-mod-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 20px;
+  cursor: pointer;
+  transition: transform var(--duration) var(--ease), box-shadow var(--duration) var(--ease), border-color var(--duration) var(--ease);
+}
+.nz-mod-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); border-color: var(--border-strong); }
 
-/* Buttons */
-'.nz-btn{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border-radius:10px;border:none;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;transition:all .15s;}',
-'.nz-btn:active{transform:scale(.97);}',
-'.nz-btn:disabled{opacity:.45;cursor:not-allowed;}',
-'.nz-btn-pri{background:var(--primary);color:#fff;}',
-'.nz-btn-pri:hover{opacity:.88;}',
-'.nz-btn-ghost{background:var(--card-elevated);color:var(--fg);border:1px solid var(--border);}',
-'.nz-btn-ghost:hover{border-color:var(--primary);color:var(--primary);}',
+/* ── XP card ── */
+.nz-xp-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 22px;
+  margin-bottom: 18px;
+}
+.nz-xp-row {
+  display: flex; justify-content: space-between;
+  align-items: center; margin-bottom: 10px;
+}
 
-/* Kanji grid cells */
-'.kj-cell{background:var(--card);border:1px solid var(--border);border-radius:12px;' +
-  'padding:12px 8px;display:flex;flex-direction:column;align-items:center;gap:4px;' +
-  'cursor:pointer;position:relative;transition:all .15s;}',
-'.kj-cell:hover{transform:translateY(-2px);border-color:var(--primary);box-shadow:0 4px 16px rgba(232,68,106,.18);}',
+/* ── Kanji grid ── */
+.kj-cell {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 12px 6px;
+  display: flex; flex-direction: column;
+  align-items: center; gap: 4px;
+  cursor: pointer; position: relative;
+  transition: all var(--duration-fast) var(--ease);
+}
+.kj-cell:hover {
+  transform: translateY(-3px);
+  border-color: var(--primary);
+  box-shadow: 0 4px 20px rgba(232,68,106,.2);
+  background: var(--card-elevated);
+}
 
-/* Grammar accordion */
-'.gr-card{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:10px;}',
-'.gr-toggle{width:100%;display:flex;align-items:center;justify-content:space-between;padding:16px 20px;background:none;border:none;cursor:pointer;text-align:left;transition:background .15s;}',
-'.gr-toggle:hover{background:var(--card-elevated);}',
-'.gr-body{padding:0 20px 20px;border-top:1px solid var(--border);}',
+/* ── Grammar accordion ── */
+.gr-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); overflow: hidden;
+  margin-bottom: 10px;
+  transition: border-color var(--duration-fast);
+}
+.gr-card:hover { border-color: var(--border-strong); }
+.gr-toggle {
+  width: 100%; display: flex; align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px;
+  background: none; border: none; cursor: pointer;
+  text-align: left;
+  transition: background var(--duration-fast) var(--ease);
+  gap: 12px;
+}
+.gr-toggle:hover { background: var(--card-elevated); }
+.gr-body {
+  padding: 0 20px 22px;
+  border-top: 1px solid var(--border);
+  background: var(--card);
+}
+.gr-example-row {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 13px 14px; border-radius: var(--radius);
+  background: var(--card-elevated); border: 1px solid var(--border);
+}
 
-/* Script / reading lines */
-'.sc-line{display:flex;gap:10px;padding:12px;border-radius:10px;background:var(--card-elevated);border-left:3px solid transparent;transition:all .2s;}',
-'.sc-line.active{background:var(--primary-dim);border-left-color:var(--primary);}',
+/* ── Script / reading lines ── */
+.sc-line {
+  display: flex; gap: 10px; padding: 13px;
+  border-radius: var(--radius);
+  background: var(--card-elevated);
+  border-left: 3px solid transparent;
+  transition: all var(--duration) var(--ease);
+}
+.sc-line.active {
+  background: var(--primary-dim);
+  border-left-color: var(--primary);
+}
 
-/* Quiz options */
-'.q-opt{padding:11px 14px;border-radius:10px;border:1px solid var(--border);background:var(--card-elevated);color:var(--fg);font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;text-align:left;display:flex;align-items:center;gap:7px;transition:all .15s;width:100%;}',
-'.q-opt:not([disabled]):hover{border-color:var(--primary);color:var(--primary);}',
+/* ── Quiz options ── */
+.q-opt {
+  padding: 11px 14px; border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--card-elevated); color: var(--fg);
+  font-size: 12px; font-weight: 500; font-family: inherit;
+  cursor: pointer; text-align: left;
+  display: flex; align-items: center; gap: 7px;
+  transition: all var(--duration-fast) var(--ease); width: 100%;
+  line-height: 1.4;
+}
+.q-opt:not([disabled]):hover { border-color: var(--primary); color: var(--primary); background: var(--primary-dim); }
 
-/* Kanji modal */
-'.nz-overlay-bg{position:fixed;inset:0;z-index:900;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(0,0,0,.82);}',
-'.nz-modal-box{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:24px;width:100%;max-width:400px;position:relative;animation:nzFadeIn .2s ease;max-height:90vh;overflow-y:auto;}',
+/* ── Kanji / detail modal ── */
+.nz-overlay-bg {
+  position: fixed; inset: 0; z-index: 900;
+  display: flex; align-items: center; justify-content: center;
+  padding: 16px; background: rgba(0,0,0,.85);
+  animation: fadeIn var(--duration-fast) var(--ease);
+}
+.nz-modal-box {
+  background: var(--card); border: 1px solid var(--border-strong);
+  border-radius: var(--radius-xl); padding: 26px;
+  width: 100%; max-width: 420px; position: relative;
+  animation: slideUp var(--duration) var(--ease);
+  max-height: 90vh; overflow-y: auto;
+  box-shadow: var(--shadow-xl);
+}
+.nz-cardu {
+  background: var(--card-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
 
-/* Timer ring */
-'.timer-ring{transition:stroke-dashoffset .8s ease;}',
+/* ── Timer ring ── */
+.timer-ring { transition: stroke-dashoffset .9s var(--ease); }
 
-/* CSS variable aliases for VocabPage IIFE which uses --fg / --fg-muted */
-':root{--fg:var(--fg);--fg-muted:var(--fg-muted);--fg-subtle:var(--fg-subtle);}'
-].join('\n');
+/* ── Progress bars ── */
+.nz-bartr {
+  background: var(--card-elevated);
+  border-radius: 99px; overflow: hidden;
+}
+.nz-barfi { height: 100%; border-radius: 99px; transition: width 1s var(--ease); }
+
+/* ── Hoverable ── */
+.nz-hoverable {
+  transition: transform var(--duration) var(--ease), box-shadow var(--duration) var(--ease);
+  cursor: pointer;
+}
+.nz-hoverable:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+`;
 
 /* ────────────────────────────────────────────────────────────────
    SHELL — renderShell()
@@ -305,7 +521,7 @@ function renderShell() {
   if (!$id('nz-page-styles')) {
     var s = document.createElement('style');
     s.id  = 'nz-page-styles';
-    s.textContent = Array.isArray(NZ_CSS) ? NZ_CSS.join('\n') : NZ_CSS;
+    s.textContent = NZ_CSS;
     document.head.appendChild(s);
   }
 
@@ -384,17 +600,18 @@ Pages.dashboard = function () {
     '</div>' +
 
     /* XP card */
-    '<div class="nz-card" style="padding:20px;margin-bottom:18px;">' +
-      '<div style="display:flex;justify-content:space-between;margin-bottom:8px;">' +
-        '<span style="font-size:13px;font-weight:700;color:var(--fg);">Daily XP Goal</span>' +
-        '<span style="font-size:13px;color:var(--fg-muted);">' + xp + ' / ' + xpGoal + ' XP</span>' +
+    '<div class="nz-xp-card">' +
+      '<div class="nz-xp-row">' +
+        '<span style="font-size:14px;font-weight:700;color:var(--fg);">Daily XP Goal</span>' +
+        '<span style="font-size:13px;font-family:var(--font-mono);color:var(--primary);font-weight:700;">' + xp + ' <span style="color:var(--fg-subtle);font-weight:400;">/ ' + xpGoal + ' XP</span></span>' +
       '</div>' +
-      pctBar(xp, xpGoal, 'linear-gradient(90deg,var(--primary),#F05578)', 8) +
-      '<div style="margin-top:10px;">' +
-        '<div style="font-size:11px;color:var(--fg-muted);margin-bottom:4px;">' +
-          'Level ' + level + ' progress · ' + lvXP + ' / ' + lvReq + ' XP' +
+      pctBar(xp, xpGoal, 'linear-gradient(90deg, var(--primary), #F05578)', 10) +
+      '<div style="margin-top:16px;">' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">' +
+          '<span style="font-size:11px;color:var(--fg-muted);">Level ' + level + ' progress</span>' +
+          '<span style="font-size:11px;font-family:var(--font-mono);color:var(--accent);font-weight:700;">' + lvXP + ' / ' + lvReq + ' XP</span>' +
         '</div>' +
-        pctBar(lvXP, lvReq, 'var(--accent)', 5) +
+        pctBar(lvXP, lvReq, 'var(--accent)', 6) +
       '</div>' +
     '</div>' +
 
@@ -441,28 +658,27 @@ Pages.dashboard = function () {
 };
 
 function dashStat(icon, label, value, color) {
-  return '<div class="nz-card" style="padding:16px;display:flex;align-items:center;gap:12px;">' +
-    '<div style="width:40px;height:40px;border-radius:11px;background:' + color + '18;' +
+  return '<div class="card nz-stat-card">' +
+    '<div style="width:40px;height:40px;border-radius:var(--radius);background:' + color + '18;' +
       'border:1px solid ' + color + '40;display:flex;align-items:center;justify-content:center;' +
-      'font-size:17px;font-family:\'Noto Serif JP\',serif;color:' + color + ';flex-shrink:0;">' +
+      'font-size:17px;font-family:var(--font-jp);color:' + color + ';flex-shrink:0;">' +
       icon + '</div>' +
     '<div>' +
-      '<div style="font-size:17px;font-weight:800;color:var(--fg);letter-spacing:-.3px;">' +
+      '<div style="font-size:17px;font-weight:700;color:var(--fg);letter-spacing:-.3px;font-family:var(--font-mono);">' +
         value + '</div>' +
-      '<div style="font-size:11px;color:var(--fg-muted);margin-top:1px;">' +
+      '<div class="text-muted" style="font-size:11px;margin-top:1px;">' +
         label + '</div>' +
     '</div>' +
     '</div>';
 }
 
 function dashMod(icon, title, route, sub, color) {
-  return '<div class="nz-card nz-hoverable" style="padding:20px;border-top:3px solid ' +
+  return '<div class="card nz-mod-card" style="border-top:3px solid ' +
     color + ';" onclick="window.Router.go(\'' + route + '\')">' +
-    '<div style="font-size:27px;color:' + color + ';font-family:\'Noto Serif JP\',serif;' +
-      'margin-bottom:9px;">' + icon + '</div>' +
-    '<div style="font-size:15px;font-weight:700;color:var(--fg);margin-bottom:4px;">' +
+    '<div style="font-size:26px;color:' + color + ';font-family:var(--font-jp);margin-bottom:10px;">' + icon + '</div>' +
+    '<div style="font-size:15px;font-weight:600;color:var(--fg);margin-bottom:4px;">' +
       title + '</div>' +
-    '<div style="font-size:12px;color:var(--fg-muted);">' + sub + '</div>' +
+    '<div class="text-muted" style="font-size:12px;">' + sub + '</div>' +
     '</div>';
 }
 
@@ -729,30 +945,33 @@ Pages.grammar = function () {
       if (isOpen) {
         body =
           '<div class="gr-body">' +
-            '<p style="font-size:13px;color:var(--fg-muted);line-height:1.65;' +
-              'margin:16px 0 12px;">' + H(g.explanation) + '</p>' +
-            '<div class="nz-cardu" style="padding:12px;margin-bottom:13px;">' +
-              '<p style="font-size:10px;color:var(--fg-muted);' +
-                'text-transform:uppercase;letter-spacing:.06em;margin:0 0 5px;">Structure</p>' +
-              '<p style="font-family:\'JetBrains Mono\',monospace;font-size:13px;' +
-                'color:var(--fg);margin:0;">' + H(g.structure) + '</p>' +
+            '<p style="font-size:13px;color:var(--fg-muted);line-height:1.7;' +
+              'margin:18px 0 14px;">' + H(g.explanation) + '</p>' +
+            '<div style="background:var(--bg-secondary);border:1px solid var(--border);' +
+              'border-radius:var(--radius);padding:14px 16px;margin-bottom:16px;">' +
+              '<p style="font-size:10px;font-weight:700;color:var(--fg-subtle);' +
+                'text-transform:uppercase;letter-spacing:.1em;margin:0 0 7px;' +
+                'font-family:var(--font-mono);">Structure</p>' +
+              '<p style="font-family:var(--font-mono);font-size:14px;' +
+                'color:var(--primary);margin:0;letter-spacing:.01em;">' + H(g.structure) + '</p>' +
             '</div>' +
-            '<p style="font-size:10px;font-weight:700;color:var(--fg-muted);' +
-              'text-transform:uppercase;letter-spacing:.06em;margin:0 0 8px;">Examples</p>' +
-            '<div style="display:flex;flex-direction:column;gap:8px;">' +
+            '<p style="font-size:10px;font-weight:700;color:var(--fg-subtle);' +
+              'text-transform:uppercase;letter-spacing:.1em;margin:0 0 10px;' +
+              'font-family:var(--font-mono);">Examples</p>' +
+            '<div style="display:flex;flex-direction:column;gap:9px;">' +
               g.examples.map(function (ex) {
-                return '<div style="display:flex;align-items:flex-start;gap:10px;padding:12px;' +
-                  'border-radius:10px;background:var(--card-elevated);' +
-                  'border:1px solid var(--border);">' +
-                  '<div style="flex:1;">' +
-                    '<p style="font-family:\'Noto Sans JP\',sans-serif;font-size:13px;' +
-                      'color:var(--fg);margin:0 0 3px;">' + H(ex.jp) + '</p>' +
+                return '<div class="gr-example-row">' +
+                  '<div style="flex:1;min-width:0;">' +
+                    '<p style="font-family:var(--font-jp-sans);font-size:14px;' +
+                      'color:var(--fg);margin:0 0 4px;line-height:1.6;">' + H(ex.jp) + '</p>' +
                     '<p style="font-size:12px;color:var(--fg-muted);' +
                       'font-style:italic;margin:0;">' + H(ex.en) + '</p>' +
                   '</div>' +
                   '<button onclick="speak(\'' + H(ex.jp) + '\')" ' +
                     'style="background:none;border:none;cursor:pointer;color:var(--primary);' +
-                    'font-size:14px;flex-shrink:0;padding:2px 4px;">🔊</button>' +
+                    'font-size:15px;flex-shrink:0;padding:3px 5px;opacity:.8;' +
+                    'transition:opacity .15s;" onmouseover="this.style.opacity=1" ' +
+                    'onmouseout="this.style.opacity=.8">🔊</button>' +
                   '</div>';
               }).join('') +
             '</div>' +
@@ -761,24 +980,22 @@ Pages.grammar = function () {
 
       return '<div class="gr-card">' +
         '<button class="gr-toggle" data-gid="' + g.id + '">' +
-          '<div style="display:flex;align-items:center;gap:11px;">' +
-            '<span style="font-size:10px;font-weight:800;color:' + color + ';' +
-              'background:' + color + '18;border:1px solid ' + color + ';' +
-              'padding:2px 7px;border-radius:5px;font-family:\'JetBrains Mono\',monospace;' +
-              'flex-shrink:0;">' + H(g.level) + '</span>' +
-            '<div>' +
-              '<div style="display:flex;align-items:center;gap:8px;">' +
+          '<div style="display:flex;align-items:center;gap:12px;min-width:0;flex:1;">' +
+            '<span class="badge badge-' + g.level.toLowerCase() + '" ' +
+              'style="flex-shrink:0;">' + H(g.level) + '</span>' +
+            '<div style="min-width:0;">' +
+              '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">' +
                 '<span style="font-family:\'Noto Sans JP\',sans-serif;font-size:16px;' +
                   'font-weight:700;color:var(--fg);">' + H(g.pattern) + '</span>' +
                 '<button onclick="event.stopPropagation();speak(\'' + H(g.pattern) + '\')" ' +
                   'style="background:none;border:none;cursor:pointer;color:var(--primary);' +
-                  'font-size:12px;padding:2px 4px;">🔊</button>' +
+                  'font-size:13px;padding:2px 4px;flex-shrink:0;">🔊</button>' +
               '</div>' +
-              '<p style="font-size:11px;color:var(--fg-muted);margin:0;">' +
+              '<p style="font-size:12px;color:var(--fg-muted);margin:3px 0 0;">' +
                 H(g.title) + '</p>' +
             '</div>' +
           '</div>' +
-          '<span style="color:var(--fg-muted);font-size:15px;flex-shrink:0;">' +
+          '<span style="color:var(--fg-subtle);font-size:13px;flex-shrink:0;margin-left:8px;">' +
             (isOpen ? '▲' : '▼') + '</span>' +
         '</button>' +
         body +
@@ -913,7 +1130,7 @@ Pages.listening = function () {
       '</div>' +
 
       /* Script card */
-      '<div class="nz-card" style="padding:20px;margin-bottom:13px;">' +
+      '<div class="card" style="padding:20px;margin-bottom:13px;">' +
         '<div style="display:flex;justify-content:space-between;align-items:center;' +
           'margin-bottom:15px;">' +
           '<div style="display:flex;align-items:center;gap:10px;">' +
@@ -953,7 +1170,7 @@ Pages.listening = function () {
       '</div>' +
 
       /* Key phrases */
-      '<div class="nz-card" style="padding:20px;margin-bottom:13px;">' +
+      '<div class="card" style="padding:20px;margin-bottom:13px;">' +
         '<h3 style="font-size:13px;font-weight:700;color:var(--fg);' +
           'margin:0 0 11px;">Key Phrases</h3>' +
         '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(185px,1fr));' +
@@ -1095,7 +1312,7 @@ Pages.reading = function () {
       '</div>' +
 
       /* Passage lines */
-      '<div class="nz-card" style="padding:20px;margin-bottom:13px;">' +
+      '<div class="card" style="padding:20px;margin-bottom:13px;">' +
         p.lines.map(function (ln) {
           var vis = showAllTrans || visLines.has(ln.id);
           return '<div id="rd-' + H(ln.id) + '" ' +
@@ -1123,7 +1340,7 @@ Pages.reading = function () {
       '</div>' +
 
       /* Key vocabulary */
-      '<div class="nz-card" style="padding:20px;margin-bottom:13px;">' +
+      '<div class="card" style="padding:20px;margin-bottom:13px;">' +
         '<h3 style="font-size:13px;font-weight:700;color:var(--fg);' +
           'margin:0 0 11px;">Key Vocabulary</h3>' +
         '<div style="display:flex;flex-wrap:wrap;gap:8px;">' +
@@ -1456,7 +1673,7 @@ Pages.progress = function () {
     '</div>' +
 
     /* Level & XP card */
-    '<div class="nz-card" style="padding:22px;margin-bottom:15px;">' +
+    '<div class="card" style="padding:22px;margin-bottom:15px;">' +
       '<div style="display:flex;align-items:center;gap:16px;margin-bottom:18px;' +
         'flex-wrap:wrap;">' +
         '<div style="width:56px;height:56px;border-radius:14px;' +
@@ -1493,7 +1710,7 @@ Pages.progress = function () {
     /* Kanji by JLPT */
     '<h2 style="font-size:15px;font-weight:700;color:var(--fg);' +
       'margin:0 0 12px;">Kanji by JLPT Level</h2>' +
-    '<div class="nz-card" style="padding:20px;">' +
+    '<div class="card" style="padding:20px;">' +
       ['N5','N4','N3','N2','N1'].map(function (lv) {
         var c    = jlptColor(lv);
         var cnt  = (kanjiData[lv] || []).length;
@@ -1526,7 +1743,7 @@ function progressRow(label, val, max, color) {
 
 function progressCard(label, val, max, color) {
   var p = Math.min(100, Math.round(val / Math.max(max, 1) * 100));
-  return '<div class="nz-card" style="padding:18px;">' +
+  return '<div class="card" style="padding:18px;">' +
     '<div style="display:flex;justify-content:space-between;align-items:center;' +
       'margin-bottom:10px;">' +
       '<span style="font-size:13px;font-weight:700;color:var(--fg);">' + label + '</span>' +
@@ -1576,7 +1793,7 @@ Pages.profile = function () {
     '</div>' +
 
     /* Avatar + identity */
-    '<div class="nz-card" style="padding:24px;margin-bottom:14px;display:flex;' +
+    '<div class="card" style="padding:24px;margin-bottom:14px;display:flex;' +
       'align-items:center;gap:20px;flex-wrap:wrap;">' +
       ava +
       '<div>' +
@@ -1594,7 +1811,7 @@ Pages.profile = function () {
     '</div>' +
 
     /* Account details */
-    '<div class="nz-card" style="padding:20px;margin-bottom:14px;">' +
+    '<div class="card" style="padding:20px;margin-bottom:14px;">' +
       '<h3 style="font-size:13px;font-weight:700;color:var(--fg);' +
         'margin:0 0 12px;">Account Details</h3>' +
       profileRow('Display Name',   name,          false) +
@@ -1606,7 +1823,7 @@ Pages.profile = function () {
     '</div>' +
 
     /* Learning stats */
-    '<div class="nz-card" style="padding:20px;margin-bottom:15px;">' +
+    '<div class="card" style="padding:20px;margin-bottom:15px;">' +
       '<h3 style="font-size:13px;font-weight:700;color:var(--fg);' +
         'margin:0 0 12px;">Learning Stats</h3>' +
       profileRow('Level',          'Level '+(d.level||1),         false) +
@@ -1674,7 +1891,7 @@ function phraseCard(p) {
 
 function quizBlock(quiz, answers, showResults, score, ansFn, checkFn, retryFn) {
   var allAnswered = Object.keys(answers).length >= quiz.length;
-  return '<div class="nz-card" style="padding:20px;">' +
+  return '<div class="card" style="padding:20px;">' +
     '<div style="display:flex;justify-content:space-between;align-items:center;' +
       'margin-bottom:15px;">' +
       '<h3 style="font-size:13px;font-weight:700;color:var(--fg);' +
