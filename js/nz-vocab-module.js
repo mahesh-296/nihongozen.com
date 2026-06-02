@@ -50,7 +50,7 @@
    VOCAB DATA — 2104 words across 77 categories
    ========================================================= */
 
-const VocabPage = (() => {
+var VocabPage = (() => {
   let mode           = 'grid';       // 'grid' | 'flashcard'
   let activeCategory = 'All';
   let cardIndex      = 0;
