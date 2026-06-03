@@ -2818,11 +2818,14 @@ function getSRSItems() {
   if (!_srsItems) _srsItems = JSON.parse(localStorage.getItem('nz-srs-items')||'null');
   if (!_srsItems) {
     _srsItems = [];
-    (kanjiData['N5']||[]).slice(0,14).forEach(function(k){
-      _srsItems.push({ id:'srs-'+k.id, front:k.kanji, reading:k.reading,
-        back:k.meaning, type:'kanji', level:'N5', interval:1, due:Date.now() });
-    });
-    saveSRS();
+    /* Safety check: kanjiData may not be loaded yet on first call */
+    try {
+      (window.kanjiData && kanjiData['N5'] ? kanjiData['N5'] : []).slice(0,14).forEach(function(k){
+        _srsItems.push({ id:'srs-'+k.id, front:k.kanji, reading:k.reading,
+          back:k.meaning, type:'kanji', level:'N5', interval:1, due:Date.now() });
+      });
+    } catch(e) { /* kanjiData not ready yet — SRS will init on next load */ }
+    if (_srsItems.length) saveSRS();
   }
   return _srsItems;
 }
@@ -3241,6 +3244,14 @@ var _origRenderShellFn = renderShell;
 window.renderShell = renderShell = function() {
   _origRenderShellFn();
 
+  /* Register new routes immediately so they work even if nz:userReady never fires */
+  if (window.Router) {
+    window.Router.register('goals', function(){ Pages.goals(); });
+    window.Router.register('srs',   function(){ Pages.srs(); });
+    window.Router.register('notes', function(){ Pages.notes(); });
+    window.Router.register('chat',  function(){ Pages.chat(); });
+  }
+
   var nav = document.querySelector('#nz-sb .nz-sb-nav');
   if (!nav) return;
 
@@ -3261,7 +3272,7 @@ window.renderShell = renderShell = function() {
 
   var badge=document.createElement('span');
   badge.id='nz-srs-badge';
-  var due=getDueItems().length;
+  var due=0; try { due=getDueItems().length; } catch(e) { due=0; }
   badge.style.cssText='font-size:10px;font-weight:800;padding:1px 6px;border-radius:10px;' +
     'background:var(--primary);color:#fff;margin-left:auto;align-items:center;' +
     'display:'+(due>0?'inline-flex':'none')+';';
@@ -3299,6 +3310,13 @@ window.renderShell = renderShell = function() {
   }
 
   setTimeout(injectThemeAndNotifButtons, 60);
+
+  /* Dispatch nz:userReady in case index.html bootstrap doesn't — safe to fire multiple times */
+  setTimeout(function() {
+    try {
+      document.dispatchEvent(new CustomEvent('nz:userReady'));
+    } catch(e) {}
+  }, 200);
 };
 
 function createNavEl(route, icon, label) {
@@ -3308,48 +3326,15 @@ function createNavEl(route, icon, label) {
   return a;
 }
 
-/* Register ALL routes after user is ready */
+/* Register new routes after user is ready */
 document.addEventListener('nz:userReady', function() {
   setTimeout(function(){
-    if (!window.Router) return;
-
-    /* ── Core study routes ── */
-    window.Router.register('dashboard', function(){ Pages.dashboard(); });
-    window.Router.register('kanji',     function(){ Pages.kanji(); });
-    window.Router.register('vocab',     function(){ Pages.vocab(); });
-    window.Router.register('grammar',   function(){ Pages.grammar(); });
-    window.Router.register('listening', function(){ Pages.listening(); });
-    window.Router.register('reading',   function(){ Pages.reading(); });
-    window.Router.register('kana',      function(){ Pages.kana(); });
-
-    /* ── JLPT routes ── */
-    window.Router.register('jlpt-n5',   function(){ Pages['jlpt-n5'](); });
-    window.Router.register('jlpt-n4',   function(){ Pages['jlpt-n4'](); });
-    window.Router.register('jlpt-n3',   function(){ Pages['jlpt-n3'](); });
-    window.Router.register('jlpt-n2',   function(){ Pages['jlpt-n2'](); });
-    window.Router.register('jlpt-n1',   function(){ Pages['jlpt-n1'](); });
-
-    /* ── Tool routes ── */
-    window.Router.register('timer',    function(){ Pages.timer(); });
-    window.Router.register('progress', function(){ Pages.progress(); });
-    window.Router.register('profile',  function(){ Pages.profile(); });
-
-    /* ── Community & extras ── */
-    window.Router.register('goals', function(){ Pages.goals(); });
-    window.Router.register('srs',   function(){ Pages.srs(); });
-    window.Router.register('notes', function(){ Pages.notes(); });
-    window.Router.register('chat',  function(){ Pages.chat(); });
-
-    /* ── Load initial page from URL hash, or default to dashboard ── */
-    var hash = window.location.hash.replace('#', '').trim();
-    window.Router.go(hash || 'dashboard');
-
-    /* ── Handle browser back/forward navigation ── */
-    window.addEventListener('popstate', function() {
-      var h = window.location.hash.replace('#', '').trim();
-      if (h) window.Router.go(h);
-    });
-
+    if (window.Router) {
+      window.Router.register('goals', function(){ Pages.goals(); });
+      window.Router.register('srs',   function(){ Pages.srs(); });
+      window.Router.register('notes', function(){ Pages.notes(); });
+      window.Router.register('chat',  function(){ Pages.chat(); });
+    }
   }, 150);
 });
 
