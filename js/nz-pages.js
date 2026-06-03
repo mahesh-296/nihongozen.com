@@ -2818,14 +2818,11 @@ function getSRSItems() {
   if (!_srsItems) _srsItems = JSON.parse(localStorage.getItem('nz-srs-items')||'null');
   if (!_srsItems) {
     _srsItems = [];
-    /* Safety check: kanjiData may not be loaded yet on first call */
-    try {
-      (window.kanjiData && kanjiData['N5'] ? kanjiData['N5'] : []).slice(0,14).forEach(function(k){
-        _srsItems.push({ id:'srs-'+k.id, front:k.kanji, reading:k.reading,
-          back:k.meaning, type:'kanji', level:'N5', interval:1, due:Date.now() });
-      });
-    } catch(e) { /* kanjiData not ready yet — SRS will init on next load */ }
-    if (_srsItems.length) saveSRS();
+    (kanjiData['N5']||[]).slice(0,14).forEach(function(k){
+      _srsItems.push({ id:'srs-'+k.id, front:k.kanji, reading:k.reading,
+        back:k.meaning, type:'kanji', level:'N5', interval:1, due:Date.now() });
+    });
+    saveSRS();
   }
   return _srsItems;
 }
@@ -3244,14 +3241,6 @@ var _origRenderShellFn = renderShell;
 window.renderShell = renderShell = function() {
   _origRenderShellFn();
 
-  /* Register new routes immediately so they work even if nz:userReady never fires */
-  if (window.Router) {
-    window.Router.register('goals', function(){ Pages.goals(); });
-    window.Router.register('srs',   function(){ Pages.srs(); });
-    window.Router.register('notes', function(){ Pages.notes(); });
-    window.Router.register('chat',  function(){ Pages.chat(); });
-  }
-
   var nav = document.querySelector('#nz-sb .nz-sb-nav');
   if (!nav) return;
 
@@ -3272,7 +3261,7 @@ window.renderShell = renderShell = function() {
 
   var badge=document.createElement('span');
   badge.id='nz-srs-badge';
-  var due=0; try { due=getDueItems().length; } catch(e) { due=0; }
+  var due=getDueItems().length;
   badge.style.cssText='font-size:10px;font-weight:800;padding:1px 6px;border-radius:10px;' +
     'background:var(--primary);color:#fff;margin-left:auto;align-items:center;' +
     'display:'+(due>0?'inline-flex':'none')+';';
@@ -3310,13 +3299,6 @@ window.renderShell = renderShell = function() {
   }
 
   setTimeout(injectThemeAndNotifButtons, 60);
-
-  /* Dispatch nz:userReady in case index.html bootstrap doesn't — safe to fire multiple times */
-  setTimeout(function() {
-    try {
-      document.dispatchEvent(new CustomEvent('nz:userReady'));
-    } catch(e) {}
-  }, 200);
 };
 
 function createNavEl(route, icon, label) {
