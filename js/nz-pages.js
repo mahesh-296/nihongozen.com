@@ -3308,15 +3308,48 @@ function createNavEl(route, icon, label) {
   return a;
 }
 
-/* Register new routes after user is ready */
+/* Register ALL routes after user is ready */
 document.addEventListener('nz:userReady', function() {
   setTimeout(function(){
-    if (window.Router) {
-      window.Router.register('goals', function(){ Pages.goals(); });
-      window.Router.register('srs',   function(){ Pages.srs(); });
-      window.Router.register('notes', function(){ Pages.notes(); });
-      window.Router.register('chat',  function(){ Pages.chat(); });
-    }
+    if (!window.Router) return;
+
+    /* ── Core study routes ── */
+    window.Router.register('dashboard', function(){ Pages.dashboard(); });
+    window.Router.register('kanji',     function(){ Pages.kanji(); });
+    window.Router.register('vocab',     function(){ Pages.vocab(); });
+    window.Router.register('grammar',   function(){ Pages.grammar(); });
+    window.Router.register('listening', function(){ Pages.listening(); });
+    window.Router.register('reading',   function(){ Pages.reading(); });
+    window.Router.register('kana',      function(){ Pages.kana(); });
+
+    /* ── JLPT routes ── */
+    window.Router.register('jlpt-n5',   function(){ Pages['jlpt-n5'](); });
+    window.Router.register('jlpt-n4',   function(){ Pages['jlpt-n4'](); });
+    window.Router.register('jlpt-n3',   function(){ Pages['jlpt-n3'](); });
+    window.Router.register('jlpt-n2',   function(){ Pages['jlpt-n2'](); });
+    window.Router.register('jlpt-n1',   function(){ Pages['jlpt-n1'](); });
+
+    /* ── Tool routes ── */
+    window.Router.register('timer',    function(){ Pages.timer(); });
+    window.Router.register('progress', function(){ Pages.progress(); });
+    window.Router.register('profile',  function(){ Pages.profile(); });
+
+    /* ── Community & extras ── */
+    window.Router.register('goals', function(){ Pages.goals(); });
+    window.Router.register('srs',   function(){ Pages.srs(); });
+    window.Router.register('notes', function(){ Pages.notes(); });
+    window.Router.register('chat',  function(){ Pages.chat(); });
+
+    /* ── Load initial page from URL hash, or default to dashboard ── */
+    var hash = window.location.hash.replace('#', '').trim();
+    window.Router.go(hash || 'dashboard');
+
+    /* ── Handle browser back/forward navigation ── */
+    window.addEventListener('popstate', function() {
+      var h = window.location.hash.replace('#', '').trim();
+      if (h) window.Router.go(h);
+    });
+
   }, 150);
 });
 
