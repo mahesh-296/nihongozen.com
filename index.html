@@ -92,10 +92,12 @@ const app  = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db   = getFirestore(app);
 
-// Safety fallback — if Firebase is slow/offline, redirect after 6s
+// Safety fallback — if Firebase is slow/offline, redirect after 12s
+// Increased from 6s → 12s to handle slow connections
 const fallback = setTimeout(() => {
+  console.warn("NihongoZen: Firebase auth timeout — redirecting to login");
   window.location.replace("login.html");
-}, 6000);
+}, 12000);
 
 onAuthStateChanged(auth, async (user) => {
   clearTimeout(fallback);
@@ -172,8 +174,19 @@ onAuthStateChanged(auth, async (user) => {
     detail: { user, data: window._nzUserData }
   }));
 
-  // Bootstrap the SPA
-  window._nzBootstrap();
+  // Bootstrap the SPA — wrapped in try/catch to surface any JS errors
+  try {
+    window._nzBootstrap();
+  } catch(err) {
+    console.error("NihongoZen bootstrap error:", err);
+    // Show error on screen instead of staying on loading screen forever
+    const errEl = document.createElement('div');
+    errEl.style.cssText = 'position:fixed;inset:0;background:#0F0F14;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;z-index:9999;';
+    errEl.innerHTML = '<div style="font-family:sans-serif;color:#E8446A;font-size:16px;font-weight:700;">⚠️ App failed to load</div>' +
+      '<div style="font-family:monospace;color:#8888A0;font-size:12px;max-width:80%;text-align:center;">' + err.message + '</div>' +
+      '<button onclick="location.reload()" style="margin-top:8px;padding:10px 24px;background:#E8446A;color:#fff;border:none;border-radius:10px;cursor:pointer;font-size:14px;">Reload</button>';
+    document.body.appendChild(errEl);
+  }
 });
 
 // ── XP helper ───────────────────────────────────────────────
@@ -216,6 +229,12 @@ window._nzReady = true;
 window._nzBootstrap = function() {
   /* Safety: if defer scripts haven't finished yet, wait for them */
   if (!window._nzReady || typeof renderShell !== 'function') {
+    // Try up to 40 times (2 seconds total) then show error
+    window._nzBootstrapRetries = (window._nzBootstrapRetries || 0) + 1;
+    if (window._nzBootstrapRetries > 40) {
+      console.error("NihongoZen: renderShell never became available. Check core.js / nz-pages.js loaded correctly.");
+      return;
+    }
     setTimeout(window._nzBootstrap, 50);
     return;
   }
