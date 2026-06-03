@@ -1,263 +1,221 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<meta name="description" content="NihongoZen — Japanese Language Learning Platform"/>
-<meta name="theme-color" content="#0F0F14"/>
-<title>NihongoZen — Japanese Learning</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NihongoZen</title>
 
-<!-- Google Fonts -->
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=Noto+Serif+JP:wght@400;700&family=Noto+Sans+JP:wght@400;500;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    /* ── CSS Variables / Design Tokens ── */
+    :root {
+      /* Sidebar */
+      --sidebar-width:   240px;
+      --topbar-height:   52px;
 
-<!-- Stylesheets -->
-<link rel="stylesheet" href="css/tokens.css"/>
-<link rel="stylesheet" href="css/layout.css"/>
-<link rel="stylesheet" href="css/components.css"/>
+      /* Dark theme (default) */
+      --bg:              #0d0d0f;
+      --bg-secondary:    #111114;
+      --card:            #1a1a1e;
+      --card-elevated:   #1f1f24;
+      --border:          #2a2a30;
+      --fg:              #f0f0f2;
+      --fg-muted:        #8a8a9a;
+      --fg-subtle:       #5a5a6a;
 
-<style>
-  /* Auth loading screen — shown until Firebase confirms user */
-  #auth-loading {
-    position: fixed; inset: 0; z-index: 9999;
-    background: #0F0F14;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    gap: 16px;
-    transition: opacity 0.4s ease;
-  }
-  #auth-loading.fade-out { opacity: 0; pointer-events: none; }
-  .auth-logo-mark {
-    width: 52px; height: 52px; border-radius: 14px;
-    background: linear-gradient(135deg, #E8446A, #B02050);
-    display: flex; align-items: center; justify-content: center;
-    font-family: 'Noto Serif JP', serif;
-    font-size: 24px; color: #fff; font-weight: 700;
-    box-shadow: 0 0 32px rgba(232,68,106,0.4);
-    animation: authPulse 1.8s ease-in-out infinite;
-  }
-  .auth-loading-text {
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    font-size: 13px; color: #8888A0;
-  }
-  .auth-loading-dots::after {
-    content: ''; animation: dots 1.5s steps(3,end) infinite;
-  }
-  @keyframes authPulse {
-    0%,100% { box-shadow: 0 0 20px rgba(232,68,106,0.3); }
-    50%      { box-shadow: 0 0 40px rgba(232,68,106,0.6); }
-  }
-  @keyframes dots {
-    0%   { content: '.'; }
-    33%  { content: '..'; }
-    66%  { content: '...'; }
-  }
-</style>
+      /* Brand */
+      --primary:         #e8446a;
+      --primary-hover:   #c73358;
+      --primary-dim:     rgba(232,68,106,.12);
+      --accent:          #f59e0b;
+      --success:         #10b981;
+
+      /* JLPT colours */
+      --n5: #22c55e; --n4: #3b82f6;
+      --n3: #f59e0b; --n2: #ef4444; --n1: #8b5cf6;
+
+      /* Misc */
+      --radius:    8px;
+      --radius-lg: 14px;
+      --shadow:    0 8px 32px rgba(0,0,0,.45);
+      --duration:  .25s;
+      --duration-fast: .15s;
+      --ease:      cubic-bezier(.4,0,.2,1);
+      --font-jp:   'Noto Serif JP', serif;
+      --font-mono: 'JetBrains Mono', 'Fira Mono', monospace;
+    }
+
+    /* Light mode */
+    body.nz-light {
+      --bg:           #f5f5f7;
+      --bg-secondary: #ffffff;
+      --card:         #ffffff;
+      --card-elevated:#f0f0f4;
+      --border:       #e0e0e8;
+      --fg:           #1a1a2e;
+      --fg-muted:     #6a6a8a;
+      --fg-subtle:    #9a9ab0;
+      --primary-dim:  rgba(232,68,106,.08);
+      --shadow:       0 4px 20px rgba(0,0,0,.10);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--fg);
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a { text-decoration: none; color: inherit; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Loading screen ── */
+    #nz-loading {
+      position: fixed; inset: 0;
+      background: var(--bg);
+      display: flex; align-items: center;
+      justify-content: center; z-index: 9999;
+      flex-direction: column; gap: 16px;
+    }
+    #nz-loading.hidden { display: none; }
+    .nz-load-logo {
+      width: 52px; height: 52px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #e8446a, #b02050);
+      display: flex; align-items: center;
+      justify-content: center;
+      font-family: 'Noto Serif JP', serif;
+      font-size: 22px; color: #fff;
+      box-shadow: 0 0 30px rgba(232,68,106,.4);
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%,100% { box-shadow: 0 0 20px rgba(232,68,106,.3); }
+      50%      { box-shadow: 0 0 40px rgba(232,68,106,.6); }
+    }
+    .nz-load-text {
+      font-size: 13px; color: var(--fg-muted);
+      font-family: var(--font-mono);
+    }
+
+    /* progress track */
+    .progress-track {
+      width: 100%; background: var(--card-elevated);
+      border-radius: 99px; overflow: hidden;
+    }
+    .progress-fill { border-radius: 99px; transition: width .5s var(--ease); }
+  </style>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&family=Noto+Serif+JP:wght@400;700&display=swap" rel="stylesheet" />
 </head>
 <body>
 
-<!-- Auth Loading Screen -->
-<div id="auth-loading">
-  <div class="auth-logo-mark">禅</div>
-  <p class="auth-loading-text">Checking authentication<span class="auth-loading-dots"></span></p>
-</div>
+  <!-- Loading screen shown until Firebase auth check + data load -->
+  <div id="nz-loading">
+    <div class="nz-load-logo">禅</div>
+    <div class="nz-load-text">Loading NihongoZen…</div>
+  </div>
 
-<!-- ══════════════════════════════════════════════════════════
-     FIREBASE AUTH GUARD
-     Runs BEFORE app JS. Checks auth, redirects if not logged in,
-     then fires "nz:userReady" so the app can render with real user data.
-═══════════════════════════════════════════════════════════ -->
-<script type="module">
-import { initializeApp, getApps, getApp }
-  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import {
-  getAuth, onAuthStateChanged, signOut
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import {
-  getFirestore, doc, getDoc, setDoc, updateDoc, serverTimestamp
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  <!--
+    ══════════════════════════════════════════════════════
+    FILE LOAD ORDER  (place JS files in your project root
+    or adjust paths accordingly)
+    ══════════════════════════════════════════════════════
+    1. nz-data.js          — kanjiData, grammarPoints, etc.
+    2. nz-kana.js          — kana chart helpers
+    3. nz-vocab-module.js  — VocabPage IIFE
+    4. nz-pages.js         — renderShell, Router, Pages
+    5. auth-guard.js       — Firebase auth + user doc
+    6. This inline bootstrap script (last)
+  -->
 
-const firebaseConfig = {
-  apiKey:            "AIzaSyCP2Uwo1lx996q0l3nkC7RhAesVuIHEXiA",
-  authDomain:        "nihongo-zen-cd97d.firebaseapp.com",
-  projectId:         "nihongo-zen-cd97d",
-  storageBucket:     "nihongo-zen-cd97d.firebasestorage.app",
-  messagingSenderId: "513320956483",
-  appId:             "1:513320956483:web:a1069825e0df3587f65af6",
-  measurementId:     "G-1WTJ5ML3R2"
-};
+  <script src="nz-data.js"></script>
+  <script src="nz-kana.js"></script>
+  <script src="nz-vocab-module.js"></script>
+  <script src="nz-pages.js"></script>
 
-// Guard: prevent "Firebase App already exists" crash
-const app  = getApps().length ? getApp() : initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db   = getFirestore(app);
+  <!-- Auth guard as module — handles redirect to login.html if not signed in -->
+  <script type="module" src="auth-guard.js"></script>
 
-// Safety fallback — if Firebase is slow/offline, redirect after 6s
-const fallback = setTimeout(() => {
-  window.location.replace("login.html");
-}, 6000);
+  <script>
+    /* ══════════════════════════════════════════════════════════
+       _nzBootstrap  — called once auth-guard fires nz:userReady
+       ══════════════════════════════════════════════════════════ */
+    window._nzBootstrap = function () {
+      // Hide loading screen
+      var loading = document.getElementById('nz-loading');
+      if (loading) loading.classList.add('hidden');
 
-onAuthStateChanged(auth, async (user) => {
-  clearTimeout(fallback);
+      // Build shell (sidebar + main area)
+      if (typeof renderShell === 'function') {
+        renderShell();
+      }
 
-  if (!user) {
-    // Not logged in → go to login
-    window.location.replace("login.html");
-    return;
-  }
+      // Register all routes
+      var R = window.Router;
+      var P = window.Pages;
+      if (!R || !P) return;
 
-  // ── Expose globally so pages.js can use real user data ──────
-  window._nzAuth    = auth;
-  window._nzDb      = db;
-  window._nzUser    = user;
-  window._nzSignOut = () =>
-    signOut(auth).then(() => window.location.replace("login.html"));
+      R.register('dashboard',  function(){ P.dashboard();          });
+      R.register('kanji',      function(){ P.kanji();              });
+      R.register('vocab',      function(){ P.vocab();              });
+      R.register('grammar',    function(){ P.grammar();            });
+      R.register('listening',  function(){ P.listening();          });
+      R.register('reading',    function(){ P.reading();            });
+      R.register('kana',       function(){ P.kana();               });
+      R.register('timer',      function(){ P.timer();              });
+      R.register('progress',   function(){ P.progress();           });
+      R.register('profile',    function(){ P.profile();            });
+      R.register('jlpt-n5',   function(){ P.jlptLevel('N5');      });
+      R.register('jlpt-n4',   function(){ P.jlptLevel('N4');      });
+      R.register('jlpt-n3',   function(){ P.jlptLevel('N3');      });
+      R.register('jlpt-n2',   function(){ P.jlptLevel('N2');      });
+      R.register('jlpt-n1',   function(){ P.jlptLevel('N1');      });
 
-  // ── Create or update Firestore user document ────────────────
-  const userRef  = doc(db, "users", user.uid);
-  const userSnap = await getDoc(userRef);
+      // Navigate to hash or default to dashboard
+      var hash = window.location.hash.replace('#', '');
+      R.go(hash || 'dashboard');
 
-  if (!userSnap.exists()) {
-    await setDoc(userRef, {
-      uid:              user.uid,
-      displayName:      user.displayName || "Learner",
-      email:            user.email       || "",
-      photoURL:         user.photoURL    || "",
-      phone:            user.phoneNumber || "",
-      xp:               0,
-      xpGoal:           500,
-      streak:           1,
-      kanjiCount:       0,
-      lessonsCompleted: 0,
-      vocabMastered:    0,
-      quizAccuracy:     0,
-      level:            1,
-      levelXP:          0,
-      levelXPRequired:  200,
-      weeklyKanji:      0,
-      weeklyLessons:    0,
-      weeklyVocab:      0,
-      weeklyAccuracyDelta: 0,
-      lastLogin:        serverTimestamp(),
-      createdAt:        serverTimestamp()
+      // Back/forward browser navigation
+      window.addEventListener('popstate', function () {
+        var h = window.location.hash.replace('#', '');
+        if (h) R.go(h);
+      });
+    };
+
+    /* ── Listen for auth-guard "user ready" event ── */
+    document.addEventListener('nz:userReady', function (e) {
+      // Small delay so auth-guard can finish any DOM setup
+      setTimeout(window._nzBootstrap, 50);
     });
-  } else {
-    await updateDoc(userRef, { lastLogin: serverTimestamp() });
-  }
 
-  // ── Load fresh user data ────────────────────────────────────
-  const freshSnap = await getDoc(userRef);
-  window._nzUserData = freshSnap.data();
-
-  // Sync State with real Firestore data
-  const d = window._nzUserData;
-  if (window.State) {
-    State.state.xpToday  = d.xp       || 0;
-    State.state.xpGoal   = d.xpGoal   || 500;
-    State.state.streak   = d.streak   || 1;
-    State.state.level    = d.level     || 1;
-    State.state.totalXP  = d.xp       || 0;
-    State.state.nextLevelXP = d.levelXPRequired || 200;
-  }
-
-  // ── Hide loading screen and launch the app ──────────────────
-  const loadingEl = document.getElementById("auth-loading");
-  if (loadingEl) {
-    loadingEl.classList.add("fade-out");
-    setTimeout(() => loadingEl.remove(), 400);
-  }
-
-  // Fire event for any listeners
-  document.dispatchEvent(new CustomEvent("nz:userReady", {
-    detail: { user, data: window._nzUserData }
-  }));
-
-  // Bootstrap the SPA — wait for defer scripts to define _nzBootstrap
-  const _waitForBootstrap = () => {
-    if (typeof window._nzBootstrap === 'function') {
-      window._nzBootstrap();
-    } else {
-      setTimeout(_waitForBootstrap, 30);
-    }
-  };
-  _waitForBootstrap();
-});
-
-// ── XP helper ───────────────────────────────────────────────
-window._nzAddXP = async (amount) => {
-  const user = auth.currentUser; if (!user) return;
-  const userRef = doc(db, "users", user.uid);
-  const snap = await getDoc(userRef); if (!snap.exists()) return;
-  const d = snap.data();
-  const newXP = (d.xp||0)+amount;
-  const newLvlXP = (d.levelXP||0)+amount;
-  const req = d.levelXPRequired||200;
-  const lvlUp = newLvlXP >= req;
-  await updateDoc(userRef, {
-    xp: newXP,
-    levelXP: lvlUp ? newLvlXP - req : newLvlXP,
-    level: lvlUp ? (d.level||1)+1 : (d.level||1)
-  });
-  const fresh = await getDoc(userRef);
-  document.dispatchEvent(new CustomEvent("nz:xpUpdated", { detail: fresh.data() }));
-};
-</script>
-
-<!-- ══════════════════════════════════════════════════════════
-     APP JS — loaded after auth guard sets up globals
-═══════════════════════════════════════════════════════════ -->
-<script src="js/core.js" defer></script>
-<script src="js/nz-data.js" defer></script>
-<script src="js/nz-kana.js" defer></script>
-<script src="js/nz-vocab-module.js" defer></script>
-<script src="js/pomodoro.js" defer></script>
-<script src="js/nz-pages.js" defer></script>
-
-<script defer>
-'use strict';
-
-/* Mark that all defer scripts have finished executing */
-window._nzReady = true;
-
-/* ── Bootstrap function called by auth guard after user confirmed ── */
-window._nzBootstrap = function() {
-  /* Safety: if defer scripts haven't finished yet, wait for them */
-  if (!window._nzReady || typeof renderShell !== 'function') {
-    setTimeout(window._nzBootstrap, 50);
-    return;
-  }
-  // Build shell with real user data
-  renderShell();
-
-  // Register all routes
-  window.Router.register('dashboard', ()  => Pages.dashboard());
-  window.Router.register('kanji',     ()  => Pages.kanji());
-  window.Router.register('vocab',     ()  => Pages.vocab());
-  window.Router.register('grammar',   ()  => Pages.grammar());
-  window.Router.register('listening', ()  => Pages.listening());
-  window.Router.register('reading',   ()  => Pages.reading());
-  window.Router.register('kana',      ()  => Pages.kana());
-  window.Router.register('progress',  ()  => Pages.progress());
-  window.Router.register('timer',     ()  => Pages.timer());
-  window.Router.register('profile',   ()  => Pages.profile());
-  window.Router.register('jlpt-n5',   ()  => Pages.jlptLevel('n5'));
-  window.Router.register('jlpt-n4',   ()  => Pages.jlptLevel('n4'));
-  window.Router.register('jlpt-n3',   ()  => Pages.jlptLevel('n3'));
-  window.Router.register('jlpt-n2',   ()  => Pages.jlptLevel('n2'));
-  window.Router.register('jlpt-n1',   ()  => Pages.jlptLevel('n1'));
-
-  // Navigate to hash route or dashboard
-  const startPage = window.location.hash.replace('#','') || 'dashboard';
-  window.Router.go(startPage);
-
-  // Handle browser back/forward
-  window.addEventListener('popstate', () => {
-    const hash = window.location.hash.replace('#','') || 'dashboard';
-    window.Router.go(hash);
-  });
-};
-</script>
+    /* ── Theme toggle helper (callable from pages) ── */
+    window._nzLightMode = false;
+    window.nzToggleTheme = function () {
+      window._nzLightMode = !window._nzLightMode;
+      document.body.classList.toggle('nz-light', window._nzLightMode);
+      try { localStorage.setItem('nz-theme', window._nzLightMode ? 'light' : 'dark'); }
+      catch(e){}
+    };
+    // Restore saved theme
+    try {
+      if (localStorage.getItem('nz-theme') === 'light') {
+        window._nzLightMode = true;
+        document.body.classList.add('nz-light');
+      }
+    } catch(e){}
+  </script>
 
 </body>
 </html>
