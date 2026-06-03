@@ -69,7 +69,7 @@
      then fires "nz:userReady" so the app can render with real user data.
 ═══════════════════════════════════════════════════════════ -->
 <script type="module">
-import { initializeApp }
+import { initializeApp, getApps, getApp }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
   getAuth, onAuthStateChanged, signOut
@@ -88,7 +88,8 @@ const firebaseConfig = {
   measurementId:     "G-1WTJ5ML3R2"
 };
 
-const app  = initializeApp(firebaseConfig);
+// Guard: prevent "Firebase App already exists" crash
+const app  = getApps().length ? getApp() : initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db   = getFirestore(app);
 
@@ -172,8 +173,15 @@ onAuthStateChanged(auth, async (user) => {
     detail: { user, data: window._nzUserData }
   }));
 
-  // Bootstrap the SPA
-  window._nzBootstrap();
+  // Bootstrap the SPA — wait for defer scripts to define _nzBootstrap
+  const _waitForBootstrap = () => {
+    if (typeof window._nzBootstrap === 'function') {
+      window._nzBootstrap();
+    } else {
+      setTimeout(_waitForBootstrap, 30);
+    }
+  };
+  _waitForBootstrap();
 });
 
 // ── XP helper ───────────────────────────────────────────────
