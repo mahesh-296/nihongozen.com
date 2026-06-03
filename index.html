@@ -1,1574 +1,255 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <meta name="description" content="NihongoZen — Japanese Language Learning Platform"/>
 <meta name="theme-color" content="#0F0F14"/>
-<title>NihongoZen — Japanese Learning OS</title>
+<title>NihongoZen — Japanese Learning</title>
+
+<!-- Google Fonts -->
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=Noto+Serif+JP:wght@400;700&family=Noto+Sans+JP:wght@400;500;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+
+<!-- Stylesheets -->
+<link rel="stylesheet" href="css/tokens.css"/>
+<link rel="stylesheet" href="css/layout.css"/>
+<link rel="stylesheet" href="css/components.css"/>
+
 <style>
-/* ═══════════════════════════════════════════════════════
-   DESIGN TOKENS — DARK (DEFAULT) + LIGHT (SAKURA)
-═══════════════════════════════════════════════════════ */
-:root {
-  --bg-primary:#0F0F14; --bg-secondary:#16161E; --bg-tertiary:#1E1E2A;
-  --bg-card:rgba(255,255,255,0.04); --bg-card-hover:rgba(255,255,255,0.07);
-  --border:rgba(255,255,255,0.08); --border-accent:rgba(232,68,106,0.3);
-  --text-primary:#F0F0F8; --text-secondary:#A0A0B8; --text-muted:#606078;
-  --accent:#E8446A; --accent-soft:rgba(232,68,106,0.15);
-  --accent2:#7C5CBF; --accent2-soft:rgba(124,92,191,0.15);
-  --accent3:#3BBFCF; --accent3-soft:rgba(59,191,207,0.12);
-  --gold:#F5A623; --gold-soft:rgba(245,166,35,0.15);
-  --green:#3DD68C; --green-soft:rgba(61,214,140,0.12);
-  --shadow-card:0 4px 24px rgba(0,0,0,0.4); --shadow-glow:0 0 32px rgba(232,68,106,0.2);
-  --radius-sm:8px; --radius-md:12px; --radius-lg:16px; --radius-xl:24px;
-  --font-sans:'Plus Jakarta Sans',sans-serif; --font-serif:'Noto Serif JP',serif;
-  --font-jp:'Noto Sans JP',sans-serif; --font-mono:'JetBrains Mono',monospace;
-  --sidebar-w:240px; --topbar-h:60px; --transition:0.3s cubic-bezier(0.4,0,0.2,1);
-}
-[data-theme="light"] {
-  --bg-primary:#FDF4F7; --bg-secondary:#FFF8FB; --bg-tertiary:#FFFFFF;
-  --bg-card:rgba(255,255,255,0.75); --bg-card-hover:rgba(255,255,255,0.92);
-  --border:rgba(210,130,160,0.2); --border-accent:rgba(220,80,120,0.3);
-  --text-primary:#2A1520; --text-secondary:#8B4060; --text-muted:#C070A0;
-  --accent:#D63665; --accent-soft:rgba(214,54,101,0.1);
-  --accent2:#9B59A3; --accent2-soft:rgba(155,89,163,0.12);
-  --accent3:#2A9DB8; --accent3-soft:rgba(42,157,184,0.12);
-  --gold:#E09020; --gold-soft:rgba(224,144,32,0.12);
-  --green:#2AB870; --green-soft:rgba(42,184,112,0.1);
-  --shadow-card:0 4px 24px rgba(160,60,100,0.12); --shadow-glow:0 0 32px rgba(214,54,101,0.15);
-}
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth}
-body{font-family:var(--font-sans);background:var(--bg-primary);color:var(--text-primary);min-height:100vh;overflow-x:hidden;transition:background var(--transition),color var(--transition)}
-[data-theme="light"] body{background:linear-gradient(160deg,#FDF4F7 0%,#FFE8EF 40%,#FFF5F8 100%)}
-button{cursor:pointer;border:none;background:none;font-family:inherit}
-input,textarea,select{font-family:inherit}
-a{color:inherit;text-decoration:none}
-::-webkit-scrollbar{width:5px;height:5px}
-::-webkit-scrollbar-track{background:var(--bg-secondary)}
-::-webkit-scrollbar-thumb{background:var(--border-accent);border-radius:10px}
-
-/* AUTH LOADING */
-#auth-loading{position:fixed;inset:0;z-index:9999;background:#0F0F14;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;transition:opacity 0.4s ease}
-#auth-loading.fade-out{opacity:0;pointer-events:none}
-.auth-logo-mark{width:52px;height:52px;border-radius:14px;background:linear-gradient(135deg,#E8446A,#B02050);display:flex;align-items:center;justify-content:center;font-family:'Noto Serif JP',serif;font-size:24px;color:#fff;font-weight:700;box-shadow:0 0 32px rgba(232,68,106,0.4);animation:authPulse 1.8s ease-in-out infinite}
-.auth-loading-text{font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;color:#8888A0}
-.auth-loading-dots::after{content:'';animation:dots 1.5s steps(3,end) infinite}
-@keyframes authPulse{0%,100%{box-shadow:0 0 20px rgba(232,68,106,0.3)}50%{box-shadow:0 0 40px rgba(232,68,106,0.6)}}
-@keyframes dots{0%{content:'.'}33%{content:'..'}66%{content:'...'}}
-
-/* PETAL CANVAS */
-#petal-canvas{position:fixed;inset:0;pointer-events:none;z-index:0;opacity:0;transition:opacity 1s ease}
-[data-theme="light"] #petal-canvas{opacity:1}
-
-/* LAYOUT */
-#app{display:none;height:100vh;overflow:hidden}
-#app.visible{display:flex}
-
-/* SIDEBAR */
-.sidebar{width:var(--sidebar-w);min-width:var(--sidebar-w);height:100vh;background:var(--bg-secondary);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden;position:relative;z-index:10;transition:background var(--transition),border-color var(--transition)}
-.sidebar-logo{padding:20px 18px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border)}
-.logo-mark{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#B02050);display:flex;align-items:center;justify-content:center;font-family:var(--font-serif);font-size:17px;color:#fff;font-weight:700;box-shadow:0 0 16px var(--accent-soft);flex-shrink:0}
-.logo-text{font-size:15px;font-weight:700;letter-spacing:-0.3px}
-.logo-sub{font-size:10px;color:var(--text-muted);margin-top:1px}
-.sidebar-section{padding:16px 12px 8px}
-.sidebar-section-label{font-size:10px;font-weight:600;letter-spacing:1.5px;color:var(--text-muted);text-transform:uppercase;padding:0 6px 6px}
-.nav-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:var(--radius-sm);font-size:13px;font-weight:500;color:var(--text-secondary);cursor:pointer;transition:all 0.2s ease;position:relative;white-space:nowrap}
-.nav-item:hover{background:var(--bg-card-hover);color:var(--text-primary)}
-.nav-item.active{background:var(--accent-soft);color:var(--accent)}
-.nav-item.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:60%;background:var(--accent);border-radius:0 3px 3px 0}
-.nav-item svg{width:16px;height:16px;flex-shrink:0;opacity:0.8}
-.nav-badge{margin-left:auto;background:var(--accent);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:20px;min-width:18px;text-align:center}
-.nav-badge.green{background:var(--green)}
-.sidebar-footer{margin-top:auto;padding:12px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:4px}
-
-/* MAIN */
-.main-area{flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--bg-primary);transition:background var(--transition)}
-
-/* TOPBAR */
-.topbar{height:var(--topbar-h);min-height:var(--topbar-h);background:var(--bg-secondary);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;gap:16px;position:relative;z-index:9;transition:background var(--transition),border-color var(--transition)}
-.topbar-left{display:flex;align-items:center;gap:12px}
-.topbar-right{display:flex;align-items:center;gap:8px}
-.topbar-title{font-size:16px;font-weight:700}
-.topbar-subtitle{font-size:12px;color:var(--text-muted)}
-.xp-bar-wrap{display:flex;align-items:center;gap:8px;background:var(--bg-card);border:1px solid var(--border);border-radius:20px;padding:5px 14px 5px 10px}
-.xp-bar-track{width:90px;height:5px;background:var(--bg-tertiary);border-radius:10px;overflow:hidden}
-.xp-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--gold));border-radius:10px;transition:width 0.8s ease}
-.xp-label{font-size:11px;font-weight:600;color:var(--accent)}
-.streak-badge{display:flex;align-items:center;gap:5px;background:var(--gold-soft);border:1px solid rgba(245,166,35,0.25);border-radius:20px;padding:5px 12px;font-size:12px;font-weight:600;color:var(--gold)}
-.theme-toggle{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:var(--bg-card);border:1px solid var(--border);font-size:17px;transition:all 0.2s ease}
-.theme-toggle:hover{background:var(--bg-card-hover);transform:scale(1.05)}
-.notif-btn{position:relative;width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:var(--bg-card);border:1px solid var(--border);font-size:17px;transition:all 0.2s ease}
-.notif-btn:hover{background:var(--bg-card-hover)}
-.notif-dot{position:absolute;top:7px;right:7px;width:8px;height:8px;background:var(--accent);border-radius:50%;border:2px solid var(--bg-secondary)}
-.avatar-btn{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0;cursor:pointer;border:2px solid var(--border-accent)}
-
-/* PAGE CONTENT */
-#page-content{flex:1;overflow-y:auto;overflow-x:hidden;padding:28px;position:relative}
-
-/* CARDS */
-.card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;transition:all 0.25s ease;box-shadow:var(--shadow-card);backdrop-filter:blur(12px)}
-.card:hover{border-color:var(--border-accent)}
-.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
-.card-title{font-size:14px;font-weight:700;display:flex;align-items:center;gap:8px}
-.card-title-icon{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px}
-
-/* GRIDS */
-.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
-.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
-.grid-auto{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px}
-
-/* STAT CARDS */
-.stat-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-md);padding:16px;display:flex;flex-direction:column;gap:8px;transition:all 0.25s ease}
-.stat-card:hover{border-color:var(--border-accent);transform:translateY(-1px)}
-.stat-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px}
-.stat-value{font-size:26px;font-weight:800;letter-spacing:-1px}
-.stat-label{font-size:11px;color:var(--text-muted);font-weight:500}
-.stat-delta{font-size:11px;font-weight:600}
-.stat-delta.up{color:var(--green)}
-.stat-delta.down{color:var(--accent)}
-
-/* BUTTONS */
-.btn{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;transition:all 0.2s ease;cursor:pointer;border:none}
-.btn-primary{background:linear-gradient(135deg,var(--accent),#B02050);color:#fff;box-shadow:0 4px 14px rgba(232,68,106,0.3)}
-.btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(232,68,106,0.4)}
-.btn-secondary{background:var(--bg-card);color:var(--text-primary);border:1px solid var(--border)}
-.btn-secondary:hover{background:var(--bg-card-hover);border-color:var(--border-accent)}
-.btn-ghost{background:transparent;color:var(--text-secondary);padding:7px 12px}
-.btn-ghost:hover{background:var(--bg-card);color:var(--text-primary)}
-.btn-sm{padding:6px 12px;font-size:12px}
-.btn-xs{padding:4px 9px;font-size:11px}
-.btn-danger{background:rgba(255,60,60,0.15);color:#FF6060;border:1px solid rgba(255,60,60,0.2)}
-.btn-danger:hover{background:rgba(255,60,60,0.25)}
-
-/* PROGRESS */
-.progress-track{height:6px;background:var(--bg-tertiary);border-radius:10px;overflow:hidden}
-.progress-fill{height:100%;border-radius:10px;transition:width 0.8s cubic-bezier(0.4,0,0.2,1)}
-.progress-fill.accent{background:linear-gradient(90deg,var(--accent),var(--gold))}
-.progress-fill.green{background:linear-gradient(90deg,var(--green),var(--accent3))}
-.progress-fill.purple{background:linear-gradient(90deg,var(--accent2),var(--accent))}
-
-/* BADGES */
-.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600}
-.badge-red{background:var(--accent-soft);color:var(--accent);border:1px solid var(--border-accent)}
-.badge-green{background:var(--green-soft);color:var(--green);border:1px solid rgba(61,214,140,0.2)}
-.badge-purple{background:var(--accent2-soft);color:var(--accent2);border:1px solid rgba(124,92,191,0.2)}
-.badge-gold{background:var(--gold-soft);color:var(--gold);border:1px solid rgba(245,166,35,0.2)}
-.badge-blue{background:var(--accent3-soft);color:var(--accent3);border:1px solid rgba(59,191,207,0.2)}
-
-/* INPUTS */
-.input-wrap{margin-bottom:12px}
-.input-label{font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:5px;display:block}
-.input{width:100%;padding:10px 14px;background:var(--bg-tertiary);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;color:var(--text-primary);outline:none;transition:border-color 0.2s ease}
-.input:focus{border-color:var(--border-accent)}
-textarea.input{resize:vertical;min-height:80px}
-select.input{cursor:pointer}
-
-/* NOTIFICATION PANEL */
-#notif-panel{position:fixed;top:70px;right:20px;width:340px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-card);z-index:500;transform:translateY(-8px) scale(0.97);opacity:0;pointer-events:none;transition:all 0.2s cubic-bezier(0.4,0,0.2,1)}
-#notif-panel.open{transform:translateY(0) scale(1);opacity:1;pointer-events:all}
-.notif-header{padding:16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
-.notif-list{max-height:380px;overflow-y:auto}
-.notif-item{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;gap:10px;align-items:flex-start;transition:background 0.15s ease}
-.notif-item:hover{background:var(--bg-card)}
-.notif-item.unread{background:var(--accent-soft)}
-.notif-icon{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
-.notif-title{font-size:12px;font-weight:600;margin-bottom:2px}
-.notif-body{font-size:11px;color:var(--text-secondary);line-height:1.4}
-.notif-time{font-size:10px;color:var(--text-muted);margin-top:3px}
-.notif-footer{padding:10px 16px}
-
-/* TABS */
-.tabs{display:flex;gap:4px;background:var(--bg-tertiary);border-radius:var(--radius-md);padding:4px;margin-bottom:20px}
-.tab{flex:1;padding:8px 12px;border-radius:var(--radius-sm);font-size:12px;font-weight:600;color:var(--text-muted);transition:all 0.2s ease;cursor:pointer;text-align:center}
-.tab.active{background:var(--bg-secondary);color:var(--text-primary);box-shadow:0 1px 4px rgba(0,0,0,0.2)}
-
-/* MODAL */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.65);backdrop-filter:blur(4px);z-index:800;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.25s ease}
-.modal-overlay.open{opacity:1;pointer-events:all}
-.modal{background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--radius-xl);padding:28px;width:520px;max-width:95vw;max-height:85vh;overflow-y:auto;transform:translateY(16px) scale(0.97);transition:transform 0.25s cubic-bezier(0.4,0,0.2,1)}
-.modal-overlay.open .modal{transform:translateY(0) scale(1)}
-.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
-.modal-title{font-size:17px;font-weight:700}
-.modal-close{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:15px;color:var(--text-muted);background:var(--bg-card);border:1px solid var(--border);cursor:pointer;transition:all 0.15s ease}
-.modal-close:hover{background:var(--bg-card-hover);color:var(--text-primary)}
-
-/* PAGE HEADER */
-.page-header{margin-bottom:24px}
-.page-title{font-size:22px;font-weight:800;letter-spacing:-0.5px}
-.page-subtitle{font-size:13px;color:var(--text-secondary);margin-top:4px}
-
-/* LEVEL RING */
-.level-ring-wrap{display:flex;align-items:center;gap:20px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-xl);padding:20px;margin-bottom:20px}
-.level-ring{position:relative;width:72px;height:72px;flex-shrink:0}
-.level-ring svg{width:72px;height:72px;transform:rotate(-90deg)}
-.level-ring-track{fill:none;stroke:var(--bg-tertiary);stroke-width:5}
-.level-ring-fill{fill:none;stroke:url(#levelGrad);stroke-width:5;stroke-linecap:round;transition:stroke-dashoffset 1s ease}
-.level-ring-text{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column}
-.level-number{font-size:20px;font-weight:800;line-height:1}
-.level-word{font-size:9px;color:var(--text-muted);font-weight:600;letter-spacing:1px}
-.level-title{font-size:15px;font-weight:700;margin-bottom:4px}
-.level-xp-bar{margin:8px 0}
-.level-xp-label{font-size:11px;color:var(--text-muted);margin-top:4px}
-
-/* LESSON CARDS */
-.lesson-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;cursor:pointer;transition:all 0.2s ease;display:flex;flex-direction:column;gap:10px}
-.lesson-card:hover{border-color:var(--border-accent);transform:translateY(-2px);box-shadow:var(--shadow-glow)}
-.lesson-icon{width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:18px}
-.lesson-name{font-size:13px;font-weight:700}
-.lesson-desc{font-size:11px;color:var(--text-muted)}
-
-/* PLANNER */
-.planner-task{display:flex;align-items:center;gap:12px;padding:11px 14px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-md);transition:all 0.2s ease}
-.planner-task:hover{border-color:var(--border-accent)}
-.planner-task.done{opacity:0.55}
-.planner-task.done .task-name{text-decoration:line-through;color:var(--text-muted)}
-.task-check{width:20px;height:20px;border-radius:6px;border:2px solid var(--border-accent);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.2s ease;background:transparent;font-size:11px;color:#fff}
-.planner-task.done .task-check{background:var(--green);border-color:var(--green)}
-.task-name{font-size:13px;font-weight:500;flex:1}
-.task-xp{font-size:11px;font-weight:600;color:var(--gold)}
-.task-del{font-size:14px;color:var(--text-muted);cursor:pointer;padding:2px 5px;border-radius:5px;opacity:0;transition:opacity 0.15s}
-.planner-task:hover .task-del{opacity:1}
-
-/* GOALS */
-.goal-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;display:flex;flex-direction:column;gap:10px;transition:all 0.25s ease}
-.goal-card:hover{border-color:var(--border-accent)}
-
-/* NOTES */
-.note-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px;display:flex;flex-direction:column;gap:8px;transition:all 0.2s ease;position:relative}
-.note-card:hover{border-color:var(--border-accent)}
-.note-card.pinned{border-color:rgba(245,166,35,0.3);background:linear-gradient(135deg,var(--bg-card),rgba(245,166,35,0.04))}
-.note-pin{position:absolute;top:12px;right:12px;font-size:13px}
-.note-title{font-size:13px;font-weight:700}
-.note-body{font-size:12px;color:var(--text-secondary);line-height:1.6;word-break:break-word}
-.note-alarm{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--accent3);background:var(--accent3-soft);padding:3px 9px;border-radius:20px;width:fit-content}
-.note-footer{display:flex;align-items:center;gap:6px;margin-top:4px;flex-wrap:wrap}
-.note-date{font-size:10px;color:var(--text-muted)}
-
-/* CHAT */
-.chat-layout{display:flex;gap:16px;height:520px}
-.chat-sidebar{width:200px;flex-shrink:0;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;display:flex;flex-direction:column}
-.chat-sidebar-header{padding:12px;font-size:12px;font-weight:700;border-bottom:1px solid var(--border)}
-.chat-room-list{overflow-y:auto;flex:1}
-.chat-room{padding:10px 12px;cursor:pointer;font-size:12px;font-weight:500;transition:background 0.15s;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
-.chat-room:hover{background:var(--bg-card-hover)}
-.chat-room.active{background:var(--accent-soft);color:var(--accent)}
-.chat-room-unread{background:var(--accent);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:10px}
-.chat-main{flex:1;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);display:flex;flex-direction:column;overflow:hidden}
-.chat-main-header{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;font-size:13px;font-weight:700}
-.chat-online{font-size:11px;color:var(--green);display:flex;align-items:center;gap:4px}
-.chat-online::before{content:'';display:block;width:6px;height:6px;background:var(--green);border-radius:50%}
-.chat-messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px}
-.chat-msg{display:flex;gap:10px;align-items:flex-start}
-.chat-msg.own{flex-direction:row-reverse}
-.chat-avatar{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;background:linear-gradient(135deg,var(--accent),var(--accent2))}
-.chat-bubble{max-width:65%;padding:9px 13px;border-radius:12px 12px 12px 4px;background:var(--bg-tertiary);border:1px solid var(--border);font-size:12px;line-height:1.5}
-.chat-msg.own .chat-bubble{border-radius:12px 12px 4px 12px;background:var(--accent-soft);border-color:var(--border-accent)}
-.chat-meta{font-size:10px;color:var(--text-muted);margin-top:3px;padding:0 2px}
-.chat-input-row{padding:12px;border-top:1px solid var(--border);display:flex;gap:8px}
-
-/* CANVAS */
-.canvas-wrap{background:var(--bg-tertiary);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;display:flex;align-items:center;justify-content:center}
-#kanji-canvas{cursor:crosshair;touch-action:none;display:block}
-.canvas-toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
-.brush-size{width:34px;height:34px;border-radius:9px;background:var(--bg-card);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.2s;font-size:11px;font-weight:600}
-.brush-size.active,.brush-size:hover{border-color:var(--border-accent);background:var(--accent-soft)}
-.color-dot{width:26px;height:26px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:border-color 0.2s;flex-shrink:0}
-.color-dot.active,.color-dot:hover{border-color:var(--text-primary)}
-
-/* SRS */
-.srs-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-xl);padding:28px;text-align:center;max-width:480px;margin:0 auto}
-.srs-question{font-family:var(--font-serif);font-size:52px;font-weight:700;color:var(--text-primary);margin:16px 0;line-height:1}
-.srs-reading{font-size:14px;color:var(--text-secondary);margin-bottom:8px;min-height:20px}
-.srs-meaning{font-size:18px;color:var(--text-primary);font-weight:600;padding:14px;background:var(--bg-tertiary);border-radius:var(--radius-md);margin:12px 0;display:none}
-.srs-meaning.show{display:block}
-.srs-grade-buttons{display:flex;gap:10px;justify-content:center;margin-top:16px;flex-wrap:wrap}
-.srs-grade{padding:8px 18px;border-radius:var(--radius-sm);font-size:12px;font-weight:700;cursor:pointer;transition:all 0.2s}
-.srs-again{background:rgba(255,80,80,0.15);color:#FF6060;border:1px solid rgba(255,80,80,0.2)}
-.srs-hard{background:var(--gold-soft);color:var(--gold);border:1px solid rgba(245,166,35,0.2)}
-.srs-good{background:var(--green-soft);color:var(--green);border:1px solid rgba(61,214,140,0.2)}
-.srs-easy{background:var(--accent3-soft);color:var(--accent3);border:1px solid rgba(59,191,207,0.2)}
-.srs-grade:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,0.2)}
-.srs-stats-row{display:flex;gap:12px;justify-content:center;margin-bottom:20px;flex-wrap:wrap}
-.srs-stat-pill{padding:5px 14px;border-radius:20px;font-size:12px;font-weight:600;background:var(--bg-card);border:1px solid var(--border)}
-
-/* WEEKLY REPORT */
-.bar-chart{display:flex;gap:8px;align-items:flex-end;height:120px;padding-bottom:24px;position:relative;border-bottom:1px solid var(--border)}
-.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px;height:100%}
-.bar{width:100%;border-radius:5px 5px 0 0;background:linear-gradient(180deg,var(--accent),rgba(232,68,106,0.3));transition:height 0.8s cubic-bezier(0.4,0,0.2,1);min-height:4px}
-.bar-value{font-size:10px;font-weight:600;color:var(--text-secondary)}
-.history-thumb{width:60px;height:60px;border-radius:var(--radius-sm);background:var(--bg-tertiary);border:1px solid var(--border);overflow:hidden;cursor:pointer;transition:all 0.2s}
-.history-thumb:hover{border-color:var(--border-accent);transform:scale(1.05)}
-.history-thumb img{width:100%;height:100%;object-fit:cover}
-
-/* ANIMATIONS */
-@keyframes fadeInUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
-@keyframes slideInRight{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
-.anim-fade-in{animation:fadeInUp 0.4s ease both}
-.anim-delay-1{animation-delay:0.05s}
-.anim-delay-2{animation-delay:0.1s}
-.anim-delay-3{animation-delay:0.15s}
-.anim-delay-4{animation-delay:0.2s}
-
-/* SECTION */
-.section{margin-bottom:28px}
-.section-title{font-size:12px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--text-muted);margin-bottom:14px}
-.divider{height:1px;background:var(--border);margin:20px 0}
-.empty-state{text-align:center;padding:40px 20px;color:var(--text-muted);font-size:13px;display:flex;flex-direction:column;align-items:center;gap:10px}
-.empty-state-icon{font-size:36px;margin-bottom:4px}
-
-/* TOAST */
-#toast-container{position:fixed;bottom:24px;right:24px;display:flex;flex-direction:column;gap:8px;z-index:900}
-.toast{padding:12px 18px;background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--radius-md);font-size:13px;font-weight:500;box-shadow:var(--shadow-card);animation:slideInRight 0.3s ease;display:flex;align-items:center;gap:8px;min-width:220px}
-.toast.success{border-left:3px solid var(--green)}
-.toast.error{border-left:3px solid var(--accent)}
-.toast.info{border-left:3px solid var(--accent3)}
-
-/* RESPONSIVE */
-@media(max-width:900px){
-  .sidebar{width:56px;min-width:56px}
-  .sidebar-logo .logo-text,.sidebar-section-label,.nav-item span{display:none}
-  .nav-item{justify-content:center;padding:10px}
-  .grid-4{grid-template-columns:repeat(2,1fr)}
-  .grid-3{grid-template-columns:1fr 1fr}
-  #page-content{padding:18px}
-  .chat-sidebar{display:none}
-}
-@media(max-width:600px){
-  .grid-2,.grid-3,.grid-4{grid-template-columns:1fr}
-  .xp-bar-wrap{display:none}
-}
+  /* Auth loading screen — shown until Firebase confirms user */
+  #auth-loading {
+    position: fixed; inset: 0; z-index: 9999;
+    background: #0F0F14;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 16px;
+    transition: opacity 0.4s ease;
+  }
+  #auth-loading.fade-out { opacity: 0; pointer-events: none; }
+  .auth-logo-mark {
+    width: 52px; height: 52px; border-radius: 14px;
+    background: linear-gradient(135deg, #E8446A, #B02050);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Noto Serif JP', serif;
+    font-size: 24px; color: #fff; font-weight: 700;
+    box-shadow: 0 0 32px rgba(232,68,106,0.4);
+    animation: authPulse 1.8s ease-in-out infinite;
+  }
+  .auth-loading-text {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 13px; color: #8888A0;
+  }
+  .auth-loading-dots::after {
+    content: ''; animation: dots 1.5s steps(3,end) infinite;
+  }
+  @keyframes authPulse {
+    0%,100% { box-shadow: 0 0 20px rgba(232,68,106,0.3); }
+    50%      { box-shadow: 0 0 40px rgba(232,68,106,0.6); }
+  }
+  @keyframes dots {
+    0%   { content: '.'; }
+    33%  { content: '..'; }
+    66%  { content: '...'; }
+  }
 </style>
 </head>
 <body>
-<!-- PETAL CANVAS -->
-<canvas id="petal-canvas"></canvas>
-<!-- AUTH LOADING -->
+
+<!-- Auth Loading Screen -->
 <div id="auth-loading">
   <div class="auth-logo-mark">禅</div>
   <p class="auth-loading-text">Checking authentication<span class="auth-loading-dots"></span></p>
 </div>
-<!-- TOAST -->
-<div id="toast-container"></div>
-<!-- NOTIFICATION PANEL -->
-<div id="notif-panel">
-  <div class="notif-header">
-    <span style="font-size:13px;font-weight:700">🔔 Notifications</span>
-    <button class="btn btn-ghost btn-xs" onclick="NZ.notifs.markAllRead()">Mark all read</button>
-  </div>
-  <div class="notif-list" id="notif-list"></div>
-  <div class="notif-footer"><button class="btn btn-ghost btn-xs" style="width:100%" onclick="NZ.notifs.clearAll()">Clear all</button></div>
-</div>
-<!-- APP SHELL -->
-<div id="app">
-  <aside class="sidebar" id="sidebar">
-    <div class="sidebar-logo">
-      <div class="logo-mark">禅</div>
-      <div><div class="logo-text">NihongoZen</div><div class="logo-sub">Japanese Learning OS</div></div>
-    </div>
-    <div class="sidebar-section">
-      <div class="sidebar-section-label">Main</div>
-      <div class="nav-item active" data-route="dashboard">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-        <span>Dashboard</span>
-      </div>
-      <div class="nav-item" data-route="planner">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-        <span>Daily Planner</span>
-      </div>
-      <div class="nav-item" data-route="srs">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-        <span>SRS Review</span>
-        <span class="nav-badge" id="srs-badge">7</span>
-      </div>
-      <div class="nav-item" data-route="goals">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
-        <span>My Goals</span>
-      </div>
-    </div>
-    <div class="sidebar-section">
-      <div class="sidebar-section-label">Learn</div>
-      <div class="nav-item" data-route="kanji">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-        <span>Kanji</span>
-      </div>
-      <div class="nav-item" data-route="vocab">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-        <span>Vocabulary</span>
-      </div>
-      <div class="nav-item" data-route="grammar">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>
-        <span>Grammar</span>
-      </div>
-      <div class="nav-item" data-route="kanji-canvas">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/></svg>
-        <span>Kanji Canvas</span>
-      </div>
-    </div>
-    <div class="sidebar-section">
-      <div class="sidebar-section-label">Community</div>
-      <div class="nav-item" data-route="community">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-        <span>Community Chat</span>
-        <span class="nav-badge green">3</span>
-      </div>
-      <div class="nav-item" data-route="notes">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-        <span>Smart Notes</span>
-      </div>
-      <div class="nav-item" data-route="progress">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-        <span>Weekly Report</span>
-      </div>
-    </div>
-    <div class="sidebar-footer">
-      <div class="nav-item" data-route="profile">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-        <span>Profile</span>
-      </div>
-      <div class="nav-item" onclick="NZ.auth.signOut()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-        <span>Sign Out</span>
-      </div>
-    </div>
-  </aside>
-  <div class="main-area">
-    <header class="topbar">
-      <div class="topbar-left">
-        <div>
-          <div class="topbar-title" id="topbar-title">Dashboard</div>
-          <div class="topbar-subtitle" id="topbar-subtitle">Welcome back</div>
-        </div>
-      </div>
-      <div class="topbar-right">
-        <div class="xp-bar-wrap">
-          <span class="xp-label" id="tb-xp-label">0 XP</span>
-          <div class="xp-bar-track"><div class="xp-bar-fill" id="tb-xp-fill" style="width:0%"></div></div>
-        </div>
-        <div class="streak-badge">🔥 <span id="tb-streak">1</span></div>
-        <button class="theme-toggle" id="theme-toggle-btn" title="Toggle theme" onclick="NZ.theme.toggle()">🌸</button>
-        <button class="notif-btn" onclick="NZ.notifs.togglePanel()">🔔<span class="notif-dot" id="notif-dot"></span></button>
-        <div class="avatar-btn" id="tb-avatar">学</div>
-      </div>
-    </header>
-    <main id="page-content"></main>
-  </div>
-</div>
-<!-- MODAL -->
-<div class="modal-overlay" id="modal-overlay" onclick="if(event.target===this)NZ.modal.close()">
-  <div class="modal" id="modal-box">
-    <div class="modal-header">
-      <span class="modal-title" id="modal-title">Modal</span>
-      <button class="modal-close" onclick="NZ.modal.close()">✕</button>
-    </div>
-    <div id="modal-body"></div>
-  </div>
-</div>
-<!-- FIREBASE -->
+
+<!-- ══════════════════════════════════════════════════════════
+     FIREBASE AUTH GUARD
+     Runs BEFORE app JS. Checks auth, redirects if not logged in,
+     then fires "nz:userReady" so the app can render with real user data.
+═══════════════════════════════════════════════════════════ -->
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, getDoc, setDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-const cfg={apiKey:"AIzaSyCP2Uwo1lx996q0l3nkC7RhAesVuIHEXiA",authDomain:"nihongo-zen-cd97d.firebaseapp.com",projectId:"nihongo-zen-cd97d",storageBucket:"nihongo-zen-cd97d.firebasestorage.app",messagingSenderId:"513320956483",appId:"1:513320956483:web:a1069825e0df3587f65af6",measurementId:"G-1WTJ5ML3R2"};
-const app=initializeApp(cfg),auth=getAuth(app),db=getFirestore(app);
-const fb=setTimeout(()=>window.location.replace("login.html"),6000);
-onAuthStateChanged(auth,async(user)=>{
-  clearTimeout(fb);
-  if(!user){window.location.replace("login.html");return;}
-  window._nzAuth=auth;window._nzDb=db;window._nzUser=user;
-  window._nzSignOut=()=>signOut(auth).then(()=>window.location.replace("login.html"));
-  const ref=doc(db,"users",user.uid),snap=await getDoc(ref);
-  if(!snap.exists()){
-    await setDoc(ref,{uid:user.uid,displayName:user.displayName||"Learner",email:user.email||"",photoURL:user.photoURL||"",xp:0,xpGoal:500,streak:1,kanjiCount:0,lessonsCompleted:0,vocabMastered:0,quizAccuracy:0,level:1,levelXP:0,levelXPRequired:200,weeklyKanji:0,weeklyLessons:0,weeklyVocab:0,weeklyAccuracyDelta:0,lastLogin:serverTimestamp(),createdAt:serverTimestamp()});
-  } else { await updateDoc(ref,{lastLogin:serverTimestamp()}); }
-  const fresh=await getDoc(ref); window._nzUserData=fresh.data();
-  const el=document.getElementById("auth-loading");
-  if(el){el.classList.add("fade-out");setTimeout(()=>el.remove(),400);}
-  document.getElementById("app").classList.add("visible");
-  document.dispatchEvent(new CustomEvent("nz:userReady",{detail:{user,data:window._nzUserData}}));
-  if(window._nzBootApp)window._nzBootApp();
-});
-window._nzAddXP=async(amt)=>{
-  const user=auth.currentUser;if(!user)return;
-  const ref=doc(db,"users",user.uid),snap=await getDoc(ref);if(!snap.exists())return;
-  const d=snap.data(),nx=(d.xp||0)+amt,nlx=(d.levelXP||0)+amt,req=d.levelXPRequired||200,up=nlx>=req;
-  await updateDoc(ref,{xp:nx,levelXP:up?nlx-req:nlx,level:up?(d.level||1)+1:(d.level||1)});
-  const f=await getDoc(ref);document.dispatchEvent(new CustomEvent("nz:xpUpdated",{detail:f.data()}));
-};
-</script>
-<script>
-'use strict';
-const NZ={};
-/* ── UTILS ── */
-NZ.utils={
-  ls:{
-    get:(k,d=null)=>{try{const v=localStorage.getItem('nz_'+k);return v?JSON.parse(v):d;}catch{return d;}},
-    set:(k,v)=>{try{localStorage.setItem('nz_'+k,JSON.stringify(v));}catch{}},
-    del:(k)=>localStorage.removeItem('nz_'+k)
-  },
-  id:()=>Math.random().toString(36).slice(2,10),
-  date:(d=new Date())=>d.toLocaleDateString('en-CA'),
-  time:(d=new Date())=>d.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'}),
-  dtStr:(d)=>{if(!d)return'';const dd=new Date(d);return dd.toLocaleDateString('en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});},
-  relTime:(ts)=>{const d=(Date.now()-ts)/1000;if(d<60)return'just now';if(d<3600)return Math.floor(d/60)+'m ago';if(d<86400)return Math.floor(d/3600)+'h ago';return Math.floor(d/86400)+'d ago';},
-  esc:(s)=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')
-};
-/* ── TOAST ── */
-NZ.toast={
-  show(msg,type='info',dur=3000){
-    const c=document.getElementById('toast-container'),t=document.createElement('div');
-    t.className=`toast ${type}`;
-    const ic={success:'✅',error:'❌',info:'ℹ️'};
-    t.innerHTML=`<span>${ic[type]||'💬'}</span> ${NZ.utils.esc(msg)}`;
-    c.appendChild(t);
-    setTimeout(()=>{t.style.opacity='0';t.style.transform='translateX(20px)';t.style.transition='all 0.3s';setTimeout(()=>t.remove(),300);},dur);
-  }
-};
-/* ── MODAL ── */
-NZ.modal={
-  open(title,html){document.getElementById('modal-title').textContent=title;document.getElementById('modal-body').innerHTML=html;document.getElementById('modal-overlay').classList.add('open');},
-  close(){document.getElementById('modal-overlay').classList.remove('open');}
-};
-/* ── THEME ── */
-NZ.theme={
-  current:'dark',
-  init(){this.current=NZ.utils.ls.get('theme','dark');this.apply(this.current,false);},
-  toggle(){this.current=this.current==='dark'?'light':'dark';NZ.utils.ls.set('theme',this.current);this.apply(this.current,true);},
-  apply(theme,animate){
-    document.documentElement.setAttribute('data-theme',theme);
-    const btn=document.getElementById('theme-toggle-btn');
-    if(btn)btn.textContent=theme==='dark'?'🌸':'🌙';
-    if(theme==='light')NZ.petals.start();else NZ.petals.stop();
-  }
-};
-/* ── CHERRY BLOSSOM PETALS ── */
-NZ.petals={
-  running:false,rafId:null,petals:[],
-  start(){
-    if(this.running)return;this.running=true;
-    const cv=document.getElementById('petal-canvas');
-    cv.width=window.innerWidth;cv.height=window.innerHeight;
-    this.petals=[];
-    for(let i=0;i<28;i++)this.petals.push(this.make(true));
-    this.loop();
-  },
-  stop(){
-    this.running=false;cancelAnimationFrame(this.rafId);
-    const cv=document.getElementById('petal-canvas');
-    if(cv){const ctx=cv.getContext('2d');ctx.clearRect(0,0,cv.width,cv.height);}
-  },
-  make(init=false){
-    const cv=document.getElementById('petal-canvas');
-    return{x:Math.random()*(cv?cv.width:window.innerWidth),y:init?Math.random()*window.innerHeight:-20,size:4+Math.random()*8,speed:0.6+Math.random()*1.2,drift:(Math.random()-0.5)*0.6,rot:Math.random()*360,rotSpeed:(Math.random()-0.5)*3,opacity:0.35+Math.random()*0.45,hue:340+Math.random()*25};
-  },
-  loop(){
-    if(!this.running)return;
-    const cv=document.getElementById('petal-canvas');if(!cv)return;
-    const ctx=cv.getContext('2d');
-    cv.width=window.innerWidth;cv.height=window.innerHeight;
-    ctx.clearRect(0,0,cv.width,cv.height);
-    this.petals.forEach((p,i)=>{
-      p.y+=p.speed;p.x+=p.drift;p.rot+=p.rotSpeed;
-      if(p.y>cv.height+30)this.petals[i]=this.make();
-      ctx.save();ctx.globalAlpha=p.opacity;ctx.translate(p.x,p.y);ctx.rotate(p.rot*Math.PI/180);
-      ctx.fillStyle=`hsl(${p.hue},70%,75%)`;
-      ctx.beginPath();ctx.ellipse(0,0,p.size*0.5,p.size,0,0,Math.PI*2);ctx.fill();
-      ctx.restore();
-    });
-    this.rafId=requestAnimationFrame(()=>this.loop());
-  }
-};
-/* ── AUTH ── */
-NZ.auth={signOut(){if(window._nzSignOut)window._nzSignOut();}};
-/* ── NOTIFICATIONS ── */
-NZ.notifs={
-  data:[],
-  init(){
-    this.data=NZ.utils.ls.get('notifs',this._def());
-    this.render();this.checkReminders();
-    setInterval(()=>this.checkReminders(),60000);
-  },
-  _def(){return[
-    {id:NZ.utils.id(),icon:'🌅',title:'Daily Reminder',body:'Time to start your Japanese study session!',time:Date.now()-3600000,unread:true},
-    {id:NZ.utils.id(),icon:'🎯',title:'Goal Progress',body:'You are 65% toward your JLPT N5 goal. Keep going!',time:Date.now()-7200000,unread:true},
-    {id:NZ.utils.id(),icon:'📊',title:'Weekly Report Ready',body:'Your weekly learning report is now available.',time:Date.now()-86400000,unread:false},
-  ];},
-  add(icon,title,body){
-    const n={id:NZ.utils.id(),icon,title,body,time:Date.now(),unread:true};
-    this.data.unshift(n);if(this.data.length>50)this.data.pop();
-    NZ.utils.ls.set('notifs',this.data);this.render();this.updateDot();
-  },
-  render(){
-    const list=document.getElementById('notif-list');if(!list)return;
-    if(!this.data.length){list.innerHTML='<div class="empty-state"><div class="empty-state-icon">🔔</div>No notifications</div>';return;}
-    list.innerHTML=this.data.slice(0,20).map(n=>`
-      <div class="notif-item ${n.unread?'unread':''}">
-        <div class="notif-icon" style="background:var(--bg-tertiary)">${n.icon}</div>
-        <div class="notif-text">
-          <div class="notif-title">${NZ.utils.esc(n.title)}</div>
-          <div class="notif-body">${NZ.utils.esc(n.body)}</div>
-          <div class="notif-time">${NZ.utils.relTime(n.time)}</div>
-        </div>
-      </div>`).join('');
-    this.updateDot();
-  },
-  markAllRead(){this.data.forEach(n=>n.unread=false);NZ.utils.ls.set('notifs',this.data);this.render();},
-  clearAll(){this.data=[];NZ.utils.ls.set('notifs',this.data);this.render();},
-  updateDot(){const d=document.getElementById('notif-dot');if(d)d.style.display=this.data.some(n=>n.unread)?'block':'none';},
-  togglePanel(){
-    const p=document.getElementById('notif-panel');p.classList.toggle('open');
-    if(p.classList.contains('open')){
-      this.render();
-      document.addEventListener('click',(e)=>{if(!p.contains(e.target)&&!e.target.closest('.notif-btn'))p.classList.remove('open')},{once:true});
-    }
-  },
-  checkReminders(){
-    const notes=NZ.utils.ls.get('notes',[]);const now=Date.now();let changed=false;
-    notes.forEach(n=>{if(n.alarm&&n.alarm<=now&&!n.alarmFired){this.add('⏰','Note Reminder',n.title||n.body.slice(0,40));NZ.toast.show('Reminder: '+(n.title||n.body.slice(0,30)),'info',6000);n.alarmFired=true;changed=true;}});
-    if(changed)NZ.utils.ls.set('notes',notes);
-  },
-  requestPermission(){if('Notification'in window&&Notification.permission==='default')Notification.requestPermission();}
-};
-/* ── ROUTER ── */
-NZ.router={
-  current:null,
-  go(route){
-    this.current=route;
-    document.querySelectorAll('.nav-item[data-route]').forEach(el=>el.classList.toggle('active',el.dataset.route===route));
-    const routes={dashboard:NZ.pages.dashboard,planner:NZ.pages.planner,srs:NZ.pages.srs,goals:NZ.pages.goals,kanji:NZ.pages.kanji,vocab:NZ.pages.vocab,grammar:NZ.pages.grammar,'kanji-canvas':NZ.pages.kanjiCanvas,community:NZ.pages.community,notes:NZ.pages.notes,progress:NZ.pages.progress,profile:NZ.pages.profile};
-    const fn=routes[route]||routes['dashboard'];
-    fn.call(NZ.pages);
-    document.getElementById('page-content').scrollTop=0;
-  }
-};
-/* ── TOPBAR ── */
-NZ.topbar={
-  update(){
-    const d=window._nzUserData||{};
-    const xp=d.xp||0,xpGoal=d.xpGoal||500,streak=d.streak||1;
-    const name=((d.displayName||'Learner').split(' ')[0]);
-    const el=(id)=>document.getElementById(id);
-    if(el('tb-xp-label'))el('tb-xp-label').textContent=xp+' XP';
-    if(el('tb-xp-fill'))el('tb-xp-fill').style.width=Math.min((xp/xpGoal)*100,100)+'%';
-    if(el('tb-streak'))el('tb-streak').textContent=streak;
-    if(el('tb-avatar'))el('tb-avatar').textContent=name[0].toUpperCase();
-    if(el('topbar-subtitle'))el('topbar-subtitle').textContent='Welcome back, '+name;
-  },
-  setTitle(t,s=''){
-    const d=window._nzUserData||{};
-    const el=(id)=>document.getElementById(id);
-    if(el('topbar-title'))el('topbar-title').textContent=t;
-    if(el('topbar-subtitle'))el('topbar-subtitle').textContent=s||(d.displayName?'Welcome back, '+d.displayName.split(' ')[0]:'');
-  }
-};
-</script>
-<script>
-'use strict';
-/* ═══ PAGES ═══ */
-NZ.pages={};
-NZ.pages._render=function(html){document.getElementById('page-content').innerHTML=html;};
+import { initializeApp }
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getAuth, onAuthStateChanged, signOut
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {
+  getFirestore, doc, getDoc, setDoc, updateDoc, serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-/* ── DASHBOARD ── */
-NZ.pages.dashboard=function(){
-  NZ.topbar.setTitle('Dashboard','Your learning overview');
-  const d=window._nzUserData||{};
-  const xp=d.xp||0,level=d.level||1,lvlXP=d.levelXP||0,lvlReq=d.levelXPRequired||200;
-  const xpPct=Math.min((lvlXP/lvlReq)*100,100);
-  const r=30,circ=2*Math.PI*r,offset=circ-(xpPct/100)*circ;
-  const tasks=NZ.utils.ls.get('planner_'+NZ.utils.date(),[]);
-  const done=tasks.filter(t=>t.done).length,total=tasks.length;
-  const planPct=total?Math.round((done/total)*100):0;
-  const srsItems=NZ.utils.ls.get('srs_items',NZ.data.srsDefault());
-  const due=srsItems.filter(i=>i.nextReview<=Date.now()).length;
-  NZ.pages._render(`
-    <div class="anim-fade-in">
-      <div class="page-header">
-        <div class="page-title">おはようございます 👋</div>
-        <div class="page-subtitle">Ready for today's session? Keep that streak going!</div>
-      </div>
-      <div class="level-ring-wrap anim-fade-in">
-        <div class="level-ring">
-          <svg viewBox="0 0 72 72">
-            <defs><linearGradient id="levelGrad" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#E8446A"/><stop offset="100%" stop-color="#F5A623"/></linearGradient></defs>
-            <circle class="level-ring-track" cx="36" cy="36" r="${r}"/>
-            <circle class="level-ring-fill" cx="36" cy="36" r="${r}" stroke-dasharray="${circ.toFixed(1)}" stroke-dashoffset="${offset.toFixed(1)}"/>
-          </svg>
-          <div class="level-ring-text"><div class="level-number">${level}</div><div class="level-word">LEVEL</div></div>
-        </div>
-        <div style="flex:1">
-          <div class="level-title">${NZ.data.levelTitle(level)}</div>
-          <div class="level-xp-bar"><div class="progress-track"><div class="progress-fill accent" style="width:${xpPct}%"></div></div></div>
-          <div class="level-xp-label">${lvlXP} / ${lvlReq} XP to next level</div>
-          <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
-            <span class="badge badge-red">🔥 ${d.streak||1} day streak</span>
-            <span class="badge badge-gold">⭐ ${xp} total XP</span>
-            <span class="badge badge-green">📚 ${d.lessonsCompleted||0} lessons</span>
-          </div>
-        </div>
-      </div>
-      <div class="section">
-        <div class="section-title">Today's Overview</div>
-        <div class="grid-4">
-          <div class="stat-card anim-fade-in anim-delay-1">
-            <div class="stat-icon" style="background:var(--accent-soft)">漢</div>
-            <div class="stat-value">${d.kanjiCount||0}</div>
-            <div class="stat-label">Kanji Learned</div>
-            <div class="stat-delta up">↑ ${d.weeklyKanji||0} this week</div>
-          </div>
-          <div class="stat-card anim-fade-in anim-delay-2">
-            <div class="stat-icon" style="background:var(--accent2-soft)">語</div>
-            <div class="stat-value">${d.vocabMastered||0}</div>
-            <div class="stat-label">Vocab Mastered</div>
-            <div class="stat-delta up">↑ ${d.weeklyVocab||0} this week</div>
-          </div>
-          <div class="stat-card anim-fade-in anim-delay-3">
-            <div class="stat-icon" style="background:var(--gold-soft)">★</div>
-            <div class="stat-value">${due}</div>
-            <div class="stat-label">SRS Due Today</div>
-            <div class="stat-delta ${due>0?'down':'up'}">${due>0?'↓ Review now':'✓ All clear'}</div>
-          </div>
-          <div class="stat-card anim-fade-in anim-delay-4">
-            <div class="stat-icon" style="background:var(--green-soft)">📅</div>
-            <div class="stat-value">${planPct}%</div>
-            <div class="stat-label">Daily Goals Done</div>
-            <div class="stat-delta">${done}/${total||5} tasks</div>
-          </div>
-        </div>
-      </div>
-      <div class="section">
-        <div class="section-title">Quick Study</div>
-        <div class="grid-auto">
-          ${NZ.data.lessons().map((l,i)=>`
-            <div class="lesson-card anim-fade-in" style="animation-delay:${i*0.04}s" onclick="NZ.router.go('${l.route}')">
-              <div class="lesson-icon" style="background:${l.bg}">${l.icon}</div>
-              <div><div class="lesson-name">${l.name}</div><div class="lesson-desc">${l.desc}</div></div>
-              <div class="progress-track"><div class="progress-fill ${l.color}" style="width:${l.prog}%"></div></div>
-              <div style="font-size:11px;color:var(--text-muted)">${l.prog}% complete</div>
-            </div>`).join('')}
-        </div>
-      </div>
-      ${due>0?`<div class="card anim-fade-in" style="border-left:3px solid var(--gold)"><div class="card-header"><div class="card-title">⭐ SRS Reviews Due</div><button class="btn btn-primary btn-sm" onclick="NZ.router.go('srs')">Start Review</button></div><p style="font-size:13px;color:var(--text-secondary)">You have <strong style="color:var(--gold)">${due} items</strong> ready for review. Keep your memory fresh!</p></div>`:''}
-    </div>
-  `);
+const firebaseConfig = {
+  apiKey:            "AIzaSyCP2Uwo1lx996q0l3nkC7RhAesVuIHEXiA",
+  authDomain:        "nihongo-zen-cd97d.firebaseapp.com",
+  projectId:         "nihongo-zen-cd97d",
+  storageBucket:     "nihongo-zen-cd97d.firebasestorage.app",
+  messagingSenderId: "513320956483",
+  appId:             "1:513320956483:web:a1069825e0df3587f65af6",
+  measurementId:     "G-1WTJ5ML3R2"
 };
 
-/* ── DAILY PLANNER ── */
-NZ.pages.planner=function(){NZ.topbar.setTitle('Daily Planner','Plan your study session');this._plannerRender();};
-NZ.pages._plannerRender=function(){
-  const today=NZ.utils.date();
-  const tasks=NZ.utils.ls.get('planner_'+today,NZ.data.plannerDefaults());
-  const done=tasks.filter(t=>t.done).length,pct=tasks.length?Math.round((done/tasks.length)*100):0;
-  const history=[];
-  for(let i=1;i<=7;i++){const d=new Date();d.setDate(d.getDate()-i);const k=NZ.utils.date(d);const pts=NZ.utils.ls.get('planner_'+k,[]);history.push({label:d.toLocaleDateString('en-US',{weekday:'short'}),pct:pts.length?Math.round((pts.filter(t=>t.done).length/pts.length)*100):0});}
-  history.reverse();
-  NZ.pages._render(`
-    <div class="anim-fade-in">
-      <div class="page-header">
-        <div class="page-title">Daily Planner</div>
-        <div class="page-subtitle">📅 ${new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}</div>
-      </div>
-      <div class="grid-2">
-        <div class="card">
-          <div class="card-header">
-            <div class="card-title"><div class="card-title-icon" style="background:var(--accent-soft)">📋</div>Today's Goals</div>
-            <div style="text-align:right"><div style="font-size:28px;font-weight:800;color:var(--accent);letter-spacing:-1px">${pct}%</div><div style="font-size:11px;color:var(--text-muted)">${done}/${tasks.length} done</div></div>
-          </div>
-          <div class="progress-track" style="margin-bottom:16px"><div class="progress-fill ${pct===100?'green':'accent'}" style="width:${pct}%"></div></div>
-          <div style="display:flex;flex-direction:column;gap:8px" id="task-list">
-            ${tasks.map(t=>NZ.pages._taskHTML(t)).join('')}
-          </div>
-          <div style="display:flex;gap:8px;margin-top:16px">
-            <input class="input" id="new-task-input" placeholder="Add new task..." style="flex:1;margin:0" onkeydown="if(event.key==='Enter')NZ.pages._addTask()"/>
-            <select class="input" id="new-task-xp" style="width:90px;margin:0"><option value="10">10 XP</option><option value="20" selected>20 XP</option><option value="30">30 XP</option><option value="50">50 XP</option></select>
-            <button class="btn btn-primary" onclick="NZ.pages._addTask()">+ Add</button>
-          </div>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:16px">
-          <div class="card">
-            <div class="card-header"><div class="card-title"><div class="card-title-icon" style="background:var(--accent2-soft)">📈</div>7-Day History</div></div>
-            <div style="display:flex;gap:6px;align-items:flex-end;height:80px">
-              ${history.map(h=>`
-                <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;justify-content:flex-end;height:100%">
-                  <div style="font-size:9px;color:var(--text-muted)">${h.pct}%</div>
-                  <div style="width:100%;border-radius:4px 4px 0 0;background:${h.pct>70?'var(--green)':h.pct>40?'var(--gold)':'var(--accent)'};height:${Math.max(h.pct,4)}%;min-height:4px;transition:height 0.5s ease"></div>
-                  <div style="font-size:9px;color:var(--text-muted)">${h.label}</div>
-                </div>`).join('')}
-            </div>
-          </div>
-          <div class="card">
-            <div class="card-title" style="margin-bottom:12px"><div class="card-title-icon" style="background:var(--green-soft)">⚡</div>Quick Add</div>
-            <div style="display:flex;flex-wrap:wrap;gap:8px">
-              ${['Kanji Practice','Vocabulary','Grammar Study','Reading','Listening','Writing','Mock Quiz'].map(c=>`<button class="btn btn-secondary btn-sm" onclick="NZ.pages._addTaskNamed('${c}',20)">+ ${c}</button>`).join('')}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  `);
-};
-NZ.pages._taskHTML=function(t){return`<div class="planner-task ${t.done?'done':''}" id="task-${t.id}"><div class="task-check" onclick="NZ.pages._toggleTask('${t.id}')">${t.done?'✓':''}</div><span class="task-name">${NZ.utils.esc(t.name)}</span><span class="task-xp">+${t.xp} XP</span><span class="task-del" onclick="NZ.pages._delTask('${t.id}')">✕</span></div>`;};
-NZ.pages._addTask=function(){
-  const inp=document.getElementById('new-task-input'),xpEl=document.getElementById('new-task-xp');
-  const name=inp.value.trim();if(!name)return;
-  const today=NZ.utils.date(),tasks=NZ.utils.ls.get('planner_'+today,[]);
-  tasks.push({id:NZ.utils.id(),name,xp:parseInt(xpEl.value)||20,done:false});
-  NZ.utils.ls.set('planner_'+today,tasks);inp.value='';NZ.pages._plannerRender();
-};
-NZ.pages._addTaskNamed=function(name,xp){
-  const today=NZ.utils.date(),tasks=NZ.utils.ls.get('planner_'+today,[]);
-  if(tasks.find(t=>t.name===name)){NZ.toast.show('Task already added','info');return;}
-  tasks.push({id:NZ.utils.id(),name,xp,done:false});
-  NZ.utils.ls.set('planner_'+today,tasks);NZ.pages._plannerRender();
-};
-NZ.pages._toggleTask=function(id){
-  const today=NZ.utils.date(),tasks=NZ.utils.ls.get('planner_'+today,[]),task=tasks.find(t=>t.id===id);
-  if(!task)return;task.done=!task.done;NZ.utils.ls.set('planner_'+today,tasks);
-  if(task.done){NZ.toast.show(`+${task.xp} XP earned!`,'success');if(window._nzAddXP)window._nzAddXP(task.xp);NZ.notifs.add('✅','Task Complete!',`"${task.name}" done. +${task.xp} XP`);}
-  NZ.pages._plannerRender();
-};
-NZ.pages._delTask=function(id){
-  const today=NZ.utils.date();let tasks=NZ.utils.ls.get('planner_'+today,[]);
-  tasks=tasks.filter(t=>t.id!==id);NZ.utils.ls.set('planner_'+today,tasks);NZ.pages._plannerRender();
-};
+const app  = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db   = getFirestore(app);
 
-/* ── GOALS ── */
-NZ.pages.goals=function(){NZ.topbar.setTitle('My Goals','Track your Japanese journey');this._goalsRender();};
-NZ.pages._goalsRender=function(){
-  const goals=NZ.utils.ls.get('goals',NZ.data.defaultGoals());
-  NZ.pages._render(`
-    <div class="anim-fade-in">
-      <div class="page-header"><div class="page-title">My Goals</div><div class="page-subtitle">Set targets, track progress, earn rewards</div></div>
-      <div style="margin-bottom:20px"><button class="btn btn-primary" onclick="NZ.pages._newGoalModal()">+ New Goal</button></div>
-      <div class="grid-2" id="goals-grid">
-        ${goals.length?goals.map(g=>NZ.pages._goalCard(g)).join(''):'<div class="empty-state"><div class="empty-state-icon">🎯</div>No goals yet. Create your first goal!</div>'}
-      </div>
-    </div>
-  `);
-};
-NZ.pages._goalCard=function(g){
-  const pct=Math.min(Math.round((g.current/g.target)*100),100);
-  return`<div class="goal-card">
-    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
-      <div><div style="font-size:22px">${g.emoji}</div><div style="font-size:13px;font-weight:700;margin-top:4px">${NZ.utils.esc(g.title)}</div><div style="font-size:11px;color:var(--text-muted)">${NZ.utils.esc(g.desc)}</div></div>
-      <div><div style="font-size:22px;font-weight:800;color:var(--accent);letter-spacing:-1px;text-align:right">${pct}%</div><div style="font-size:10px;color:var(--text-muted);text-align:right">complete</div></div>
-    </div>
-    <div class="progress-track"><div class="progress-fill ${pct>=100?'green':'accent'}" style="width:${pct}%"></div></div>
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px">
-      <span style="font-size:11px;color:var(--text-muted)">${g.current} / ${g.target} ${g.unit}</span>
-      <div style="display:flex;gap:6px">
-        <button class="btn btn-secondary btn-xs" onclick="NZ.pages._updateGoalProgress('${g.id}')">Update</button>
-        <button class="btn btn-danger btn-xs" onclick="NZ.pages._delGoal('${g.id}')">Delete</button>
-      </div>
-    </div>
-    ${pct>=100?'<div class="badge badge-green" style="margin-top:6px">🏆 Completed! +100 XP</div>':''}
-  </div>`;
-};
-NZ.pages._newGoalModal=function(){
-  NZ.modal.open('New Goal',`
-    <div class="input-wrap"><label class="input-label">Goal Title</label><input class="input" id="g-title" placeholder="e.g. Pass JLPT N5"/></div>
-    <div class="input-wrap"><label class="input-label">Description</label><input class="input" id="g-desc" placeholder="Short description..."/></div>
-    <div style="display:flex;gap:12px">
-      <div class="input-wrap" style="flex:1"><label class="input-label">Target</label><input class="input" id="g-target" type="number" value="100"/></div>
-      <div class="input-wrap" style="flex:1"><label class="input-label">Unit</label><input class="input" id="g-unit" placeholder="words, days..."/></div>
-      <div class="input-wrap" style="flex:0 0 60px"><label class="input-label">Emoji</label><input class="input" id="g-emoji" value="🎯" maxlength="2"/></div>
-    </div>
-    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
-      <button class="btn btn-secondary" onclick="NZ.modal.close()">Cancel</button>
-      <button class="btn btn-primary" onclick="NZ.pages._saveGoal()">Create Goal</button>
-    </div>`);
-};
-NZ.pages._saveGoal=function(){
-  const title=document.getElementById('g-title').value.trim();if(!title)return NZ.toast.show('Enter a title','error');
-  const goals=NZ.utils.ls.get('goals',[]);
-  goals.push({id:NZ.utils.id(),title,desc:document.getElementById('g-desc').value.trim(),target:parseInt(document.getElementById('g-target').value)||100,current:0,unit:document.getElementById('g-unit').value.trim()||'units',emoji:document.getElementById('g-emoji').value.trim()||'🎯'});
-  NZ.utils.ls.set('goals',goals);NZ.modal.close();NZ.toast.show('Goal created!','success');NZ.pages._goalsRender();
-};
-NZ.pages._updateGoalProgress=function(id){
-  const goals=NZ.utils.ls.get('goals',[]),g=goals.find(x=>x.id===id);if(!g)return;
-  NZ.modal.open('Update Progress',`
-    <p style="font-size:13px;color:var(--text-secondary);margin-bottom:14px">${g.emoji} ${g.title}</p>
-    <div class="input-wrap"><label class="input-label">Current Progress (max ${g.target})</label><input class="input" id="g-prog" type="number" value="${g.current}" min="0" max="${g.target}"/></div>
-    <div style="display:flex;gap:8px;justify-content:flex-end">
-      <button class="btn btn-secondary" onclick="NZ.modal.close()">Cancel</button>
-      <button class="btn btn-primary" onclick="NZ.pages._saveProgress('${id}')">Save</button>
-    </div>`);
-};
-NZ.pages._saveProgress=function(id){
-  const goals=NZ.utils.ls.get('goals',[]),g=goals.find(x=>x.id===id);
-  const val=parseInt(document.getElementById('g-prog').value)||0,was=g.current>=g.target;
-  g.current=Math.min(val,g.target);NZ.utils.ls.set('goals',goals);NZ.modal.close();
-  if(!was&&g.current>=g.target){NZ.toast.show('🏆 Goal completed! +100 XP','success',5000);if(window._nzAddXP)window._nzAddXP(100);NZ.notifs.add('🏆','Goal Completed!',`You completed: ${g.title}`);}
-  else NZ.toast.show('Progress updated!','success');
-  NZ.pages._goalsRender();
-};
-NZ.pages._delGoal=function(id){let goals=NZ.utils.ls.get('goals',[]);goals=goals.filter(g=>g.id!==id);NZ.utils.ls.set('goals',goals);NZ.toast.show('Goal deleted','info');NZ.pages._goalsRender();};
-</script>
-<script>
-'use strict';
-/* ── NOTES ── */
-NZ.pages.notes=function(){NZ.topbar.setTitle('Smart Notes','Notes with alarms & reminders');this._notesRender();};
-NZ.pages._notesRender=function(){
-  const notes=NZ.utils.ls.get('notes',[]);
-  const pinned=notes.filter(n=>n.pinned),unpinned=notes.filter(n=>!n.pinned);
-  const sorted=[...pinned,...unpinned];
-  NZ.pages._render(`
-    <div class="anim-fade-in">
-      <div class="page-header"><div class="page-title">Smart Notes</div><div class="page-subtitle">Create notes with reminders and alarms</div></div>
-      <div style="margin-bottom:20px"><button class="btn btn-primary" onclick="NZ.pages._newNoteModal()">+ New Note</button></div>
-      ${sorted.length===0?'<div class="empty-state"><div class="empty-state-icon">📝</div>No notes yet. Create your first note!</div>':`<div class="grid-2" id="notes-grid">${sorted.map(n=>NZ.pages._noteCard(n)).join('')}</div>`}
-    </div>`);
-};
-NZ.pages._noteCard=function(n){
-  return`<div class="note-card ${n.pinned?'pinned':''}">
-    ${n.pinned?'<div class="note-pin">📌</div>':''}
-    <div class="note-title">${NZ.utils.esc(n.title||'Untitled')}</div>
-    <div class="note-body">${NZ.utils.esc(n.body)}</div>
-    ${n.alarm?`<div class="note-alarm">⏰ ${n.alarmFired?'Fired: ':''}${NZ.utils.dtStr(n.alarm)}</div>`:''}
-    <div class="note-footer">
-      <span class="note-date">${NZ.utils.dtStr(n.createdAt)}</span>
-      <button class="btn btn-ghost btn-xs" onclick="NZ.pages._newNoteModal('${n.id}')">Edit</button>
-      <button class="btn btn-ghost btn-xs" onclick="NZ.pages._pinNote('${n.id}')">${n.pinned?'Unpin':'Pin'}</button>
-      <button class="btn btn-danger btn-xs" onclick="NZ.pages._delNote('${n.id}')">Delete</button>
-    </div>
-  </div>`;
-};
-NZ.pages._newNoteModal=function(id){
-  const notes=NZ.utils.ls.get('notes',[]),n=id?notes.find(x=>x.id===id):null;
-  NZ.modal.open(n?'Edit Note':'New Note',`
-    <div class="input-wrap"><label class="input-label">Title</label><input class="input" id="n-title" placeholder="Note title..." value="${n?NZ.utils.esc(n.title||''):''}"/></div>
-    <div class="input-wrap"><label class="input-label">Content</label><textarea class="input" id="n-body" placeholder="Write your note...">${n?NZ.utils.esc(n.body):''}</textarea></div>
-    <div class="divider"></div>
-    <div style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:10px">⏰ Set Reminder (optional)</div>
-    <div style="display:flex;gap:12px;flex-wrap:wrap">
-      <div class="input-wrap" style="flex:1;min-width:140px"><label class="input-label">Date</label><input class="input" id="n-date" type="date" value="${n&&n.alarmDate?n.alarmDate:''}"/></div>
-      <div class="input-wrap" style="flex:1;min-width:120px"><label class="input-label">Time</label><input class="input" id="n-time" type="time" value="${n&&n.alarmTime?n.alarmTime:''}"/></div>
-    </div>
-    <div class="input-wrap"><label class="input-label">Or remind me after...</label>
-      <select class="input" id="n-dur"><option value="">— select duration —</option><option value="1800">30 minutes</option><option value="3600">1 hour</option><option value="10800">3 hours</option><option value="21600">6 hours</option><option value="86400">1 day</option></select>
-    </div>
-    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px">
-      <button class="btn btn-secondary" onclick="NZ.modal.close()">Cancel</button>
-      <button class="btn btn-primary" onclick="NZ.pages._saveNote('${id||''}')">Save Note</button>
-    </div>`);
-};
-NZ.pages._saveNote=function(id){
-  const title=document.getElementById('n-title').value.trim();
-  const body=document.getElementById('n-body').value.trim();
-  if(!body&&!title)return NZ.toast.show('Write something first','error');
-  let alarm=null,alarmDate=null,alarmTime=null;
-  const dv=document.getElementById('n-date').value,tv=document.getElementById('n-time').value,durv=document.getElementById('n-dur').value;
-  if(durv){alarm=Date.now()+parseInt(durv)*1000;}
-  else if(dv){const dt=new Date(dv+(tv?'T'+tv:'T09:00'));alarm=dt.getTime();alarmDate=dv;alarmTime=tv||'09:00';}
-  const notes=NZ.utils.ls.get('notes',[]);
-  if(id){const n=notes.find(x=>x.id===id);if(n){n.title=title;n.body=body;n.alarm=alarm;n.alarmDate=alarmDate;n.alarmTime=alarmTime;n.alarmFired=false;}}
-  else{notes.unshift({id:NZ.utils.id(),title,body,alarm,alarmDate,alarmTime,alarmFired:false,pinned:false,createdAt:Date.now()});}
-  NZ.utils.ls.set('notes',notes);NZ.modal.close();NZ.toast.show(id?'Note updated!':'Note saved!','success');NZ.pages._notesRender();
-};
-NZ.pages._pinNote=function(id){const notes=NZ.utils.ls.get('notes',[]),n=notes.find(x=>x.id===id);if(n)n.pinned=!n.pinned;NZ.utils.ls.set('notes',notes);NZ.pages._notesRender();};
-NZ.pages._delNote=function(id){let notes=NZ.utils.ls.get('notes',[]);notes=notes.filter(n=>n.id!==id);NZ.utils.ls.set('notes',notes);NZ.toast.show('Note deleted','info');NZ.pages._notesRender();};
+// Safety fallback — if Firebase is slow/offline, redirect after 6s
+const fallback = setTimeout(() => {
+  window.location.replace("login.html");
+}, 6000);
 
-/* ── COMMUNITY ── */
-NZ.pages.community=function(){
-  NZ.topbar.setTitle('Community','Connect with Japanese learners');
-  const rooms=['General 🌸','JLPT Prep 📚','Kanji Help 漢','Vocab Share 語','Study Groups 👥','Off-Topic 💬'];
-  const activeRoom=NZ.utils.ls.get('chat_room','General 🌸');
-  NZ.pages._render(`
-    <div class="anim-fade-in">
-      <div class="page-header"><div class="page-title">Community Chat</div><div class="page-subtitle">Learn together, grow together</div></div>
-      <div class="chat-layout">
-        <div class="chat-sidebar">
-          <div class="chat-sidebar-header">Rooms</div>
-          <div class="chat-room-list">
-            ${rooms.map(r=>`<div class="chat-room ${r===activeRoom?'active':''}" onclick="NZ.pages._switchRoom('${r.replace(/'/g,"\\'")}')"><span>${r}</span>${r==='General 🌸'?'<span class="chat-room-unread">3</span>':''}</div>`).join('')}
-          </div>
-        </div>
-        <div class="chat-main">
-          <div class="chat-main-header"><span>${activeRoom}</span><span class="chat-online">47 online</span></div>
-          <div class="chat-messages" id="chat-msgs">
-            ${NZ.pages._getChatMsgs(activeRoom).map(m=>NZ.pages._msgHTML(m)).join('')}
-          </div>
-          <div class="chat-input-row">
-            <input class="input" id="chat-input" placeholder="Message ${activeRoom}..." style="flex:1;margin:0" onkeydown="if(event.key==='Enter')NZ.pages._sendMsg()"/>
-            <button class="btn btn-primary" onclick="NZ.pages._sendMsg()">Send</button>
-          </div>
-        </div>
-      </div>
-    </div>`);
-  const msgs=document.getElementById('chat-msgs');if(msgs)msgs.scrollTop=msgs.scrollHeight;
-};
-NZ.pages._msgHTML=function(m){return`<div class="chat-msg ${m.own?'own':''}"><div class="chat-avatar" style="background:${m.color}">${m.avatar}</div><div><div class="chat-meta">${m.own?'':m.user+' · '}${m.time}</div><div class="chat-bubble">${NZ.utils.esc(m.text)}</div></div></div>`;};
-NZ.pages._switchRoom=function(room){NZ.utils.ls.set('chat_room',room);NZ.pages.community();};
-NZ.pages._sendMsg=function(){
-  const inp=document.getElementById('chat-input'),text=inp.value.trim();if(!text)return;
-  const room=NZ.utils.ls.get('chat_room','General 🌸');
-  const msgs=NZ.utils.ls.get('chat_msgs_'+room,NZ.pages._getChatMsgs(room));
-  const d=window._nzUserData||{};
-  const msg={id:NZ.utils.id(),user:d.displayName||'You',avatar:(d.displayName||'Y')[0].toUpperCase(),color:'linear-gradient(135deg,#E8446A,#B02050)',text,own:true,time:NZ.utils.time()};
-  msgs.push(msg);NZ.utils.ls.set('chat_msgs_'+room,msgs.slice(-50));inp.value='';
-  const list=document.getElementById('chat-msgs');
-  if(list){list.insertAdjacentHTML('beforeend',NZ.pages._msgHTML(msg));list.scrollTop=list.scrollHeight;}
-  setTimeout(()=>NZ.pages._simulateReply(room),1200+Math.random()*2000);
-};
-NZ.pages._simulateReply=function(room){
-  const replies=['そうですね！Great point!','Just finished my SRS reviews — so helpful!','Any tips for remembering kanji radicals?','がんばって！Keep it up everyone!','I use the mnemonics method, really works!','Don\'t forget daily SRS reviews 📚','The て-form gets easier with practice!'];
-  const users=['Sakura_Learner','Tanaka_Study','HiroJPN','YumiKanji','TokyoDreamer'],colors=['linear-gradient(135deg,#7C5CBF,#5C3B9F)','linear-gradient(135deg,#3BBFCF,#2A9DB8)','linear-gradient(135deg,#3DD68C,#2AB870)'];
-  const u=users[Math.floor(Math.random()*users.length)];
-  const msg={id:NZ.utils.id(),user:u,avatar:u[0],color:colors[Math.floor(Math.random()*colors.length)],text:replies[Math.floor(Math.random()*replies.length)],own:false,time:NZ.utils.time()};
-  const msgs=NZ.utils.ls.get('chat_msgs_'+room,[]);msgs.push(msg);NZ.utils.ls.set('chat_msgs_'+room,msgs.slice(-50));
-  const list=document.getElementById('chat-msgs');
-  if(list){list.insertAdjacentHTML('beforeend',NZ.pages._msgHTML(msg));list.scrollTop=list.scrollHeight;}
-};
-NZ.pages._getChatMsgs=function(room){
-  const saved=NZ.utils.ls.get('chat_msgs_'+room,null);if(saved)return saved;
-  const defaults={'General 🌸':[
-    {id:'m1',user:'Sakura_Learner',avatar:'S',color:'linear-gradient(135deg,#E8446A,#B02050)',text:"おはようございます！Ready for today's study session? 🌸",own:false,time:'9:15 AM'},
-    {id:'m2',user:'HiroJPN',avatar:'H',color:'linear-gradient(135deg,#7C5CBF,#5C3B9F)',text:'Just finished my SRS reviews! 25 items done ✅',own:false,time:'9:18 AM'},
-    {id:'m3',user:'TokyoDreamer',avatar:'T',color:'linear-gradient(135deg,#3BBFCF,#2A9DB8)',text:'Does anyone have tips for remembering kanji radicals?',own:false,time:'9:22 AM'},
-    {id:'m4',user:'YumiKanji',avatar:'Y',color:'linear-gradient(135deg,#3DD68C,#2AB870)',text:'I use the story method! Each radical tells part of a story 📖',own:false,time:'9:24 AM'},
-  ]};
-  return defaults[room]||[{id:'m1',user:'NihongoZen',avatar:'禅',color:'linear-gradient(135deg,#E8446A,#B02050)',text:`Welcome to ${room}! Start the conversation 🎌`,own:false,time:NZ.utils.time()}];
-};
+onAuthStateChanged(auth, async (user) => {
+  clearTimeout(fallback);
 
-/* ── KANJI CANVAS ── */
-NZ.pages.kanjiCanvas=function(){
-  NZ.topbar.setTitle('Kanji Canvas','Practice writing kanji');
-  const kanjis=['日','月','火','水','木','金','土','山','川','田','人','口','手','目','耳','足','力','心','花','雨'];
-  const current=NZ.utils.ls.get('canvas_kanji','日');
-  NZ.pages._render(`
-    <div class="anim-fade-in">
-      <div class="page-header"><div class="page-title">Kanji Writing Canvas</div><div class="page-subtitle">Draw with mouse or touch. Practice stroke order.</div></div>
-      <div class="grid-2">
-        <div style="display:flex;flex-direction:column;gap:12px">
-          <div class="canvas-toolbar">
-            <button class="btn btn-secondary btn-sm" onclick="NZ.canvas.clear()">🗑 Clear</button>
-            <button class="btn btn-secondary btn-sm" onclick="NZ.canvas.undo()">↩ Undo</button>
-            <button class="btn btn-secondary btn-sm" onclick="NZ.canvas.save()">💾 Save</button>
-            <div style="flex:1"></div>
-            <span style="font-size:11px;color:var(--text-muted)">Brush:</span>
-            ${[6,10,16,24].map((s,i)=>`<div class="brush-size ${i===1?'active':''}" onclick="NZ.canvas.setBrush(${s},this)">${s}</div>`).join('')}
-            <span style="font-size:11px;color:var(--text-muted);margin:0 4px">Color:</span>
-            ${['#F0F0F8','#E8446A','#3DD68C','#F5A623','#3BBFCF'].map((c,i)=>`<div class="color-dot ${i===0?'active':''}" style="background:${c}" onclick="NZ.canvas.setColor('${c}',this)"></div>`).join('')}
-          </div>
-          <div class="canvas-wrap" style="height:380px">
-            <canvas id="kanji-canvas" width="380" height="380" style="background:#1a1a24;border-radius:12px"></canvas>
-          </div>
-          <div style="font-size:12px;color:var(--text-muted);text-align:center">Draw the kanji carefully. Practice each stroke deliberately.</div>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:16px">
-          <div class="card">
-            <div class="card-title" style="margin-bottom:12px"><div class="card-title-icon" style="background:var(--accent-soft)">漢</div>Practice Character</div>
-            <div style="text-align:center;padding:16px">
-              <div style="font-family:var(--font-serif);font-size:96px;font-weight:700;color:var(--text-primary);line-height:1;margin-bottom:12px">${current}</div>
-              <div style="font-size:13px;color:var(--text-secondary);margin-bottom:16px">${NZ.data.kanjiInfo(current)}</div>
-              <div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center">
-                ${kanjis.map(k=>`<button class="btn btn-xs ${k===current?'btn-primary':'btn-secondary'}" onclick="NZ.canvas.setKanji('${k}')">${k}</button>`).join('')}
-              </div>
-            </div>
-          </div>
-          <div class="card">
-            <div class="card-title" style="margin-bottom:12px"><div class="card-title-icon" style="background:var(--green-soft)">📁</div>Saved Practices</div>
-            <div style="display:flex;flex-wrap:wrap;gap:8px" id="canvas-history">
-              ${NZ.canvas._getHistory().map(h=>`<div class="history-thumb" onclick="NZ.canvas.restore('${h.id}')"><img src="${h.data}" alt="saved practice"/></div>`).join('')}
-              ${NZ.canvas._getHistory().length===0?'<div style="font-size:12px;color:var(--text-muted)">No saved practices yet</div>':''}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>`);
-  requestAnimationFrame(()=>NZ.canvas.init());
-};
-NZ.canvas={
-  ctx:null,drawing:false,history:[],brushSize:10,color:'#F0F0F8',
-  init(){
-    const c=document.getElementById('kanji-canvas');if(!c)return;
-    this.ctx=c.getContext('2d');this.ctx.strokeStyle=this.color;this.ctx.lineWidth=this.brushSize;this.ctx.lineCap='round';this.ctx.lineJoin='round';this.history=[];
-    const gp=(e)=>{const r=c.getBoundingClientRect();const t=e.touches?e.touches[0]:e;return{x:(t.clientX-r.left)*(c.width/r.width),y:(t.clientY-r.top)*(c.height/r.height)};};
-    const start=(e)=>{e.preventDefault();this.drawing=true;const p=gp(e);this.ctx.beginPath();this.ctx.moveTo(p.x,p.y);};
-    const move=(e)=>{e.preventDefault();if(!this.drawing)return;const p=gp(e);this.ctx.lineTo(p.x,p.y);this.ctx.stroke();};
-    const end=()=>{if(this.drawing){this.drawing=false;this.history.push(c.toDataURL());}};
-    c.addEventListener('mousedown',start);c.addEventListener('mousemove',move);c.addEventListener('mouseup',end);c.addEventListener('mouseleave',end);
-    c.addEventListener('touchstart',start,{passive:false});c.addEventListener('touchmove',move,{passive:false});c.addEventListener('touchend',end);
-  },
-  clear(){const c=document.getElementById('kanji-canvas');if(!c)return;this.ctx.clearRect(0,0,c.width,c.height);this.history=[];},
-  undo(){
-    const c=document.getElementById('kanji-canvas');if(!c)return;
-    if(this.history.length>1){this.history.pop();const img=new Image();img.onload=()=>{this.ctx.clearRect(0,0,c.width,c.height);this.ctx.drawImage(img,0,0);};img.src=this.history[this.history.length-1];}
-    else this.clear();
-  },
-  save(){
-    const c=document.getElementById('kanji-canvas');if(!c)return;
-    const saved=this._getHistory();saved.unshift({id:NZ.utils.id(),data:c.toDataURL(),kanji:NZ.utils.ls.get('canvas_kanji','日'),time:Date.now()});
-    NZ.utils.ls.set('canvas_history',saved.slice(0,12));NZ.toast.show('Practice saved! +5 XP','success');if(window._nzAddXP)window._nzAddXP(5);
-    const el=document.getElementById('canvas-history');
-    if(el)el.innerHTML=saved.slice(0,12).map(h=>`<div class="history-thumb" onclick="NZ.canvas.restore('${h.id}')"><img src="${h.data}"/></div>`).join('');
-  },
-  restore(id){const h=this._getHistory().find(x=>x.id===id);if(!h)return;const c=document.getElementById('kanji-canvas');if(!c)return;const img=new Image();img.onload=()=>{this.ctx.clearRect(0,0,c.width,c.height);this.ctx.drawImage(img,0,0);};img.src=h.data;},
-  setBrush(size,el){this.brushSize=size;if(this.ctx)this.ctx.lineWidth=size;document.querySelectorAll('.brush-size').forEach(b=>b.classList.remove('active'));if(el)el.classList.add('active');},
-  setColor(color,el){this.color=color;if(this.ctx)this.ctx.strokeStyle=color;document.querySelectorAll('.color-dot').forEach(d=>d.classList.remove('active'));if(el)el.classList.add('active');},
-  setKanji(k){NZ.utils.ls.set('canvas_kanji',k);this.clear();NZ.pages.kanjiCanvas();},
-  _getHistory(){return NZ.utils.ls.get('canvas_history',[]);}
-};
-</script>
-<script>
-'use strict';
-/* ── SRS ── */
-NZ.pages.srs=function(){
-  NZ.topbar.setTitle('SRS Review','Spaced Repetition System');
-  const items=NZ.utils.ls.get('srs_items',NZ.data.srsDefault());
-  const due=items.filter(i=>i.nextReview<=Date.now());
-  const completed=NZ.utils.ls.get('srs_completed_'+NZ.utils.date(),0);
-  if(due.length===0){
-    NZ.pages._render(`<div class="anim-fade-in">
-      <div class="page-header"><div class="page-title">SRS Review</div></div>
-      <div class="srs-stats-row">
-        <div class="srs-stat-pill">📋 Total: ${items.length}</div>
-        <div class="srs-stat-pill">✅ Done Today: ${completed}</div>
-        <div class="srs-stat-pill">🔜 Due: 0</div>
-      </div>
-      <div class="srs-card"><div style="font-size:48px;margin-bottom:12px">🎉</div><div style="font-size:18px;font-weight:700;margin-bottom:8px">All Caught Up!</div><p style="font-size:13px;color:var(--text-secondary)">You've completed all reviews for now. Come back later!</p><div style="margin-top:20px"><button class="btn btn-primary" onclick="NZ.pages._addSRSModal()">+ Add Items</button></div></div>
-    </div>`);
+  if (!user) {
+    // Not logged in → go to login
+    window.location.replace("login.html");
     return;
   }
-  const item=due[0];const shown=NZ.utils.ls.get('srs_shown_'+item.id,false);
-  NZ.pages._render(`<div class="anim-fade-in">
-    <div class="page-header"><div class="page-title">SRS Review</div><div class="page-subtitle">Build long-term memory through spaced repetition</div></div>
-    <div class="srs-stats-row">
-      <div class="srs-stat-pill">📋 Total: ${items.length}</div>
-      <div class="srs-stat-pill" style="color:var(--accent)">🔔 Due: ${due.length}</div>
-      <div class="srs-stat-pill" style="color:var(--green)">✅ Done Today: ${completed}</div>
-    </div>
-    <div class="srs-card">
-      <div style="margin-bottom:8px">
-        <span class="badge ${item.type==='kanji'?'badge-red':item.type==='vocab'?'badge-purple':'badge-blue'}">${item.type.toUpperCase()}</span>
-        <span class="badge badge-gold" style="margin-left:6px">Interval: ${item.interval}d</span>
-      </div>
-      <div class="srs-question">${item.front}</div>
-      <div class="srs-reading" id="srs-reading">${shown?item.reading:''}</div>
-      <div class="srs-meaning ${shown?'show':''}" id="srs-meaning">${item.back}</div>
-      ${!shown?`<button class="btn btn-primary" style="margin-top:16px" onclick="NZ.pages._showAnswer('${item.id}')">Show Answer</button>`:`
-      <div class="srs-grade-buttons">
-        <button class="srs-grade srs-again" onclick="NZ.pages._gradeSRS('${item.id}','again')">Again<br><span style="font-size:10px">&lt;1d</span></button>
-        <button class="srs-grade srs-hard" onclick="NZ.pages._gradeSRS('${item.id}','hard')">Hard<br><span style="font-size:10px">${Math.max(1,Math.round(item.interval*0.8))}d</span></button>
-        <button class="srs-grade srs-good" onclick="NZ.pages._gradeSRS('${item.id}','good')">Good<br><span style="font-size:10px">${item.interval+1}d</span></button>
-        <button class="srs-grade srs-easy" onclick="NZ.pages._gradeSRS('${item.id}','easy')">Easy<br><span style="font-size:10px">${item.interval*2}d</span></button>
-      </div>`}
-      <div style="margin-top:20px"><button class="btn btn-ghost btn-sm" onclick="NZ.pages._addSRSModal()">+ Add Items</button></div>
-    </div>
-  </div>`);
-};
-NZ.pages._showAnswer=function(id){
-  NZ.utils.ls.set('srs_shown_'+id,true);
-  const items=NZ.utils.ls.get('srs_items',[]),item=items.find(i=>i.id===id);
-  const m=document.getElementById('srs-meaning'),r=document.getElementById('srs-reading');
-  if(m)m.classList.add('show');if(r&&item)r.textContent=item.reading;
-  const btn=document.querySelector('.srs-card .btn-primary');if(btn)btn.remove();
-  const card=document.querySelector('.srs-card');
-  if(card&&item)card.insertAdjacentHTML('beforeend',`<div class="srs-grade-buttons">
-    <button class="srs-grade srs-again" onclick="NZ.pages._gradeSRS('${id}','again')">Again</button>
-    <button class="srs-grade srs-hard" onclick="NZ.pages._gradeSRS('${id}','hard')">Hard</button>
-    <button class="srs-grade srs-good" onclick="NZ.pages._gradeSRS('${id}','good')">Good</button>
-    <button class="srs-grade srs-easy" onclick="NZ.pages._gradeSRS('${id}','easy')">Easy</button>
-  </div>`);
-};
-NZ.pages._gradeSRS=function(id,grade){
-  const items=NZ.utils.ls.get('srs_items',NZ.data.srsDefault()),item=items.find(i=>i.id===id);if(!item)return;
-  NZ.utils.ls.del('srs_shown_'+id);
-  item.interval=Math.max(1,Math.round(item.interval*(grade==='again'?0.25:grade==='easy'?2.5:grade==='hard'?0.8:1.5)));
-  item.nextReview=Date.now()+item.interval*86400000;
-  item.ease=Math.max(1.3,(item.ease||2.5)+(grade==='again'?-0.2:grade==='hard'?-0.15:grade==='easy'?0.15:0));
-  NZ.utils.ls.set('srs_items',items);
-  const done=NZ.utils.ls.get('srs_completed_'+NZ.utils.date(),0)+1;
-  NZ.utils.ls.set('srs_completed_'+NZ.utils.date(),done);
-  if(window._nzAddXP)window._nzAddXP(grade==='again'?2:grade==='easy'?10:5);
-  NZ.toast.show(grade==='again'?'Marked for retry':'+'+( grade==='again'?2:grade==='easy'?10:5)+' XP!',grade==='again'?'info':'success');
-  const remaining=items.filter(i=>i.nextReview<=Date.now()).length;
-  const badge=document.getElementById('srs-badge');if(badge)badge.textContent=remaining;
-  NZ.pages.srs();
-};
-NZ.pages._addSRSModal=function(){
-  NZ.modal.open('Add SRS Item',`
-    <div class="input-wrap"><label class="input-label">Front (Question)</label><input class="input" id="srs-front" placeholder="漢字, word, or grammar point"/></div>
-    <div class="input-wrap"><label class="input-label">Reading (furigana)</label><input class="input" id="srs-reading-inp" placeholder="e.g. かんじ"/></div>
-    <div class="input-wrap"><label class="input-label">Back (Answer / Meaning)</label><input class="input" id="srs-back" placeholder="English meaning..."/></div>
-    <div class="input-wrap"><label class="input-label">Type</label><select class="input" id="srs-type"><option>kanji</option><option>vocab</option><option>grammar</option></select></div>
-    <div style="display:flex;gap:8px;justify-content:flex-end">
-      <button class="btn btn-secondary" onclick="NZ.modal.close()">Cancel</button>
-      <button class="btn btn-primary" onclick="NZ.pages._saveSRSItem()">Add to Queue</button>
-    </div>`);
-};
-NZ.pages._saveSRSItem=function(){
-  const front=document.getElementById('srs-front').value.trim(),back=document.getElementById('srs-back').value.trim();
-  if(!front||!back)return NZ.toast.show('Fill in front and back','error');
-  const items=NZ.utils.ls.get('srs_items',NZ.data.srsDefault());
-  items.push({id:NZ.utils.id(),front,back,reading:document.getElementById('srs-reading-inp').value.trim(),type:document.getElementById('srs-type').value,interval:1,ease:2.5,nextReview:Date.now(),reps:0});
-  NZ.utils.ls.set('srs_items',items);NZ.modal.close();NZ.toast.show('Item added to SRS queue!','success');NZ.pages.srs();
-};
 
-/* ── WEEKLY PROGRESS ── */
-NZ.pages.progress=function(){
-  NZ.topbar.setTitle('Weekly Report','Your learning analytics');
-  const d=window._nzUserData||{};
-  const days=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
-  const xpData=[45,80,60,120,35,90,d.xp%100||70];
-  const maxXP=Math.max(...xpData);
-  NZ.pages._render(`<div class="anim-fade-in">
-    <div class="page-header"><div class="page-title">Weekly Progress Report</div><div class="page-subtitle">Insights into your learning journey</div></div>
-    <div class="grid-4" style="margin-bottom:24px">
-      ${[{icon:'⭐',label:'XP This Week',val:xpData.reduce((a,b)=>a+b,0),c:'accent-soft'},{icon:'漢',label:'Kanji Learned',val:d.weeklyKanji||0,c:'accent2-soft'},{icon:'語',label:'Vocab Mastered',val:d.weeklyVocab||0,c:'accent3-soft'},{icon:'📚',label:'Lessons Done',val:d.weeklyLessons||0,c:'green-soft'}].map(s=>`
-        <div class="stat-card"><div class="stat-icon" style="background:var(--${s.c})">${s.icon}</div><div class="stat-value">${s.val}</div><div class="stat-label">${s.label}</div></div>`).join('')}
-    </div>
-    <div class="section">
-      <div class="section-title">Daily XP Earned</div>
-      <div class="card">
-        <div class="bar-chart">
-          ${xpData.map((v,i)=>`<div class="bar-col"><div class="bar-value">${v}</div><div class="bar" style="height:${(v/maxXP*100).toFixed(1)}%"></div></div>`).join('')}
-        </div>
-        <div style="display:flex;margin-top:8px">${days.map(d=>`<div style="flex:1;text-align:center;font-size:10px;color:var(--text-muted)">${d}</div>`).join('')}</div>
-      </div>
-    </div>
-    <div class="grid-2">
-      <div class="card">
-        <div class="card-title" style="margin-bottom:16px"><div class="card-title-icon" style="background:var(--accent-soft)">📊</div>Study Breakdown</div>
-        ${[{l:'Kanji',v:d.weeklyKanji||0,m:50,c:'accent'},{l:'Vocabulary',v:d.weeklyVocab||0,m:100,c:'purple'},{l:'Grammar',v:12,m:30,c:'green'},{l:'Reading',v:8,m:20,c:'green'},{l:'Listening',v:5,m:20,c:'accent'}].map(s=>`
-          <div style="margin-bottom:12px">
-            <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px"><span>${s.l}</span><span style="color:var(--text-muted)">${s.v}/${s.m}</span></div>
-            <div class="progress-track"><div class="progress-fill ${s.c}" style="width:${Math.min((s.v/s.m)*100,100)}%"></div></div>
-          </div>`).join('')}
-      </div>
-      <div class="card">
-        <div class="card-title" style="margin-bottom:16px"><div class="card-title-icon" style="background:var(--gold-soft)">🏆</div>Achievements This Week</div>
-        ${[{icon:'🔥',t:'5-Day Streak',d:'Studied 5 days in a row'},{icon:'漢',t:'Kanji Master',d:'Learned 20+ kanji'},{icon:'⭐',t:'XP Milestone',d:'Earned 500+ XP'},{icon:'📚',t:'Consistent Learner',d:'Completed daily goals 4x'}].map(a=>`
-          <div style="display:flex;gap:10px;align-items:center;padding:8px;background:var(--bg-tertiary);border-radius:var(--radius-sm);margin-bottom:8px">
-            <div style="font-size:22px">${a.icon}</div>
-            <div><div style="font-size:12px;font-weight:700">${a.t}</div><div style="font-size:11px;color:var(--text-muted)">${a.d}</div></div>
-          </div>`).join('')}
-        <button class="btn btn-ghost btn-sm" style="margin-top:8px;width:100%" onclick="NZ.notifs.add('📊','Weekly Report','Great progress this week! Keep it up! 🎉')">📬 Share Report</button>
-      </div>
-    </div>
-  </div>`);
-};
+  // ── Expose globally so pages.js can use real user data ──────
+  window._nzAuth    = auth;
+  window._nzDb      = db;
+  window._nzUser    = user;
+  window._nzSignOut = () =>
+    signOut(auth).then(() => window.location.replace("login.html"));
 
-/* ── KANJI PAGE ── */
-NZ.pages.kanji=function(){
-  NZ.topbar.setTitle('Kanji','Master Japanese characters');
-  NZ.pages._render(`<div class="anim-fade-in">
-    <div class="page-header"><div class="page-title">Kanji Learning</div><div class="page-subtitle">Master Japanese characters step by step</div></div>
-    <div class="grid-3">
-      ${NZ.data.kanjiList().map((k,i)=>`
-        <div class="card anim-fade-in" style="animation-delay:${i*0.03}s;text-align:center;cursor:pointer" onclick="NZ.pages._kanjiDetail('${k.char}')">
-          <div style="font-family:var(--font-serif);font-size:52px;font-weight:700;line-height:1.2">${k.char}</div>
-          <div style="font-size:12px;font-weight:600;margin-top:6px">${k.reading}</div>
-          <div style="font-size:11px;color:var(--text-muted);margin-top:2px">${k.meaning}</div>
-          <div style="margin-top:8px"><span class="badge badge-${k.level==='N5'?'green':k.level==='N4'?'blue':'gold'}">${k.level}</span></div>
-        </div>`).join('')}
-    </div>
-  </div>`);
-};
-NZ.pages._kanjiDetail=function(char){
-  const k=NZ.data.kanjiList().find(x=>x.char===char);if(!k)return;
-  NZ.modal.open(`Kanji: ${char}`,`
-    <div style="text-align:center;padding:16px 0">
-      <div style="font-family:var(--font-serif);font-size:80px;font-weight:700;line-height:1">${char}</div>
-      <div style="font-size:16px;font-weight:700;margin-top:10px">${k.meaning}</div>
-      <div style="font-size:13px;color:var(--text-secondary);margin-top:4px">${k.reading}</div>
-      <div style="margin-top:12px"><span class="badge badge-gold">${k.level}</span> <span class="badge badge-blue">Strokes: ${k.strokes||'?'}</span></div>
-    </div>
-    <div class="divider"></div>
-    <div style="font-size:12px;color:var(--text-secondary);margin-bottom:10px"><strong>Example words:</strong></div>
-    ${(k.examples||[]).map(e=>`<div style="display:flex;justify-content:space-between;padding:8px;background:var(--bg-tertiary);border-radius:var(--radius-sm);margin-bottom:6px"><span style="font-family:var(--font-jp)">${e.word}</span><span style="font-size:11px;color:var(--text-muted)">${e.reading} — ${e.meaning}</span></div>`).join('')}
-    <div style="margin-top:16px;display:flex;gap:8px;justify-content:center">
-      <button class="btn btn-secondary" onclick="NZ.canvas.setKanji('${char}');NZ.modal.close();NZ.router.go('kanji-canvas')">Practice Writing</button>
-      <button class="btn btn-primary" onclick="NZ.pages._addToSRS('${char}','${k.reading}','${k.meaning}','kanji');NZ.modal.close()">Add to SRS</button>
-    </div>`);
-};
-NZ.pages._addToSRS=function(front,reading,back,type){
-  const items=NZ.utils.ls.get('srs_items',NZ.data.srsDefault());
-  if(items.find(i=>i.front===front))return NZ.toast.show('Already in SRS queue','info');
-  items.push({id:NZ.utils.id(),front,reading,back,type,interval:1,ease:2.5,nextReview:Date.now(),reps:0});
-  NZ.utils.ls.set('srs_items',items);NZ.toast.show('Added to SRS!','success');
-  const badge=document.getElementById('srs-badge');if(badge)badge.textContent=items.filter(i=>i.nextReview<=Date.now()).length;
-};
+  // ── Create or update Firestore user document ────────────────
+  const userRef  = doc(db, "users", user.uid);
+  const userSnap = await getDoc(userRef);
 
-/* ── VOCAB PAGE ── */
-NZ.pages.vocab=function(){
-  NZ.topbar.setTitle('Vocabulary','Build your Japanese word bank');
-  NZ.pages._render(`<div class="anim-fade-in">
-    <div class="page-header"><div class="page-title">Vocabulary</div><div class="page-subtitle">Master essential Japanese words</div></div>
-    <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap">
-      ${['N5','N4','N3','N2','N1'].map(l=>`<button class="btn btn-secondary btn-sm" onclick="NZ.toast.show('Showing ${l} vocabulary','info')">${l} Vocab</button>`).join('')}
-    </div>
-    <div class="grid-2">
-      ${NZ.data.vocabList().map((v,i)=>`
-        <div class="card anim-fade-in" style="animation-delay:${i*0.03}s">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start">
-            <div>
-              <div style="font-family:var(--font-jp);font-size:22px;font-weight:700">${v.word}</div>
-              <div style="font-size:12px;color:var(--text-muted);margin-top:2px">${v.reading}</div>
-              <div style="font-size:13px;font-weight:600;margin-top:4px">${v.meaning}</div>
-            </div>
-            <span class="badge badge-${v.level==='N5'?'green':'blue'}">${v.level}</span>
-          </div>
-          <div style="font-size:11px;color:var(--text-secondary);margin-top:8px;font-style:italic">${v.example||''}</div>
-          <div style="margin-top:10px"><button class="btn btn-ghost btn-xs" onclick="NZ.pages._addToSRS('${v.word}','${v.reading}','${v.meaning}','vocab')">+ Add to SRS</button></div>
-        </div>`).join('')}
-    </div>
-  </div>`);
-};
-
-/* ── GRAMMAR PAGE ── */
-NZ.pages.grammar=function(){
-  NZ.topbar.setTitle('Grammar','Japanese grammar patterns');
-  NZ.pages._render(`<div class="anim-fade-in">
-    <div class="page-header"><div class="page-title">Grammar</div><div class="page-subtitle">Essential grammar patterns for JLPT</div></div>
-    <div class="grid-2">
-      ${NZ.data.grammarList().map((g,i)=>`
-        <div class="card anim-fade-in" style="animation-delay:${i*0.04}s">
-          <div class="card-header"><div class="card-title">${g.pattern}</div><span class="badge badge-${g.level==='N5'?'green':'blue'}">${g.level}</span></div>
-          <div style="font-size:13px;color:var(--text-secondary);margin-bottom:8px">${g.meaning}</div>
-          <div style="font-size:12px;background:var(--bg-tertiary);padding:8px;border-radius:var(--radius-sm);font-family:var(--font-jp)">${g.example}</div>
-          <div style="font-size:11px;color:var(--text-muted);margin-top:4px">${g.translation}</div>
-        </div>`).join('')}
-    </div>
-  </div>`);
-};
-
-/* ── PROFILE ── */
-NZ.pages.profile=function(){
-  NZ.topbar.setTitle('Profile','Account & settings');
-  const d=window._nzUserData||{};
-  NZ.pages._render(`<div class="anim-fade-in">
-    <div class="page-header"><div class="page-title">Profile & Settings</div></div>
-    <div class="grid-2">
-      <div class="card" style="text-align:center;padding:28px">
-        <div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:700;color:#fff;margin:0 auto 16px">${(d.displayName||'U')[0].toUpperCase()}</div>
-        <div style="font-size:18px;font-weight:700">${d.displayName||'Learner'}</div>
-        <div style="font-size:12px;color:var(--text-muted);margin-top:4px">${d.email||''}</div>
-        <div style="margin-top:12px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
-          <span class="badge badge-gold">Level ${d.level||1}</span>
-          <span class="badge badge-red">🔥 ${d.streak||1} days</span>
-          <span class="badge badge-green">⭐ ${d.xp||0} XP</span>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-title" style="margin-bottom:16px">Preferences</div>
-        <div class="input-wrap">
-          <label class="input-label">Theme</label>
-          <select class="input" onchange="NZ.theme.current=this.value;NZ.theme.apply(this.value,true);NZ.utils.ls.set('theme',this.value)">
-            <option value="dark" ${NZ.theme.current==='dark'?'selected':''}>🌙 Dark (Default)</option>
-            <option value="light" ${NZ.theme.current==='light'?'selected':''}>🌸 Sakura Light</option>
-          </select>
-        </div>
-        <div class="input-wrap">
-          <label class="input-label">Daily XP Goal</label>
-          <select class="input"><option>100 XP (Casual)</option><option>250 XP (Regular)</option><option selected>500 XP (Dedicated)</option><option>1000 XP (Intense)</option></select>
-        </div>
-        <div style="margin-top:16px;display:flex;flex-direction:column;gap:8px">
-          <button class="btn btn-secondary" onclick="NZ.notifs.requestPermission();NZ.toast.show('Browser notifications enabled!','success')">🔔 Enable Browser Notifications</button>
-          <button class="btn btn-danger" onclick="NZ.auth.signOut()">Sign Out</button>
-        </div>
-      </div>
-    </div>
-  </div>`);
-};
-</script>
-<script>
-'use strict';
-/* ═══════════════════════════════════════════════════════
-   DATA LAYER
-═══════════════════════════════════════════════════════ */
-NZ.data = {
-  levelTitle(lvl) {
-    const t = ['','Beginner 🌱','Student 📖','Learner ✏️','Scholar 🎓','Practitioner 書','Advanced 漢','Expert 師','Master 達人','Grand Master 先生','Legend 伝説'];
-    return t[Math.min(lvl, t.length-1)] || 'Master 達人';
-  },
-  lessons() {
-    return [
-      {icon:'漢', name:'Kanji',        desc:'Master Japanese characters', route:'kanji',        bg:'var(--accent-soft)',  color:'accent',  prog:38},
-      {icon:'語', name:'Vocabulary',   desc:'Build your word bank',        route:'vocab',        bg:'var(--accent2-soft)', color:'purple',  prog:52},
-      {icon:'文', name:'Grammar',      desc:'Learn essential patterns',    route:'grammar',      bg:'var(--accent3-soft)', color:'green',   prog:24},
-      {icon:'✏️', name:'Writing',      desc:'Practice kanji strokes',      route:'kanji-canvas', bg:'var(--gold-soft)',    color:'accent',  prog:15},
-      {icon:'⭐', name:'SRS Review',   desc:'Spaced repetition review',    route:'srs',          bg:'var(--green-soft)',   color:'green',   prog:70},
-    ];
-  },
-  plannerDefaults() {
-    return [
-      {id:NZ.utils.id(), name:'Kanji Practice (5 new)',  xp:20, done:false},
-      {id:NZ.utils.id(), name:'Vocabulary Review',        xp:20, done:false},
-      {id:NZ.utils.id(), name:'Grammar Study',            xp:20, done:false},
-      {id:NZ.utils.id(), name:'SRS Reviews',              xp:30, done:false},
-      {id:NZ.utils.id(), name:'Reading Practice',         xp:25, done:false},
-    ];
-  },
-  defaultGoals() {
-    return [
-      {id:NZ.utils.id(), emoji:'🎌', title:'Pass JLPT N5',          desc:'Complete all N5 requirements',    target:100, current:38, unit:'%'},
-      {id:NZ.utils.id(), emoji:'📚', title:'Learn 500 Vocabulary',   desc:'Master core vocabulary',          target:500, current:127, unit:'words'},
-      {id:NZ.utils.id(), emoji:'🔥', title:'30-Day Study Streak',    desc:'Study every day for 30 days',     target:30,  current:7,  unit:'days'},
-      {id:NZ.utils.id(), emoji:'漢', title:'Know 200 Kanji',         desc:'Learn and retain 200 kanji',      target:200, current:64, unit:'kanji'},
-    ];
-  },
-  srsDefault() {
-    const items = [
-      {front:'日',   reading:'にち / ひ',      back:'sun, day',               type:'kanji'},
-      {front:'月',   reading:'つき / げつ',     back:'moon, month',            type:'kanji'},
-      {front:'山',   reading:'やま / さん',     back:'mountain',               type:'kanji'},
-      {front:'川',   reading:'かわ / せん',     back:'river',                  type:'kanji'},
-      {front:'火',   reading:'ひ / か',         back:'fire',                   type:'kanji'},
-      {front:'水',   reading:'みず / すい',     back:'water',                  type:'kanji'},
-      {front:'木',   reading:'き / もく',       back:'tree, wood',             type:'kanji'},
-      {front:'金',   reading:'かね / きん',     back:'gold, money',            type:'kanji'},
-      {front:'人',   reading:'ひと / じん',     back:'person',                 type:'kanji'},
-      {front:'ありがとう',  reading:'arigatou',    back:'thank you',           type:'vocab'},
-      {front:'すみません', reading:'sumimasen',   back:'excuse me / sorry',    type:'vocab'},
-      {front:'おはよう',   reading:'ohayou',      back:'good morning',         type:'vocab'},
-      {front:'〜は〜です', reading:'~wa ~desu',  back:'[topic] is [noun]',     type:'grammar'},
-      {front:'〜じゃない', reading:'~ja nai',    back:'is not [noun]',         type:'grammar'},
-    ];
-    const now = Date.now();
-    return items.map((item, idx) => ({
-      ...item,
-      id: 'srs_default_' + idx,
-      interval: Math.floor(Math.random() * 5) + 1,
-      ease: 2.5,
-      nextReview: now - (idx < 7 ? Math.random() * 86400000 : -86400000 * (idx - 6)),
-      reps: Math.floor(Math.random() * 5)
-    }));
-  },
-  kanjiInfo(char) {
-    const info = {
-      '日':'Sun / Day — にち・じつ / ひ','月':'Moon / Month — げつ・がつ / つき',
-      '火':'Fire — か / ひ','水':'Water — すい / みず','木':'Tree / Wood — もく・ぼく / き',
-      '金':'Gold / Money — きん / かね','土':'Soil / Earth — ど・と / つち',
-      '山':'Mountain — さん / やま','川':'River — せん / かわ','田':'Rice field — でん / た',
-      '人':'Person — じん・にん / ひと','口':'Mouth — こう / くち','手':'Hand — しゅ / て',
-      '目':'Eye — もく・ぼく / め','耳':'Ear — じ / みみ','足':'Foot / Leg — そく / あし',
-      '力':'Power — りょく・りき / ちから','心':'Heart / Mind — しん / こころ',
-      '花':'Flower — か / はな','雨':'Rain — う / あめ'
-    };
-    return info[char] || 'Japanese kanji character';
-  },
-  kanjiList() {
-    return [
-      {char:'日', reading:'にち / ひ',   meaning:'Sun, Day',    level:'N5', strokes:4,
-        examples:[{word:'日本',reading:'にほん',meaning:'Japan'},{word:'毎日',reading:'まいにち',meaning:'every day'}]},
-      {char:'月', reading:'つき / げつ',  meaning:'Moon, Month', level:'N5', strokes:4,
-        examples:[{word:'月曜日',reading:'げつようび',meaning:'Monday'},{word:'今月',reading:'こんげつ',meaning:'this month'}]},
-      {char:'火', reading:'ひ / か',      meaning:'Fire',        level:'N5', strokes:4,
-        examples:[{word:'火事',reading:'かじ',meaning:'fire (disaster)'},{word:'火山',reading:'かざん',meaning:'volcano'}]},
-      {char:'水', reading:'みず / すい',  meaning:'Water',       level:'N5', strokes:4,
-        examples:[{word:'水泳',reading:'すいえい',meaning:'swimming'},{word:'水曜日',reading:'すいようび',meaning:'Wednesday'}]},
-      {char:'木', reading:'き / もく',    meaning:'Tree, Wood',  level:'N5', strokes:4,
-        examples:[{word:'木曜日',reading:'もくようび',meaning:'Thursday'},{word:'木材',reading:'もくざい',meaning:'lumber'}]},
-      {char:'金', reading:'かね / きん',  meaning:'Gold, Money', level:'N5', strokes:8,
-        examples:[{word:'お金',reading:'おかね',meaning:'money'},{word:'金曜日',reading:'きんようび',meaning:'Friday'}]},
-      {char:'山', reading:'やま / さん',  meaning:'Mountain',    level:'N5', strokes:3,
-        examples:[{word:'富士山',reading:'ふじさん',meaning:'Mt. Fuji'},{word:'山道',reading:'やまみち',meaning:'mountain path'}]},
-      {char:'川', reading:'かわ / せん',  meaning:'River',       level:'N5', strokes:3,
-        examples:[{word:'川岸',reading:'かわぎし',meaning:'riverbank'},{word:'川下り',reading:'かわくだり',meaning:'river descent'}]},
-      {char:'田', reading:'た / でん',    meaning:'Rice field',  level:'N5', strokes:5,
-        examples:[{word:'田んぼ',reading:'たんぼ',meaning:'rice paddy'},{word:'田舎',reading:'いなか',meaning:'countryside'}]},
-      {char:'人', reading:'ひと / じん',  meaning:'Person',      level:'N5', strokes:2,
-        examples:[{word:'日本人',reading:'にほんじん',meaning:'Japanese person'},{word:'人口',reading:'じんこう',meaning:'population'}]},
-      {char:'口', reading:'くち / こう',  meaning:'Mouth',       level:'N5', strokes:3,
-        examples:[{word:'入口',reading:'いりぐち',meaning:'entrance'},{word:'出口',reading:'でぐち',meaning:'exit'}]},
-      {char:'手', reading:'て / しゅ',    meaning:'Hand',        level:'N5', strokes:4,
-        examples:[{word:'手紙',reading:'てがみ',meaning:'letter'},{word:'上手',reading:'じょうず',meaning:'skilled'}]},
-    ];
-  },
-  vocabList() {
-    return [
-      {word:'水',     reading:'みず',       meaning:'water',          level:'N5', example:'水を飲む — to drink water'},
-      {word:'食べる', reading:'たべる',     meaning:'to eat',         level:'N5', example:'ご飯を食べる — to eat rice/meal'},
-      {word:'飲む',   reading:'のむ',       meaning:'to drink',       level:'N5', example:'お茶を飲む — to drink tea'},
-      {word:'学校',   reading:'がっこう',   meaning:'school',         level:'N5', example:'学校に行く — to go to school'},
-      {word:'友達',   reading:'ともだち',   meaning:'friend',         level:'N5', example:'友達と遊ぶ — to play with friends'},
-      {word:'電車',   reading:'でんしゃ',   meaning:'train',          level:'N5', example:'電車に乗る — to ride the train'},
-      {word:'会社',   reading:'かいしゃ',   meaning:'company/office', level:'N4', example:'会社で働く — to work at a company'},
-      {word:'勉強',   reading:'べんきょう', meaning:'study',          level:'N5', example:'日本語を勉強する — to study Japanese'},
-      {word:'難しい', reading:'むずかしい', meaning:'difficult',      level:'N5', example:'日本語は難しい — Japanese is difficult'},
-      {word:'楽しい', reading:'たのしい',   meaning:'fun, enjoyable', level:'N5', example:'勉強は楽しい — Studying is fun'},
-    ];
-  },
-  grammarList() {
-    return [
-      {pattern:'〜は〜です',        level:'N5', meaning:'[Topic] is [noun]',       example:'私は学生です',            translation:'I am a student'},
-      {pattern:'〜じゃない',        level:'N5', meaning:'Is not [noun]',            example:'これは本じゃない',         translation:'This is not a book'},
-      {pattern:'〜ている',          level:'N5', meaning:'Is doing ~ / result state',example:'今食べています',           translation:'I am currently eating'},
-      {pattern:'〜たい',            level:'N5', meaning:'Want to ~',                example:'日本に行きたい',           translation:'I want to go to Japan'},
-      {pattern:'〜てください',      level:'N5', meaning:'Please do ~',              example:'待ってください',           translation:'Please wait'},
-      {pattern:'〜てもいいですか',  level:'N5', meaning:'May I ~?',                 example:'トイレに行ってもいいですか', translation:'May I go to the restroom?'},
-      {pattern:'〜ながら',          level:'N4', meaning:'While doing ~',            example:'音楽を聞きながら勉強する', translation:'Study while listening to music'},
-      {pattern:'〜ために',          level:'N4', meaning:'In order to ~',            example:'日本語のために勉強する',   translation:'Study for the sake of Japanese'},
-    ];
-  }
-};
-</script>
-<script>
-'use strict';
-/* ═══════════════════════════════════════════════════════
-   BOOT — wires everything together once Firebase fires
-═══════════════════════════════════════════════════════ */
-window._nzBootApp = function () {
-
-  /* 1 ── Theme */
-  NZ.theme.init();
-
-  /* 2 ── Notifications */
-  NZ.notifs.init();
-
-  /* 3 ── Populate topbar with user data */
-  NZ.topbar.update();
-
-  /* 4 ── Nav click handlers */
-  document.querySelectorAll('.nav-item[data-route]').forEach(el => {
-    el.addEventListener('click', () => NZ.router.go(el.dataset.route));
-  });
-
-  /* 5 ── Seed the SRS badge counter */
-  (function seedSRSBadge() {
-    const items = NZ.utils.ls.get('srs_items', NZ.data.srsDefault());
-    const due   = items.filter(i => i.nextReview <= Date.now()).length;
-    const badge = document.getElementById('srs-badge');
-    if (badge) badge.textContent = due;
-  })();
-
-  /* 6 ── Initial route */
-  const startRoute = (window.location.hash || '').replace('#', '') || 'dashboard';
-  NZ.router.go(startRoute);
-
-  /* 7 ── Hash-change navigation */
-  window.addEventListener('hashchange', () => {
-    const r = window.location.hash.replace('#', '') || 'dashboard';
-    NZ.router.go(r);
-  });
-
-  /* 8 ── Sync topbar XP whenever Firebase updates */
-  document.addEventListener('nz:xpUpdated', e => {
-    window._nzUserData = e.detail;
-    NZ.topbar.update();
-  });
-
-  /* 9 ── Request browser notification permission quietly */
-  if ('Notification' in window && Notification.permission === 'default') {
-    setTimeout(() => Notification.requestPermission(), 3000);
+  if (!userSnap.exists()) {
+    await setDoc(userRef, {
+      uid:              user.uid,
+      displayName:      user.displayName || "Learner",
+      email:            user.email       || "",
+      photoURL:         user.photoURL    || "",
+      phone:            user.phoneNumber || "",
+      xp:               0,
+      xpGoal:           500,
+      streak:           1,
+      kanjiCount:       0,
+      lessonsCompleted: 0,
+      vocabMastered:    0,
+      quizAccuracy:     0,
+      level:            1,
+      levelXP:          0,
+      levelXPRequired:  200,
+      weeklyKanji:      0,
+      weeklyLessons:    0,
+      weeklyVocab:      0,
+      weeklyAccuracyDelta: 0,
+      lastLogin:        serverTimestamp(),
+      createdAt:        serverTimestamp()
+    });
+  } else {
+    await updateDoc(userRef, { lastLogin: serverTimestamp() });
   }
 
-  /* 10 ── Resize handler: resize petal canvas when window changes */
-  window.addEventListener('resize', () => {
-    if (NZ.theme.current === 'light' && NZ.petals.running) {
-      const cv = document.getElementById('petal-canvas');
-      if (cv) { cv.width = window.innerWidth; cv.height = window.innerHeight; }
-    }
+  // ── Load fresh user data ────────────────────────────────────
+  const freshSnap = await getDoc(userRef);
+  window._nzUserData = freshSnap.data();
+
+  // Sync State with real Firestore data
+  const d = window._nzUserData;
+  if (window.State) {
+    State.state.xpToday  = d.xp       || 0;
+    State.state.xpGoal   = d.xpGoal   || 500;
+    State.state.streak   = d.streak   || 1;
+    State.state.level    = d.level     || 1;
+    State.state.totalXP  = d.xp       || 0;
+    State.state.nextLevelXP = d.levelXPRequired || 200;
+  }
+
+  // ── Hide loading screen and launch the app ──────────────────
+  const loadingEl = document.getElementById("auth-loading");
+  if (loadingEl) {
+    loadingEl.classList.add("fade-out");
+    setTimeout(() => loadingEl.remove(), 400);
+  }
+
+  // Fire event for any listeners
+  document.dispatchEvent(new CustomEvent("nz:userReady", {
+    detail: { user, data: window._nzUserData }
+  }));
+
+  // Bootstrap the SPA
+  window._nzBootstrap();
+});
+
+// ── XP helper ───────────────────────────────────────────────
+window._nzAddXP = async (amount) => {
+  const user = auth.currentUser; if (!user) return;
+  const userRef = doc(db, "users", user.uid);
+  const snap = await getDoc(userRef); if (!snap.exists()) return;
+  const d = snap.data();
+  const newXP = (d.xp||0)+amount;
+  const newLvlXP = (d.levelXP||0)+amount;
+  const req = d.levelXPRequired||200;
+  const lvlUp = newLvlXP >= req;
+  await updateDoc(userRef, {
+    xp: newXP,
+    levelXP: lvlUp ? newLvlXP - req : newLvlXP,
+    level: lvlUp ? (d.level||1)+1 : (d.level||1)
+  });
+  const fresh = await getDoc(userRef);
+  document.dispatchEvent(new CustomEvent("nz:xpUpdated", { detail: fresh.data() }));
+};
+</script>
+
+<!-- ══════════════════════════════════════════════════════════
+     APP JS — loaded after auth guard sets up globals
+═══════════════════════════════════════════════════════════ -->
+<script src="js/core.js" defer></script>
+<script src="js/nz-data.js" defer></script>
+<script src="js/nz-kana.js" defer></script>
+<script src="js/nz-vocab-module.js" defer></script>
+<script src="js/pomodoro.js" defer></script>
+<script src="js/nz-pages.js" defer></script>
+
+<script defer>
+'use strict';
+
+/* Mark that all defer scripts have finished executing */
+window._nzReady = true;
+
+/* ── Bootstrap function called by auth guard after user confirmed ── */
+window._nzBootstrap = function() {
+  /* Safety: if defer scripts haven't finished yet, wait for them */
+  if (!window._nzReady || typeof renderShell !== 'function') {
+    setTimeout(window._nzBootstrap, 50);
+    return;
+  }
+  // Build shell with real user data
+  renderShell();
+
+  // Register all routes
+  window.Router.register('dashboard', ()  => Pages.dashboard());
+  window.Router.register('kanji',     ()  => Pages.kanji());
+  window.Router.register('vocab',     ()  => Pages.vocab());
+  window.Router.register('grammar',   ()  => Pages.grammar());
+  window.Router.register('listening', ()  => Pages.listening());
+  window.Router.register('reading',   ()  => Pages.reading());
+  window.Router.register('kana',      ()  => Pages.kana());
+  window.Router.register('progress',  ()  => Pages.progress());
+  window.Router.register('timer',     ()  => Pages.timer());
+  window.Router.register('profile',   ()  => Pages.profile());
+  window.Router.register('jlpt-n5',   ()  => Pages.jlptLevel('n5'));
+  window.Router.register('jlpt-n4',   ()  => Pages.jlptLevel('n4'));
+  window.Router.register('jlpt-n3',   ()  => Pages.jlptLevel('n3'));
+  window.Router.register('jlpt-n2',   ()  => Pages.jlptLevel('n2'));
+  window.Router.register('jlpt-n1',   ()  => Pages.jlptLevel('n1'));
+
+  // Navigate to hash route or dashboard
+  const startPage = window.location.hash.replace('#','') || 'dashboard';
+  window.Router.go(startPage);
+
+  // Handle browser back/forward
+  window.addEventListener('popstate', () => {
+    const hash = window.location.hash.replace('#','') || 'dashboard';
+    window.Router.go(hash);
   });
 };
-
-/* Fire immediately if Firebase already resolved (e.g. instant cache hit) */
-if (window._nzUserData) window._nzBootApp();
 </script>
+
 </body>
 </html>
