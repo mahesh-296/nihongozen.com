@@ -850,7 +850,7 @@
      AUTH.JS — Firebase Auth (Google + Email Magic Link + Phone OTP)
 ═══════════════════════════════════════════════════════════ -->
 <script type="module">
-import { initializeApp }
+import { initializeApp, getApps, getApp }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
   getAuth, GoogleAuthProvider, FacebookAuthProvider, signInWithPopup,
@@ -869,7 +869,8 @@ const firebaseConfig = {
   measurementId:     "G-1WTJ5ML3R2"
 };
 
-const app        = initializeApp(firebaseConfig);
+// Guard against "Firebase App already exists" error
+const app        = getApps().length ? getApp() : initializeApp(firebaseConfig);
 const auth       = getAuth(app);
 const provider   = new GoogleAuthProvider();
 provider.setCustomParameters({ prompt: "select_account" });
@@ -882,7 +883,7 @@ const DASHBOARD = "index.html";
 
 // ── Email magic link settings ──────────────────────────────
 const actionCodeSettings = {
-  url:             window.location.origin + "/" + DASHBOARD,
+  url:             window.location.origin + window.location.pathname.replace(/login\.html.*$/, "") + DASHBOARD,
   handleCodeInApp: true
 };
 
@@ -896,7 +897,7 @@ if (isSignInWithEmailLink(auth, window.location.href)) {
         localStorage.removeItem("nz_emailForSignIn");
         window.location.replace(DASHBOARD);
       })
-      .catch(err => showLoginError(err.message));
+      .catch(err => (window.showLoginError || console.error)(err.message));
   }
 }
 
@@ -1020,6 +1021,11 @@ window.resetEmailForm = () => {
   document.getElementById("email-form-section").style.display = "block";
   document.getElementById("email-success-box").classList.remove("visible");
   document.getElementById("otp-toggle-btn").style.display = "flex";
+  // Also reset OTP section when email form resets
+  const otpSec = document.getElementById("otp-section");
+  if (otpSec) otpSec.classList.remove("visible");
+  const otpVerify = document.getElementById("otp-verify-section");
+  if (otpVerify) otpVerify.classList.remove("visible");
   document.getElementById("emailInput").value = "";
   const btn = document.getElementById("emailLogin");
   btn.disabled = false;
@@ -1029,7 +1035,7 @@ window.resetEmailForm = () => {
 // ── Apple — Coming Soon (Facebook is now live above) ─────────
 document.getElementById("btn-apple-login")?.addEventListener("click", (e) => {
   e.preventDefault();
-  showToast("Apple Sign-In — Coming Soon!", "info");
+  window.showToast("Apple Sign-In — Coming Soon!", "info");
 });
 
 // ── UI Helpers ──────────────────────────────────────────────
