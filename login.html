@@ -918,7 +918,7 @@ window.handleGoogle = async () => {
     // GitHub Pages: immediate redirect causes null user on next page
     if (result && result.user) {
       // Small delay for Firebase to write session to localStorage
-      await new Promise(r => setTimeout(r, 800));
+      await new Promise(r => setTimeout(r, 1500));
       window.location.replace(DASHBOARD);
     }
   } catch (err) {
@@ -937,7 +937,7 @@ window.handleFacebook = async () => {
     const fbResult = await signInWithPopup(auth, fbProvider);
     showToast("Signed in with Facebook! Redirecting…", "success");
     if (fbResult && fbResult.user) {
-      await new Promise(r => setTimeout(r, 800));
+      await new Promise(r => setTimeout(r, 1500));
       window.location.replace(DASHBOARD);
     }
   } catch (err) {
