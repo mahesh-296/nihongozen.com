@@ -16,99 +16,7 @@
      window.Router        — Router.register / Router.go
      window.Pages         — all page functions
      window.speak         — global TTS helper
-
-   Auth integration:
-     All Firebase auth/firestore accessed via window globals set by auth.js:
-       window._nzAuth      — Firebase Auth instance
-       window._nzDb        — Firestore instance
-       window._nzUser      — Current Firebase user object
-       window._nzUserData  — Firestore user document data
-       window._nzAddXP     — XP update helper
-       window._nzSignOut   — Sign out function
 ================================================================ */
-
-/* ════════════════════════════════════════════════════════════════
-   FIREBASE AUTH INTEGRATION
-   
-   nz-pages.js is a regular (non-module) defer script.
-   Firebase Auth is already initialised in auth.js which runs first
-   and sets window globals. We provide safe wrapper helpers here
-   so every page function can access auth/firestore without crashing
-   even if auth.js hasn't finished yet.
-════════════════════════════════════════════════════════════════ */
-
-/* ── Safe auth getters ──────────────────────────────────────── */
-function nzGetAuth()     { return window._nzAuth     || null; }
-function nzGetDb()       { return window._nzDb       || null; }
-function nzGetUser()     { return window._nzUser     || null; }
-function nzGetUserData() { return window._nzUserData || {}; }
-function nzIsLoggedIn()  { return !!(window._nzUser && window._nzUser.uid); }
-
-/* ── Safe XP award ─────────────────────────────────────────── */
-function nzAwardXP(amount) {
-  if (typeof window._nzAddXP === 'function') {
-    nzAwardXP(amount).catch(function(e) {
-      console.warn('NihongoZen: XP update failed:', e);
-    });
-  }
-}
-
-/* ── Safe sign-out ─────────────────────────────────────────── */
-function nzSignOut() {
-  if (typeof window._nzSignOut === 'function') {
-    window._nzSignOut();
-  } else {
-    window.location.replace('login.html');
-  }
-}
-
-/* ── Firestore dynamic import helper ───────────────────────── */
-// Used by Community Chat (real-time) and any page needing Firestore directly.
-// Returns a promise resolving to the firestore module.
-function nzFirestore() {
-  if (window._nzFS) return Promise.resolve(window._nzFS);
-  return import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js')
-    .then(function(fs) {
-      window._nzFS = fs;
-      return fs;
-    });
-}
-
-/* ── Auth guard for page functions ────────────────────────── */
-// Call this at the start of any page that MUST have a logged-in user.
-// Shows a friendly message instead of crashing if called too early.
-function nzRequireAuth(pageName) {
-  if (!nzIsLoggedIn()) {
-    setHTML(
-      '<div class="nz-page nz-fadein" style="text-align:center;padding:60px 20px;">' +
-      '<div style="font-size:36px;margin-bottom:16px;">🔐</div>' +
-      '<div style="font-size:16px;font-weight:700;color:var(--fg);margin-bottom:8px;">' +
-        'Authentication required</div>' +
-      '<div style="font-size:13px;color:var(--fg-muted);margin-bottom:20px;">' +
-        'Please sign in to access ' + (pageName || 'this page') + '</div>' +
-      '<button onclick="window.location.replace(&quot;login.html&quot;)" ' +
-        'class="nz-btn nz-btn-pri">Sign In</button>' +
-      '</div>'
-    );
-    return false;
-  }
-  return true;
-}
-
-/* ── Listen for auth changes ───────────────────────────────── */
-// Re-render shell user card when Firestore XP updates
-document.addEventListener('nz:xpUpdated', function(e) {
-  if (!e.detail) return;
-  // Update cached user data
-  window._nzUserData = Object.assign(window._nzUserData || {}, e.detail);
-  // Refresh sidebar user stats if visible
-  var xpEl = document.getElementById('nz-sb-xp');
-  var lvlEl = document.getElementById('nz-sb-level');
-  var strEl = document.getElementById('nz-sb-streak');
-  if (xpEl)  xpEl.textContent  = (e.detail.xp || 0) + ' XP';
-  if (lvlEl) lvlEl.textContent = 'Lv ' + (e.detail.level || 1);
-  if (strEl) strEl.textContent = (e.detail.streak || 1) + ' 🔥';
-});
 
 /* ────────────────────────────────────────────────────────────────
    UTILITIES
@@ -587,7 +495,7 @@ function renderShell() {
       '</nav>' +
       '<div class="nz-sb-foot">' +
         '<button class="nz-signout-btn" ' +
-          'onclick="nzSignOut()">← Sign Out</button>' +
+          'onclick="window._nzSignOut && window._nzSignOut()">← Sign Out</button>' +
       '</div>' +
     '</aside>' +
 
@@ -1926,7 +1834,7 @@ Pages.profile = function () {
       profileRow('Quiz Accuracy',  (d.quizAccuracy||0)+'%',        false) +
     '</div>' +
 
-    '<button onclick="nzSignOut()" class="nz-btn" ' +
+    '<button onclick="window._nzSignOut && window._nzSignOut()" class="nz-btn" ' +
       'style="width:100%;justify-content:center;' +
       'background:var(--primary-dim);color:var(--primary);' +
       'border:1px solid var(--primary);">← Sign Out</button>' +
@@ -2436,8 +2344,8 @@ window.nzPlannerToggle = function(i) {
   var tasks = JSON.parse(localStorage.getItem('nz-planner-tasks') || '[]');
   if (!tasks[i]) return;
   tasks[i].done = !tasks[i].done;
-  if (tasks[i].done) {
-    nzAwardXP(tasks[i].xp);
+  if (tasks[i].done && window._nzAddXP) {
+    window._nzAddXP(tasks[i].xp);
     window.nzAddNotif('task', '✅ Task Complete', 'You earned +' + tasks[i].xp + ' XP!');
     var history = JSON.parse(localStorage.getItem('nz-planner-history') || '{}');
     var todayKey = new Date().toISOString().slice(0, 10);
@@ -2669,7 +2577,7 @@ Pages.goals = function() {
     localStorage.setItem('nz-goals', JSON.stringify(goals));
     var ov = document.querySelector('.nz-overlay-bg'); if (ov) ov.remove();
     if (g.progress >= g.target && prev < g.target) {
-      nzAwardXP(100);
+      if (window._nzAddXP) window._nzAddXP(100);
       window.nzAddNotif('goal','🎯 Goal Complete!', g.title + ' — +100 XP!');
     }
     renderGoals();
@@ -2846,7 +2754,8 @@ Pages.chat = function() {
   function subscribeRoom(roomId) {
     if (_unsub) { try{_unsub();}catch(e){} _unsub=null; }
     if (!window._nzDb) return;
-    nzFirestore().then(function(fs){
+    import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js').then(function(fs){
+      if (!window._nzFS) window._nzFS = fs;
       var q = fs.query(
         fs.collection(window._nzDb,'chat_rooms',roomId,'messages'),
         fs.orderBy('timestamp','asc'), fs.limit(80)
@@ -2886,7 +2795,7 @@ Pages.chat = function() {
     var text=inp.value.trim(); inp.value='';
     if(!window._nzDb||!window._nzUser) return;
     var u2=window._nzUser, d2=getUD();
-    nzFirestore().then(function(fs){
+    import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js').then(function(fs){
       fs.addDoc(fs.collection(window._nzDb,'chat_rooms',activeRoom,'messages'),{
         text:text, uid:u2.uid,
         displayName:d2.displayName||u2.displayName||'Learner',
@@ -2909,15 +2818,10 @@ function getSRSItems() {
   if (!_srsItems) _srsItems = JSON.parse(localStorage.getItem('nz-srs-items')||'null');
   if (!_srsItems) {
     _srsItems = [];
-    // BUGFIX: kanjiData may not be loaded yet — guard with try/catch
-    try {
-      if (typeof kanjiData !== 'undefined' && kanjiData['N5']) {
-        kanjiData['N5'].slice(0,14).forEach(function(k){
-          _srsItems.push({ id:'srs-'+k.id, front:k.kanji, reading:k.reading,
-            back:k.meaning, type:'kanji', level:'N5', interval:1, due:Date.now() });
-        });
-      }
-    } catch(e) { /* kanjiData not ready yet — items seeded later */ }
+    (kanjiData['N5']||[]).slice(0,14).forEach(function(k){
+      _srsItems.push({ id:'srs-'+k.id, front:k.kanji, reading:k.reading,
+        back:k.meaning, type:'kanji', level:'N5', interval:1, due:Date.now() });
+    });
     saveSRS();
   }
   return _srsItems;
@@ -2936,7 +2840,7 @@ function srsGrade(item, grade) {
   item.interval = Math.max(0.5,(item.interval||1)*mult);
   item.due = Date.now() + item.interval*24*3600000;
   var xpMap = {again:2,hard:3,good:5,easy:10};
-  nzAwardXP(xpMap[grade]||5);
+  if (window._nzAddXP) window._nzAddXP(xpMap[grade]||5);
   saveSRS();
 }
 
@@ -2950,8 +2854,7 @@ function gradeBtn(grade, label, color) {
 }
 
 function updateSRSBadge() {
-  var due = 0;
-  try { due = getDueItems().length; } catch(e) {}
+  var due = getDueItems().length;
   var badge = document.getElementById('nz-srs-badge');
   if (badge) { badge.style.display=due>0?'inline-flex':'none'; badge.textContent=due>99?'99+':String(due); }
 }
@@ -3289,7 +3192,7 @@ function initWritingCanvas() {
     if (savedThumbs.length>20) savedThumbs=savedThumbs.slice(0,20);
     localStorage.setItem('nz-write-thumbs',JSON.stringify(savedThumbs));
     renderThumbs();
-    nzAwardXP(5);
+    if (window._nzAddXP) window._nzAddXP(5);
     nzShowToast('Practice saved! +5 XP');
     if (window.nzAddNotif) window.nzAddNotif('task','✏️ Practice Saved','+5 XP earned!');
   };
@@ -3336,12 +3239,8 @@ function injectVocabSRSButtons() {
 ════════════════════════════════════════════════════════════════ */
 var _origRenderShellFn = renderShell;
 window.renderShell = renderShell = function() {
-  // Always run original first — this is what shows the UI
   _origRenderShellFn();
 
-  // BUGFIX: Wrap all feature injections in try/catch
-  // If any feature crashes here, the shell still renders correctly
-  try {
   var nav = document.querySelector('#nz-sb .nz-sb-nav');
   if (!nav) return;
 
@@ -3362,9 +3261,7 @@ window.renderShell = renderShell = function() {
 
   var badge=document.createElement('span');
   badge.id='nz-srs-badge';
-  // BUGFIX: getDueItems can crash if kanjiData not loaded — default to 0
-  var due = 0;
-  try { due = getDueItems().length; } catch(e) { due = 0; }
+  var due=getDueItems().length;
   badge.style.cssText='font-size:10px;font-weight:800;padding:1px 6px;border-radius:10px;' +
     'background:var(--primary);color:#fff;margin-left:auto;align-items:center;' +
     'display:'+(due>0?'inline-flex':'none')+';';
@@ -3402,10 +3299,6 @@ window.renderShell = renderShell = function() {
   }
 
   setTimeout(injectThemeAndNotifButtons, 60);
-  } catch(featureErr) {
-    // Feature injection failed — log it but shell is already rendered fine
-    console.error('NihongoZen: feature shell patch error:', featureErr);
-  }
 };
 
 function createNavEl(route, icon, label) {
@@ -3415,15 +3308,48 @@ function createNavEl(route, icon, label) {
   return a;
 }
 
-/* Register new routes after user is ready */
+/* Register ALL routes after user is ready */
 document.addEventListener('nz:userReady', function() {
   setTimeout(function(){
-    if (window.Router) {
-      window.Router.register('goals', function(){ Pages.goals(); });
-      window.Router.register('srs',   function(){ Pages.srs(); });
-      window.Router.register('notes', function(){ Pages.notes(); });
-      window.Router.register('chat',  function(){ Pages.chat(); });
-    }
+    if (!window.Router) return;
+
+    /* ── Core study routes ── */
+    window.Router.register('dashboard', function(){ Pages.dashboard(); });
+    window.Router.register('kanji',     function(){ Pages.kanji(); });
+    window.Router.register('vocab',     function(){ Pages.vocab(); });
+    window.Router.register('grammar',   function(){ Pages.grammar(); });
+    window.Router.register('listening', function(){ Pages.listening(); });
+    window.Router.register('reading',   function(){ Pages.reading(); });
+    window.Router.register('kana',      function(){ Pages.kana(); });
+
+    /* ── JLPT routes ── */
+    window.Router.register('jlpt-n5',   function(){ Pages['jlpt-n5'](); });
+    window.Router.register('jlpt-n4',   function(){ Pages['jlpt-n4'](); });
+    window.Router.register('jlpt-n3',   function(){ Pages['jlpt-n3'](); });
+    window.Router.register('jlpt-n2',   function(){ Pages['jlpt-n2'](); });
+    window.Router.register('jlpt-n1',   function(){ Pages['jlpt-n1'](); });
+
+    /* ── Tool routes ── */
+    window.Router.register('timer',    function(){ Pages.timer(); });
+    window.Router.register('progress', function(){ Pages.progress(); });
+    window.Router.register('profile',  function(){ Pages.profile(); });
+
+    /* ── Community & extras ── */
+    window.Router.register('goals', function(){ Pages.goals(); });
+    window.Router.register('srs',   function(){ Pages.srs(); });
+    window.Router.register('notes', function(){ Pages.notes(); });
+    window.Router.register('chat',  function(){ Pages.chat(); });
+
+    /* ── Load initial page from URL hash, or default to dashboard ── */
+    var hash = window.location.hash.replace('#', '').trim();
+    window.Router.go(hash || 'dashboard');
+
+    /* ── Handle browser back/forward navigation ── */
+    window.addEventListener('popstate', function() {
+      var h = window.location.hash.replace('#', '').trim();
+      if (h) window.Router.go(h);
+    });
+
   }, 150);
 });
 
