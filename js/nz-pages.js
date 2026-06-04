@@ -3428,10 +3428,21 @@ document.addEventListener('nz:userReady', function() {
 });
 
 /* ════════════════════════════════════════════════════════════════
-   EXPORTS
+   EXPORTS — All functions used in HTML onclick must be on window
 ════════════════════════════════════════════════════════════════ */
 window.Router      = NzRouter;
 window.Pages       = Pages;
 window.renderShell = renderShell;
 window.speak       = speak;
+
+// ── Auth helpers → window (used in onclick attributes) ──────
+window.nzSignOut    = nzSignOut;
+window.nzAwardXP    = nzAwardXP;
+window.nzFirestore  = nzFirestore;
+window.nzRequireAuth = nzRequireAuth;
+window.nzIsLoggedIn = nzIsLoggedIn;
+window.nzShowToast  = nzShowToast;
+
+// ── Internal helpers → window (used in onclick attributes) ──
+window.nzSaveNotifs = nzSaveNotifs;
 
