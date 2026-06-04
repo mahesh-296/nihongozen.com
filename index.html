@@ -1,864 +1,84 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>NihongoZen — Sign In</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Noto+Serif+JP:wght@400;700&family=Noto+Sans+JP:wght@400;500;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="description" content="NihongoZen — Japanese Language Learning Platform"/>
+<meta name="theme-color" content="#0F0F14"/>
+<title>NihongoZen — Japanese Learning</title>
 
-  <style>
-    /* ── CSS Variables ──────────────────────────────────── */
-    :root {
-      --background:           #0F0F14;
-      --background-secondary: #16161E;
-      --background-elevated:  #1E1E2A;
-      --foreground:           #F0F0F5;
-      --foreground-muted:     #8888A0;
-      --foreground-subtle:    #555568;
-      --primary:              #E8446A;
-      --primary-hover:        #F05578;
-      --primary-dim:          rgba(232,68,106,0.13);
-      --accent:               #C9973A;
-      --accent-dim:           rgba(201,151,58,0.13);
-      --card:                 #16161E;
-      --card-elevated:        #1E1E2A;
-      --border:               #2A2A38;
-      --input:                #1E1E2A;
-      --muted-foreground:     #8888A0;
-      --jlpt-n5:              #4CAF82;
-      --jlpt-n5-dim:          rgba(76,175,130,0.13);
-      --font-sans:            'Plus Jakarta Sans', sans-serif;
-      --font-serif-jp:        'Noto Serif JP', serif;
-      --font-sans-jp:         'Noto Sans JP', sans-serif;
-      --font-mono:            'JetBrains Mono', monospace;
-    }
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=Noto+Serif+JP:wght@400;700&family=Noto+Sans+JP:wght@400;500;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
 
-    /* ── Reset & Base ────────────────────────────────────── */
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html { scroll-behavior: smooth; }
-    body {
-      font-family: var(--font-sans);
-      background: var(--background);
-      color: var(--foreground);
-      min-height: 100vh;
-      -webkit-font-smoothing: antialiased;
-      overflow-x: hidden;
-    }
+<!-- Stylesheets -->
+<link rel="stylesheet" href="css/tokens.css"/>
+<link rel="stylesheet" href="css/layout.css"/>
+<link rel="stylesheet" href="css/components.css"/>
 
-    /* ── Layout ─────────────────────────────────────────── */
-    .page-wrapper {
-      min-height: 100vh;
-      display: flex;
-      background: var(--background);
-    }
-
-    /* ── Left Panel ─────────────────────────────────────── */
-    .left-panel {
-      display: none;
-      flex-direction: column;
-      justify-content: space-between;
-      width: 55%;
-      padding: 40px;
-      position: relative;
-      overflow: hidden;
-      background: linear-gradient(160deg, #1A0810 0%, #0F0F14 50%, #0A0A12 100%);
-    }
-    @media (min-width: 768px) { .left-panel { display: flex; } }
-
-    /* Watermark 学 */
-    .watermark {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      pointer-events: none;
-      user-select: none;
-    }
-    .watermark span {
-      font-family: var(--font-serif-jp);
-      font-size: clamp(160px, 22vw, 280px);
-      font-weight: 700;
-      opacity: 0.04;
-      color: var(--primary);
-      line-height: 1;
-    }
-
-    /* Subtle grid lines */
-    .left-panel::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background-image:
-        linear-gradient(rgba(232,68,106,0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(232,68,106,0.03) 1px, transparent 1px);
-      background-size: 40px 40px;
-      pointer-events: none;
-    }
-
-    /* Top glow */
-    .left-panel::after {
-      content: '';
-      position: absolute;
-      top: -120px;
-      left: -80px;
-      width: 400px;
-      height: 400px;
-      background: radial-gradient(circle, rgba(232,68,106,0.12) 0%, transparent 70%);
-      pointer-events: none;
-    }
-
-    .left-logo {
-      position: relative;
-      z-index: 10;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    .logo-mark {
-      width: 36px;
-      height: 36px;
-      border-radius: 10px;
-      background: linear-gradient(135deg, var(--primary), #C03058);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: var(--font-serif-jp);
-      font-size: 16px;
-      color: #fff;
-      font-weight: 700;
-      flex-shrink: 0;
-      box-shadow: 0 0 20px rgba(232,68,106,0.4);
-    }
-    .logo-name {
-      font-weight: 700;
-      font-size: 20px;
-      color: var(--foreground);
-      letter-spacing: -0.3px;
-    }
-
-    .left-content {
-      position: relative;
-      z-index: 10;
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-    }
-
-    .tagline-jp {
-      font-family: var(--font-sans-jp);
-      font-size: 12px;
-      color: var(--foreground-muted);
-      letter-spacing: 0.12em;
-      margin-bottom: 14px;
-    }
-
-    .headline {
-      font-size: clamp(36px, 4vw, 58px);
-      font-weight: 900;
-      color: var(--foreground);
-      line-height: 1.1;
-      letter-spacing: -1.5px;
-      margin-bottom: 22px;
-    }
-    .headline .accent { color: var(--primary); }
-
-    .sub-headline {
-      font-size: 15px;
-      color: var(--foreground-muted);
-      line-height: 1.65;
-      max-width: 340px;
-      margin-bottom: 32px;
-    }
-
-    .features-list {
-      list-style: none;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      margin-bottom: 36px;
-    }
-    .feature-item {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      opacity: 0;
-      animation: fadeUp 0.5s ease forwards;
-    }
-    .feature-item:nth-child(1) { animation-delay: 0.1s; }
-    .feature-item:nth-child(2) { animation-delay: 0.18s; }
-    .feature-item:nth-child(3) { animation-delay: 0.26s; }
-    .feature-item:nth-child(4) { animation-delay: 0.34s; }
-
-    .feature-dot {
-      width: 22px;
-      height: 22px;
-      border-radius: 50%;
-      background: var(--primary-dim);
-      border: 1px solid var(--primary);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-    }
-    .feature-dot svg { width: 11px; height: 11px; color: var(--primary); }
-    .feature-text { font-size: 13px; color: var(--foreground); }
-
-    /* Stats Strip */
-    .stats-strip {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 12px;
-      padding: 16px;
-      border-radius: 14px;
-      border: 1px solid var(--border);
-      background: rgba(30,30,42,0.4);
-      backdrop-filter: blur(8px);
-    }
-    .stat-cell { text-align: center; }
-    .stat-val {
-      font-size: 17px;
-      font-weight: 700;
-      color: var(--foreground);
-      font-variant-numeric: tabular-nums;
-      letter-spacing: -0.5px;
-    }
-    .stat-lbl {
-      font-size: 10px;
-      color: var(--foreground-muted);
-      margin-top: 2px;
-      line-height: 1.3;
-    }
-
-    .left-footer {
-      position: relative;
-      z-index: 10;
-      font-size: 11px;
-      color: var(--foreground-subtle);
-    }
-
-    /* ── Right Panel ─────────────────────────────────────── */
-    .right-panel {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
-      background: var(--background-secondary);
-    }
-    @media (min-width: 768px) { .right-panel { padding: 40px; } }
-
-    /* Mobile logo */
-    .mobile-logo {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 28px;
-    }
-    @media (min-width: 768px) { .mobile-logo { display: none; } }
-
-    .form-card {
-      width: 100%;
-      max-width: 360px;
-    }
-
-    /* Tabs */
-    .tab-bar {
-      display: flex;
-      border-radius: 14px;
-      border: 1px solid var(--border);
-      background: var(--card);
-      padding: 4px;
-      margin-bottom: 28px;
-    }
-    .tab-btn {
-      flex: 1;
-      padding: 9px 0;
-      border-radius: 10px;
-      border: none;
-      font-size: 13px;
-      font-weight: 700;
-      cursor: pointer;
-      font-family: var(--font-sans);
-      transition: background 0.2s, color 0.2s, transform 0.15s;
-      color: var(--muted-foreground);
-      background: transparent;
-    }
-    .tab-btn.active {
-      background: var(--primary);
-      color: #fff;
-    }
-    .tab-btn:active { transform: scale(0.97); }
-
-    .form-title {
-      font-size: 22px;
-      font-weight: 800;
-      color: var(--foreground);
-      letter-spacing: -0.5px;
-      margin-bottom: 6px;
-    }
-    .form-subtitle {
-      font-size: 13px;
-      color: var(--muted-foreground);
-      margin-bottom: 22px;
-      line-height: 1.5;
-    }
-
-    /* Google Button */
-    .btn-google {
-      width: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      padding: 13px 16px;
-      border-radius: 14px;
-      border: 1px solid var(--border);
-      background: var(--card);
-      color: var(--foreground);
-      font-size: 14px;
-      font-weight: 700;
-      font-family: var(--font-sans);
-      cursor: pointer;
-      transition: background 0.2s, border-color 0.2s, transform 0.15s;
-      margin-bottom: 20px;
-    }
-    .btn-google:hover { background: var(--card-elevated); border-color: #3a3a50; }
-    .btn-google:active { transform: scale(0.97); }
-    .btn-google:disabled { opacity: 0.6; cursor: not-allowed; }
-
-    /* Divider */
-    .divider {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 18px;
-    }
-    .divider-line { flex: 1; height: 1px; background: var(--border); }
-    .divider-text { font-size: 11px; color: var(--muted-foreground); white-space: nowrap; }
-
-    /* Email Form */
-    .field-label {
-      display: block;
-      font-size: 11px;
-      font-weight: 700;
-      color: var(--foreground);
-      margin-bottom: 7px;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-    }
-    .input-wrap {
-      position: relative;
-      margin-bottom: 12px;
-    }
-    .input-icon {
-      position: absolute;
-      left: 12px;
-      top: 50%;
-      transform: translateY(-50%);
-      color: var(--muted-foreground);
-      pointer-events: none;
-      display: flex;
-    }
-    .text-input {
-      width: 100%;
-      padding: 13px 14px 13px 38px;
-      border-radius: 12px;
-      border: 1px solid var(--border);
-      background: var(--input);
-      color: var(--foreground);
-      font-size: 14px;
-      font-family: var(--font-sans);
-      outline: none;
-      transition: border-color 0.2s;
-    }
-    .text-input::placeholder { color: var(--muted-foreground); }
-    .text-input:focus { border-color: var(--primary); }
-    .field-error {
-      font-size: 11px;
-      color: var(--primary);
-      margin-top: 4px;
-      display: none;
-    }
-    .field-error.visible { display: block; }
-
-    /* Submit Button */
-    .btn-submit {
-      width: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      padding: 13px 16px;
-      border-radius: 14px;
-      border: none;
-      background: linear-gradient(135deg, var(--primary), #C03058);
-      color: #fff;
-      font-size: 14px;
-      font-weight: 800;
-      font-family: var(--font-sans);
-      cursor: pointer;
-      transition: opacity 0.2s, transform 0.15s;
-      letter-spacing: 0.01em;
-    }
-    .btn-submit:hover { opacity: 0.9; }
-    .btn-submit:active { transform: scale(0.97); }
-    .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
-
-    /* Spinner */
-    .spinner {
-      width: 16px;
-      height: 16px;
-      border: 2px solid rgba(255,255,255,0.3);
-      border-top-color: #fff;
-      border-radius: 50%;
-      animation: spin 0.7s linear infinite;
-      flex-shrink: 0;
-    }
-
-    /* Success state */
-    .success-box {
-      display: none;
-      padding: 18px;
-      border-radius: 14px;
-      border: 1px solid var(--jlpt-n5);
-      background: var(--jlpt-n5-dim);
-      text-align: center;
-    }
-    .success-box.visible { display: block; }
-    .success-icon {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      background: var(--jlpt-n5-dim);
-      border: 1.5px solid var(--jlpt-n5);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 10px;
-    }
-    .success-title {
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--foreground);
-      margin-bottom: 5px;
-    }
-    .success-text {
-      font-size: 12px;
-      color: var(--muted-foreground);
-      line-height: 1.5;
-      margin-bottom: 10px;
-    }
-    .success-reset {
-      background: none;
-      border: none;
-      font-size: 12px;
-      color: var(--primary);
-      cursor: pointer;
-      font-family: var(--font-sans);
-      transition: opacity 0.2s;
-    }
-    .success-reset:hover { opacity: 0.7; }
-
-    /* Phone OTP Section */
-    .otp-toggle {
-      width: 100%;
-      background: none;
-      border: none;
-      font-size: 12px;
-      color: var(--muted-foreground);
-      font-family: var(--font-sans);
-      cursor: pointer;
-      padding: 8px 0;
-      text-align: center;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      transition: color 0.2s;
-      margin-top: 8px;
-    }
-    .otp-toggle:hover { color: var(--foreground); }
-    .otp-section { display: none; }
-    .otp-section.visible { display: block; margin-top: 16px; }
-
-    .recaptcha-container { min-height: 4px; }
-
-    #otp-verify-section {
-      display: none;
-      margin-top: 12px;
-    }
-    #otp-verify-section.visible { display: block; }
-
-    /* Social disabled buttons */
-    .social-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      margin-top: 14px;
-    }
-    .btn-social-disabled {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      padding: 10px;
-      border-radius: 12px;
-      border: 1px solid var(--border);
-      background: transparent;
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--muted-foreground);
-      font-family: var(--font-sans);
-      cursor: not-allowed;
-      opacity: 0.4;
-    }
-    .soon-badge {
-      font-size: 9px;
-      background: var(--card-elevated);
-      padding: 2px 6px;
-      border-radius: 20px;
-      font-weight: 600;
-    }
-    .btn-facebook {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      padding: 10px;
-      border-radius: 12px;
-      border: none;
-      background: #1877F2;
-      color: #fff;
-      font-size: 13px;
-      font-weight: 700;
-      font-family: var(--font-sans);
-      cursor: pointer;
-      transition: background 0.2s, transform 0.15s;
-    }
-    .btn-facebook:hover  { background: #1560D4; }
-    .btn-facebook:active { transform: scale(0.97); }
-    .btn-facebook:disabled { opacity: 0.6; cursor: not-allowed; }
-
-    /* Toast */
-    .toast-container {
-      position: fixed;
-      bottom: 24px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 9999;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      pointer-events: none;
-      align-items: center;
-    }
-    .toast {
-      padding: 12px 20px;
-      border-radius: 12px;
-      font-size: 13px;
-      font-family: var(--font-sans);
-      font-weight: 600;
-      white-space: nowrap;
-      animation: toastIn 0.35s cubic-bezier(0.34,1.56,0.64,1) forwards;
-      pointer-events: auto;
-    }
-    .toast.success {
-      background: var(--jlpt-n5);
-      color: #fff;
-    }
-    .toast.error {
-      background: var(--primary);
-      color: #fff;
-    }
-    .toast.info {
-      background: var(--card-elevated);
-      color: var(--foreground);
-      border: 1px solid var(--border);
-    }
-    .toast.out { animation: toastOut 0.3s ease forwards; }
-
-    /* Legal */
-    .legal-text {
-      margin-top: 14px;
-      font-size: 10px;
-      color: var(--muted-foreground);
-      text-align: center;
-      line-height: 1.5;
-    }
-    .legal-text a {
-      color: var(--primary);
-      text-decoration: none;
-    }
-    .legal-text a:hover { text-decoration: underline; }
-
-    /* Error/success messages inline */
-    #login-error, #login-success {
-      font-size: 12px;
-      padding: 10px 14px;
-      border-radius: 10px;
-      margin-top: 10px;
-      display: none;
-    }
-    #login-error { background: var(--primary-dim); color: var(--primary); border: 1px solid rgba(232,68,106,0.3); }
-    #login-success { background: var(--jlpt-n5-dim); color: var(--jlpt-n5); border: 1px solid rgba(76,175,130,0.3); }
-
-    /* Animations */
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(14px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-    @keyframes toastIn {
-      from { opacity: 0; transform: translateY(10px) scale(0.95); }
-      to   { opacity: 1; transform: translateY(0) scale(1); }
-    }
-    @keyframes toastOut {
-      to { opacity: 0; transform: translateY(10px) scale(0.95); }
-    }
-
-    .fade-in {
-      opacity: 0;
-      animation: fadeUp 0.5s ease forwards;
-    }
-  </style>
+<style>
+  /* Auth loading screen — shown until Firebase confirms user */
+  #auth-loading {
+    position: fixed; inset: 0; z-index: 9999;
+    background: #0F0F14;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 16px;
+    transition: opacity 0.4s ease;
+  }
+  #auth-loading.fade-out { opacity: 0; pointer-events: none; }
+  .auth-logo-mark {
+    width: 52px; height: 52px; border-radius: 14px;
+    background: linear-gradient(135deg, #E8446A, #B02050);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Noto Serif JP', serif;
+    font-size: 24px; color: #fff; font-weight: 700;
+    box-shadow: 0 0 32px rgba(232,68,106,0.4);
+    animation: authPulse 1.8s ease-in-out infinite;
+  }
+  .auth-loading-text {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 13px; color: #8888A0;
+  }
+  .auth-loading-dots::after {
+    content: ''; animation: dots 1.5s steps(3,end) infinite;
+  }
+  @keyframes authPulse {
+    0%,100% { box-shadow: 0 0 20px rgba(232,68,106,0.3); }
+    50%      { box-shadow: 0 0 40px rgba(232,68,106,0.6); }
+  }
+  @keyframes dots {
+    0%   { content: '.'; }
+    33%  { content: '..'; }
+    66%  { content: '...'; }
+  }
+</style>
 </head>
 <body>
 
-<!-- Toast Container -->
-<div class="toast-container" id="toast-container"></div>
-
-<div class="page-wrapper">
-
-  <!-- ── LEFT PANEL ── -->
-  <div class="left-panel">
-    <div class="watermark"><span>学</span></div>
-
-    <!-- Logo -->
-    <div class="left-logo fade-in" style="animation-delay:0.05s">
-      <div class="logo-mark">禅</div>
-      <span class="logo-name">NihongoZen</span>
-    </div>
-
-    <!-- Main content -->
-    <div class="left-content">
-      <p class="tagline-jp fade-in" style="animation-delay:0.1s">日本語を極める</p>
-      <h1 class="headline fade-in" style="animation-delay:0.15s">
-        Master<br>
-        <span class="accent">Japanese.</span>
-      </h1>
-      <p class="sub-headline fade-in" style="animation-delay:0.2s">
-        From your first hiragana to JLPT N1 — a structured, gamified path to Japanese fluency.
-      </p>
-
-      <ul class="features-list">
-        <li class="feature-item">
-          <span class="feature-dot">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-          </span>
-          <span class="feature-text">Structured N5→N1 JLPT curriculum</span>
-        </li>
-        <li class="feature-item">
-          <span class="feature-dot">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-          </span>
-          <span class="feature-text">2,136 kanji with readings and examples</span>
-        </li>
-        <li class="feature-item">
-          <span class="feature-dot">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-          </span>
-          <span class="feature-text">Listening comprehension with transcripts</span>
-        </li>
-        <li class="feature-item">
-          <span class="feature-dot">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-          </span>
-          <span class="feature-text">Gamified XP, streaks, and rank badges</span>
-        </li>
-      </ul>
-
-      <!-- Stats Strip -->
-      <div class="stats-strip fade-in" style="animation-delay:0.4s">
-        <div class="stat-cell">
-          <div class="stat-val">48,200+</div>
-          <div class="stat-lbl">Active learners</div>
-        </div>
-        <div class="stat-cell">
-          <div class="stat-val">2,136</div>
-          <div class="stat-lbl">Kanji covered</div>
-        </div>
-        <div class="stat-cell">
-          <div class="stat-val">12,500+</div>
-          <div class="stat-lbl">Vocab entries</div>
-        </div>
-        <div class="stat-cell">
-          <div class="stat-val">94%</div>
-          <div class="stat-lbl">Exam pass rate</div>
-        </div>
-      </div>
-    </div>
-
-    <p class="left-footer fade-in" style="animation-delay:0.5s">
-      © 2026 NihongoZen · Privacy Policy · Terms of Service
-    </p>
-  </div>
-
-  <!-- ── RIGHT PANEL ── -->
-  <div class="right-panel">
-
-    <!-- Mobile Logo -->
-    <div class="mobile-logo">
-      <div class="logo-mark" style="width:32px;height:32px;border-radius:8px;font-size:14px;">禅</div>
-      <span style="font-weight:700;font-size:18px;color:var(--foreground)">NihongoZen</span>
-    </div>
-
-    <div class="form-card fade-in" style="animation-delay:0.1s">
-
-      <!-- Tab Bar -->
-      <div class="tab-bar">
-        <button class="tab-btn active" id="tab-signin" onclick="switchTab('signin')">Sign In</button>
-        <button class="tab-btn" id="tab-signup" onclick="switchTab('signup')">Sign Up</button>
-      </div>
-
-      <!-- Heading -->
-      <h2 class="form-title" id="form-title">Welcome back</h2>
-      <p class="form-subtitle" id="form-subtitle">Sign in to continue your Japanese studies</p>
-
-      <!-- Google Button -->
-      <button class="btn-google" id="btn-google-login" onclick="handleGoogle()">
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-          <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/>
-          <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 009 18z" fill="#34A853"/>
-          <path d="M3.964 10.71A5.41 5.41 0 013.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 000 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/>
-          <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 00.957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/>
-        </svg>
-        Continue with Google
-      </button>
-
-      <!-- Divider -->
-      <div class="divider">
-        <div class="divider-line"></div>
-        <span class="divider-text">or use email</span>
-        <div class="divider-line"></div>
-      </div>
-
-      <!-- Email Magic Link Form -->
-      <div id="email-form-section">
-        <label class="field-label" for="emailInput">Email address</label>
-        <div class="input-wrap">
-          <span class="input-icon">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="2" y="4" width="20" height="16" rx="2"/>
-              <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
-            </svg>
-          </span>
-          <input type="email" id="emailInput" class="text-input" placeholder="kenji@example.com" autocomplete="email" />
-        </div>
-        <p class="field-error" id="email-error">Please enter a valid email address.</p>
-
-        <button class="btn-submit" id="emailLogin" onclick="handleEmailLogin()">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-          Send Magic Link
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-        </button>
-      </div>
-
-      <!-- Email Sent Success State -->
-      <div class="success-box" id="email-success-box">
-        <div class="success-icon">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--jlpt-n5)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-        </div>
-        <p class="success-title">Check your inbox!</p>
-        <p class="success-text">We sent a magic link — click it to sign in instantly. No password needed.</p>
-        <button class="success-reset" onclick="resetEmailForm()">Use a different email</button>
-      </div>
-
-      <!-- OTP Toggle -->
-      <button class="otp-toggle" id="otp-toggle-btn" onclick="toggleOTP()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
-        Sign in with phone instead
-      </button>
-
-      <!-- Phone OTP Section -->
-      <div class="otp-section" id="otp-section">
-        <label class="field-label" for="phoneInput">Phone number</label>
-        <div class="input-wrap">
-          <span class="input-icon">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13 19.79 19.79 0 0 1 1.61 4.44 2 2 0 0 1 3.6 2.23h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.16 6.16l.91-.91a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-          </span>
-          <input type="tel" id="phoneInput" class="text-input" placeholder="+91 98765 43210" autocomplete="tel" />
-        </div>
-
-        <div class="recaptcha-container" id="recaptcha-container"></div>
-
-        <button class="btn-submit" id="sendOtpBtn" onclick="sendOTP()" style="margin-top:10px; background: linear-gradient(135deg, var(--accent), #A07020);">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-          Send OTP
-        </button>
-
-        <!-- OTP verify -->
-        <div id="otp-verify-section">
-          <label class="field-label" for="otpInput" style="margin-top:14px; display:block;">Enter OTP</label>
-          <div class="input-wrap">
-            <span class="input-icon">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-            </span>
-            <input type="text" id="otpInput" class="text-input" placeholder="6-digit code" maxlength="6" inputmode="numeric" />
-          </div>
-          <button class="btn-submit" onclick="verifyOTP()">
-            Verify &amp; Sign In
-          </button>
-        </div>
-      </div>
-
-      <!-- Inline messages -->
-      <div id="login-error"></div>
-      <div id="login-success"></div>
-
-      <!-- Social buttons -->
-      <div class="social-grid">
-        <button class="btn-social-disabled" id="btn-apple-login">
-          🍎 Apple <span class="soon-badge">Soon</span>
-        </button>
-        <button class="btn-facebook" id="btn-facebook-login" onclick="handleFacebook()">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-          </svg>
-          Facebook
-        </button>
-      </div>
-      </div>
-
-      <!-- Legal -->
-      <p class="legal-text">
-        By continuing, you agree to our
-        <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>
-      </p>
-
-    </div><!-- /form-card -->
-  </div><!-- /right-panel -->
-</div><!-- /page-wrapper -->
+<!-- Auth Loading Screen -->
+<div id="auth-loading">
+  <div class="auth-logo-mark">禅</div>
+  <p class="auth-loading-text">Checking authentication<span class="auth-loading-dots"></span></p>
+</div>
 
 <!-- ══════════════════════════════════════════════════════════
-     AUTH.JS — Firebase Auth (Google + Email Magic Link + Phone OTP)
+     FIREBASE AUTH GUARD
+     Runs BEFORE app JS. Checks auth, redirects if not logged in,
+     then fires "nz:userReady" so the app can render with real user data.
 ═══════════════════════════════════════════════════════════ -->
 <script type="module">
 import { initializeApp, getApps, getApp }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
-  getAuth, GoogleAuthProvider, FacebookAuthProvider, signInWithPopup,
-  sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink,
-  RecaptchaVerifier, signInWithPhoneNumber
+  getAuth, onAuthStateChanged, signOut,
+  setPersistence, browserLocalPersistence
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {
+  getFirestore, doc, getDoc, setDoc, updateDoc, serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-// ── Firebase Config ───────────────────────────────────────
 const firebaseConfig = {
   apiKey:            "AIzaSyCP2Uwo1lx996q0l3nkC7RhAesVuIHEXiA",
   authDomain:        "nihongo-zen-cd97d.firebaseapp.com",
@@ -869,268 +89,215 @@ const firebaseConfig = {
   measurementId:     "G-1WTJ5ML3R2"
 };
 
-// Guard against "Firebase App already exists" error
-const app        = getApps().length ? getApp() : initializeApp(firebaseConfig);
-const auth       = getAuth(app);
-const provider   = new GoogleAuthProvider();
-provider.setCustomParameters({ prompt: "select_account" });
+// ── FIX 1: Guard against duplicate Firebase app (GitHub Pages reload issue) ──
+const app  = getApps().length ? getApp() : initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db   = getFirestore(app);
 
-const fbProvider = new FacebookAuthProvider();
-fbProvider.addScope("email");
-fbProvider.addScope("public_profile");
+// ── FIX 2: Force localStorage persistence ────────────────────────────────────
+// On GitHub Pages, session sometimes resets between navigations without this
+try { await setPersistence(auth, browserLocalPersistence); } catch(e) {}
 
-const DASHBOARD = "index.html";
+// ── Safety fallback — 20s for slow GitHub Pages CDN ─────────────────────────
+const fallback = setTimeout(() => {
+  console.warn("NihongoZen: auth timeout → login");
+  window.location.replace("login.html");
+}, 20000);
 
-// ── Email magic link settings ──────────────────────────────
-const actionCodeSettings = {
-  url:             window.location.origin + window.location.pathname.replace(/login\.html.*$/, "") + DASHBOARD,
-  handleCodeInApp: true
-};
+// ── FIX 3: Race condition fix ─────────────────────────────────────────────────
+// GitHub Pages: after Google popup login, index.html loads fresh.
+// Firebase's first onAuthStateChanged fires BEFORE it restores the session
+// from IndexedDB/localStorage → user = null → wrongly redirects to login.
+// Solution: if first call is null, wait up to 3s for real auth state.
+let _authResolved = false;
 
-// ── Check for email sign-in link on page load ──────────────
-if (isSignInWithEmailLink(auth, window.location.href)) {
-  let email = localStorage.getItem("nz_emailForSignIn");
-  if (!email) email = window.prompt("Please confirm your email address:");
-  if (email) {
-    signInWithEmailLink(auth, email, window.location.href)
-      .then(() => {
-        localStorage.removeItem("nz_emailForSignIn");
-        window.location.replace(DASHBOARD);
-      })
-      .catch(err => (window.showLoginError || console.error)(err.message));
-  }
-}
-
-// ── Phone OTP state ─────────────────────────────────────────
-let recaptchaVerifier  = null;
-let phoneConfirmResult = null;
-
-// ── Expose functions globally ────────────────────────────────
-
-window.handleGoogle = async () => {
-  const btn = document.getElementById("btn-google-login");
-  btn.disabled = true;
-  btn.innerHTML = `<div class="spinner"></div> Signing in…`;
-  try {
-    const result = await signInWithPopup(auth, provider);
-    showToast("Signed in! Redirecting…", "success");
-    // FIX: Wait for Firebase to confirm session before redirect
-    // GitHub Pages: immediate redirect causes null user on next page
-    if (result && result.user) {
-      // Small delay for Firebase to write session to localStorage
-      await new Promise(r => setTimeout(r, 800));
-      window.location.replace(DASHBOARD);
-    }
-  } catch (err) {
-    btn.disabled = false;
-    btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/><path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 009 18z" fill="#34A853"/><path d="M3.964 10.71A5.41 5.41 0 013.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 000 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/><path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 00.957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/></svg> Continue with Google`;
-    if (err.code !== "auth/popup-closed-by-user") showLoginError(err.message);
-  }
-};
-
-// ── Facebook Sign-In ──────────────────────────────────────────
-window.handleFacebook = async () => {
-  const btn = document.getElementById("btn-facebook-login");
-  btn.disabled = true;
-  btn.innerHTML = `<div class="spinner"></div> Signing in…`;
-  try {
-    const fbResult = await signInWithPopup(auth, fbProvider);
-    showToast("Signed in with Facebook! Redirecting…", "success");
-    if (fbResult && fbResult.user) {
-      await new Promise(r => setTimeout(r, 800));
-      window.location.replace(DASHBOARD);
-    }
-  } catch (err) {
-    btn.disabled = false;
-    btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg> Facebook`;
-    if (err.code === "auth/operation-not-allowed") {
-      showLoginError("Facebook sign-in is not yet enabled. Go to Firebase Console → Authentication → Sign-in providers → enable Facebook, then enter your Facebook App ID and App Secret.");
-    } else if (err.code === "auth/account-exists-with-different-credential") {
-      showLoginError("An account with this email already exists using a different sign-in method. Try Google or email link instead.");
-    } else if (err.code !== "auth/popup-closed-by-user") {
-      showLoginError(err.message);
+onAuthStateChanged(auth, async (user) => {
+  // ── FIX 3a: First-call null race condition ──────────────────────────────
+  if (!user && !_authResolved) {
+    // Wait up to 3 seconds in 300ms steps for session to restore
+    for (let i = 0; i < 10; i++) {
+      await new Promise(r => setTimeout(r, 300));
+      if (auth.currentUser) { user = auth.currentUser; break; }
     }
   }
-};
+  _authResolved = true;
+  clearTimeout(fallback);
 
-window.handleEmailLogin = async () => {
-  const email = document.getElementById("emailInput").value.trim();
-  const errEl = document.getElementById("email-error");
-
-  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    errEl.classList.add("visible");
-    return;
-  }
-  errEl.classList.remove("visible");
-
-  const btn = document.getElementById("emailLogin");
-  btn.disabled = true;
-  btn.innerHTML = `<div class="spinner"></div> Sending link…`;
-
-  try {
-    await sendSignInLinkToEmail(auth, email, actionCodeSettings);
-    localStorage.setItem("nz_emailForSignIn", email);
-    document.getElementById("email-form-section").style.display = "none";
-    document.getElementById("email-success-box").classList.add("visible");
-    document.getElementById("otp-toggle-btn").style.display = "none";
-    showToast("Magic link sent! Check your inbox.", "success");
-  } catch (err) {
-    showLoginError(err.message);
-    btn.disabled = false;
-    btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Send Magic Link <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>`;
-  }
-};
-
-window.sendOTP = async () => {
-  const phone = document.getElementById("phoneInput").value.trim();
-  if (!phone.startsWith("+")) {
-    showLoginError('Include country code, e.g. "+91 98765 43210"');
+  if (!user) {
+    // Genuinely not logged in → go to login
+    window.location.replace("login.html");
     return;
   }
 
-  const btn = document.getElementById("sendOtpBtn");
-  btn.disabled = true;
-  btn.innerHTML = `<div class="spinner"></div> Sending OTP…`;
+  // ── Expose globally so pages.js can use real user data ──────
+  window._nzAuth    = auth;
+  window._nzDb      = db;
+  window._nzUser    = user;
+  window._nzSignOut = () =>
+    signOut(auth).then(() => window.location.replace("login.html"));
 
-  if (recaptchaVerifier) { try { recaptchaVerifier.clear(); } catch(e) {} }
-  const container = document.getElementById("recaptcha-container");
-  if (container) container.innerHTML = "";
+  // ── Create or update Firestore user document ────────────────
+  const userRef  = doc(db, "users", user.uid);
+  const userSnap = await getDoc(userRef);
 
-  try {
-    recaptchaVerifier = new RecaptchaVerifier(auth, "recaptcha-container", { size: "invisible" });
-    phoneConfirmResult = await signInWithPhoneNumber(auth, phone, recaptchaVerifier);
-    document.getElementById("otp-verify-section").classList.add("visible");
-    showToast("OTP sent! Check your phone.", "success");
-    btn.disabled = false;
-    btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Resend OTP`;
-  } catch (err) {
-    showLoginError(err.message);
-    if (recaptchaVerifier) { try { recaptchaVerifier.clear(); } catch(e) {} recaptchaVerifier = null; }
-    btn.disabled = false;
-    btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Send OTP`;
+  if (!userSnap.exists()) {
+    await setDoc(userRef, {
+      uid:              user.uid,
+      displayName:      user.displayName || "Learner",
+      email:            user.email       || "",
+      photoURL:         user.photoURL    || "",
+      phone:            user.phoneNumber || "",
+      xp:               0,
+      xpGoal:           500,
+      streak:           1,
+      kanjiCount:       0,
+      lessonsCompleted: 0,
+      vocabMastered:    0,
+      quizAccuracy:     0,
+      level:            1,
+      levelXP:          0,
+      levelXPRequired:  200,
+      weeklyKanji:      0,
+      weeklyLessons:    0,
+      weeklyVocab:      0,
+      weeklyAccuracyDelta: 0,
+      lastLogin:        serverTimestamp(),
+      createdAt:        serverTimestamp()
+    });
+  } else {
+    await updateDoc(userRef, { lastLogin: serverTimestamp() });
   }
-};
 
-window.verifyOTP = async () => {
-  if (!phoneConfirmResult) { showLoginError("Please request an OTP first."); return; }
-  const code = document.getElementById("otpInput").value.trim();
-  if (!code) { showLoginError("Please enter the 6-digit OTP."); return; }
-  try {
-    await phoneConfirmResult.confirm(code);
-    showToast("Verified! Redirecting…", "success");
-    await new Promise(r => setTimeout(r, 800));
-    window.location.replace(DASHBOARD);
-  } catch (err) {
-    showLoginError(err.code === "auth/invalid-verification-code"
-      ? "Incorrect OTP. Please try again."
-      : err.message);
+  // ── Load fresh user data ────────────────────────────────────
+  const freshSnap = await getDoc(userRef);
+  window._nzUserData = freshSnap.data();
+
+  // Sync State with real Firestore data
+  const d = window._nzUserData;
+  if (window.State) {
+    State.state.xpToday  = d.xp       || 0;
+    State.state.xpGoal   = d.xpGoal   || 500;
+    State.state.streak   = d.streak   || 1;
+    State.state.level    = d.level     || 1;
+    State.state.totalXP  = d.xp       || 0;
+    State.state.nextLevelXP = d.levelXPRequired || 200;
   }
-};
 
-window.resetEmailForm = () => {
-  document.getElementById("email-form-section").style.display = "block";
-  document.getElementById("email-success-box").classList.remove("visible");
-  document.getElementById("otp-toggle-btn").style.display = "flex";
-  // Also reset OTP section when email form resets
-  const otpSec = document.getElementById("otp-section");
-  if (otpSec) otpSec.classList.remove("visible");
-  const otpVerify = document.getElementById("otp-verify-section");
-  if (otpVerify) otpVerify.classList.remove("visible");
-  document.getElementById("emailInput").value = "";
-  const btn = document.getElementById("emailLogin");
-  btn.disabled = false;
-  btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Send Magic Link <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>`;
-};
+  // ── Hide loading screen and launch the app ──────────────────
+  const loadingEl = document.getElementById("auth-loading");
+  if (loadingEl) {
+    loadingEl.classList.add("fade-out");
+    setTimeout(() => loadingEl.remove(), 400);
+  }
 
-// ── Apple — Coming Soon (Facebook is now live above) ─────────
-document.getElementById("btn-apple-login")?.addEventListener("click", (e) => {
-  e.preventDefault();
-  window.showToast("Apple Sign-In — Coming Soon!", "info");
+  // Fire event for any listeners
+  document.dispatchEvent(new CustomEvent("nz:userReady", {
+    detail: { user, data: window._nzUserData }
+  }));
+
+  // Bootstrap the SPA — wrapped in try/catch to surface any JS errors
+  try {
+    window._nzBootstrap();
+  } catch(err) {
+    console.error("NihongoZen bootstrap error:", err);
+    // Show error on screen instead of staying on loading screen forever
+    const errEl = document.createElement('div');
+    errEl.style.cssText = 'position:fixed;inset:0;background:#0F0F14;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;z-index:9999;';
+    errEl.innerHTML = '<div style="font-family:sans-serif;color:#E8446A;font-size:16px;font-weight:700;">⚠️ App failed to load</div>' +
+      '<div style="font-family:monospace;color:#8888A0;font-size:12px;max-width:80%;text-align:center;">' + err.message + '</div>' +
+      '<button onclick="location.reload()" style="margin-top:8px;padding:10px 24px;background:#E8446A;color:#fff;border:none;border-radius:10px;cursor:pointer;font-size:14px;">Reload</button>';
+    document.body.appendChild(errEl);
+  }
 });
 
-// ── UI Helpers ──────────────────────────────────────────────
-function showLoginError(msg) {
-  const el = document.getElementById("login-error");
-  if (el) { el.textContent = msg; el.style.display = "block"; }
-  showToast(msg, "error");
-}
-window.showLoginError = showLoginError;
-
-function showLoginSuccess(msg) {
-  const el = document.getElementById("login-success");
-  if (el) { el.textContent = msg; el.style.display = "block"; }
-  showToast(msg, "success");
-}
-window.showLoginSuccess = showLoginSuccess;
+// ── XP helper ───────────────────────────────────────────────
+window._nzAddXP = async (amount) => {
+  const user = auth.currentUser; if (!user) return;
+  const userRef = doc(db, "users", user.uid);
+  const snap = await getDoc(userRef); if (!snap.exists()) return;
+  const d = snap.data();
+  const newXP = (d.xp||0)+amount;
+  const newLvlXP = (d.levelXP||0)+amount;
+  const req = d.levelXPRequired||200;
+  const lvlUp = newLvlXP >= req;
+  await updateDoc(userRef, {
+    xp: newXP,
+    levelXP: lvlUp ? newLvlXP - req : newLvlXP,
+    level: lvlUp ? (d.level||1)+1 : (d.level||1)
+  });
+  const fresh = await getDoc(userRef);
+  document.dispatchEvent(new CustomEvent("nz:xpUpdated", { detail: fresh.data() }));
+};
 </script>
 
 <!-- ══════════════════════════════════════════════════════════
-     UI HELPERS (Tab switching, OTP toggle, Toast)
+     APP JS — loaded after auth guard sets up globals
 ═══════════════════════════════════════════════════════════ -->
-<script>
-function switchTab(tab) {
-  document.getElementById("tab-signin").classList.toggle("active", tab === "signin");
-  document.getElementById("tab-signup").classList.toggle("active", tab === "signup");
-  document.getElementById("form-title").textContent   = tab === "signin" ? "Welcome back"        : "Start your journey";
-  document.getElementById("form-subtitle").textContent = tab === "signin" ? "Sign in to continue your Japanese studies" : "Create your free account to begin learning";
-  // Reset form
-  resetEmailForm();
-  hideMessages();
-}
+<script src="js/core.js" defer></script>
+<script src="js/nz-data.js" defer></script>
+<script src="js/nz-kana.js" defer></script>
+<script src="js/nz-vocab-module.js" defer></script>
+<script src="js/pomodoro.js" defer></script>
+<script src="js/nz-pages.js" defer></script>
 
-function toggleOTP() {
-  const section = document.getElementById("otp-section");
-  const btn     = document.getElementById("otp-toggle-btn");
-  const emailSection = document.getElementById("email-form-section");
-  const isVisible = section.classList.contains("visible");
+<script defer>
+'use strict';
 
-  if (isVisible) {
-    section.classList.remove("visible");
-    emailSection.style.display = "block";
-    btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg> Sign in with phone instead`;
-  } else {
-    section.classList.add("visible");
-    emailSection.style.display = "none";
-    btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h18M3 12h18M3 19h18"/></svg> Sign in with email instead`;
+/* Mark that all defer scripts have finished executing */
+window._nzReady = true;
+
+/* ── Bootstrap function called by auth guard after user confirmed ── */
+window._nzBootstrap = function() {
+  /* Safety: if defer scripts haven't finished yet, wait for them */
+  if (!window._nzReady || typeof renderShell !== 'function') {
+    // Try up to 100 times (5 seconds) — GitHub Pages can be slow to serve JS
+    window._nzBootstrapRetries = (window._nzBootstrapRetries || 0) + 1;
+    if (window._nzBootstrapRetries > 100) {
+      console.error("NihongoZen: renderShell unavailable after 5s — check JS files loaded.");
+      // Show visible error so user isn't stuck on blank/loading screen
+      const loadingEl = document.getElementById("auth-loading");
+      if (loadingEl) {
+        loadingEl.innerHTML = '<div style="font-family:sans-serif;color:#E8446A;text-align:center;padding:20px;">' +
+          '<div style="font-size:20px;margin-bottom:12px;">⚠️ Load Error</div>' +
+          '<div style="font-size:13px;color:#8888A0;margin-bottom:16px;">App scripts failed to load.<br>Check your internet connection.</div>' +
+          '<button onclick="location.reload()" style="padding:10px 24px;background:#E8446A;color:#fff;border:none;border-radius:10px;cursor:pointer;font-size:14px;">Reload</button>' +
+          '</div>';
+      }
+      return;
+    }
+    setTimeout(window._nzBootstrap, 50);
+    return;
   }
-  hideMessages();
-}
+  // Build shell with real user data
+  renderShell();
 
-function hideMessages() {
-  const err = document.getElementById("login-error");
-  const suc = document.getElementById("login-success");
-  if (err) err.style.display = "none";
-  if (suc) suc.style.display = "none";
-}
+  // Register all routes
+  window.Router.register('dashboard', ()  => Pages.dashboard());
+  window.Router.register('kanji',     ()  => Pages.kanji());
+  window.Router.register('vocab',     ()  => Pages.vocab());
+  window.Router.register('grammar',   ()  => Pages.grammar());
+  window.Router.register('listening', ()  => Pages.listening());
+  window.Router.register('reading',   ()  => Pages.reading());
+  window.Router.register('kana',      ()  => Pages.kana());
+  window.Router.register('progress',  ()  => Pages.progress());
+  window.Router.register('timer',     ()  => Pages.timer());
+  window.Router.register('profile',   ()  => Pages.profile());
+  window.Router.register('jlpt-n5',   ()  => Pages.jlptLevel('n5'));
+  window.Router.register('jlpt-n4',   ()  => Pages.jlptLevel('n4'));
+  window.Router.register('jlpt-n3',   ()  => Pages.jlptLevel('n3'));
+  window.Router.register('jlpt-n2',   ()  => Pages.jlptLevel('n2'));
+  window.Router.register('jlpt-n1',   ()  => Pages.jlptLevel('n1'));
 
-// Toast system
-function showToast(msg, type = "info") {
-  const container = document.getElementById("toast-container");
-  const toast = document.createElement("div");
-  toast.className = `toast ${type}`;
-  toast.textContent = msg;
-  container.appendChild(toast);
-  setTimeout(() => {
-    toast.classList.add("out");
-    setTimeout(() => toast.remove(), 300);
-  }, 3000);
-}
-window.showToast = showToast;
+  // Navigate to hash route or dashboard
+  const startPage = window.location.hash.replace('#','') || 'dashboard';
+  window.Router.go(startPage);
 
-// Make resetEmailForm available before module loads
-function resetEmailForm() {
-  const emailSection = document.getElementById("email-form-section");
-  const successBox   = document.getElementById("email-success-box");
-  const otpBtn       = document.getElementById("otp-toggle-btn");
-  const otpSection   = document.getElementById("otp-section");
-  if (emailSection)  emailSection.style.display = "block";
-  if (successBox)    successBox.classList.remove("visible");
-  if (otpBtn)        otpBtn.style.display = "flex";
-  if (otpSection)    otpSection.classList.remove("visible");
-  const emailInput = document.getElementById("emailInput");
-  if (emailInput) emailInput.value = "";
-}
-window.resetEmailForm = resetEmailForm;
+  // Handle browser back/forward
+  window.addEventListener('popstate', () => {
+    const hash = window.location.hash.replace('#','') || 'dashboard';
+    window.Router.go(hash);
+  });
+};
 </script>
 
 </body>
