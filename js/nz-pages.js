@@ -16,7 +16,99 @@
      window.Router        — Router.register / Router.go
      window.Pages         — all page functions
      window.speak         — global TTS helper
+
+   Auth integration:
+     All Firebase auth/firestore accessed via window globals set by auth.js:
+       window._nzAuth      — Firebase Auth instance
+       window._nzDb        — Firestore instance
+       window._nzUser      — Current Firebase user object
+       window._nzUserData  — Firestore user document data
+       window._nzAddXP     — XP update helper
+       window._nzSignOut   — Sign out function
 ================================================================ */
+
+/* ════════════════════════════════════════════════════════════════
+   FIREBASE AUTH INTEGRATION
+   
+   nz-pages.js is a regular (non-module) defer script.
+   Firebase Auth is already initialised in auth.js which runs first
+   and sets window globals. We provide safe wrapper helpers here
+   so every page function can access auth/firestore without crashing
+   even if auth.js hasn't finished yet.
+════════════════════════════════════════════════════════════════ */
+
+/* ── Safe auth getters ──────────────────────────────────────── */
+function nzGetAuth()     { return window._nzAuth     || null; }
+function nzGetDb()       { return window._nzDb       || null; }
+function nzGetUser()     { return window._nzUser     || null; }
+function nzGetUserData() { return window._nzUserData || {}; }
+function nzIsLoggedIn()  { return !!(window._nzUser && window._nzUser.uid); }
+
+/* ── Safe XP award ─────────────────────────────────────────── */
+function nzAwardXP(amount) {
+  if (typeof window._nzAddXP === 'function') {
+    nzAwardXP(amount).catch(function(e) {
+      console.warn('NihongoZen: XP update failed:', e);
+    });
+  }
+}
+
+/* ── Safe sign-out ─────────────────────────────────────────── */
+function nzSignOut() {
+  if (typeof window._nzSignOut === 'function') {
+    window._nzSignOut();
+  } else {
+    window.location.replace('login.html');
+  }
+}
+
+/* ── Firestore dynamic import helper ───────────────────────── */
+// Used by Community Chat (real-time) and any page needing Firestore directly.
+// Returns a promise resolving to the firestore module.
+function nzFirestore() {
+  if (window._nzFS) return Promise.resolve(window._nzFS);
+  return import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js')
+    .then(function(fs) {
+      window._nzFS = fs;
+      return fs;
+    });
+}
+
+/* ── Auth guard for page functions ────────────────────────── */
+// Call this at the start of any page that MUST have a logged-in user.
+// Shows a friendly message instead of crashing if called too early.
+function nzRequireAuth(pageName) {
+  if (!nzIsLoggedIn()) {
+    setHTML(
+      '<div class="nz-page nz-fadein" style="text-align:center;padding:60px 20px;">' +
+      '<div style="font-size:36px;margin-bottom:16px;">🔐</div>' +
+      '<div style="font-size:16px;font-weight:700;color:var(--fg);margin-bottom:8px;">' +
+        'Authentication required</div>' +
+      '<div style="font-size:13px;color:var(--fg-muted);margin-bottom:20px;">' +
+        'Please sign in to access ' + (pageName || 'this page') + '</div>' +
+      '<button onclick="window.location.replace(&quot;login.html&quot;)" ' +
+        'class="nz-btn nz-btn-pri">Sign In</button>' +
+      '</div>'
+    );
+    return false;
+  }
+  return true;
+}
+
+/* ── Listen for auth changes ───────────────────────────────── */
+// Re-render shell user card when Firestore XP updates
+document.addEventListener('nz:xpUpdated', function(e) {
+  if (!e.detail) return;
+  // Update cached user data
+  window._nzUserData = Object.assign(window._nzUserData || {}, e.detail);
+  // Refresh sidebar user stats if visible
+  var xpEl = document.getElementById('nz-sb-xp');
+  var lvlEl = document.getElementById('nz-sb-level');
+  var strEl = document.getElementById('nz-sb-streak');
+  if (xpEl)  xpEl.textContent  = (e.detail.xp || 0) + ' XP';
+  if (lvlEl) lvlEl.textContent = 'Lv ' + (e.detail.level || 1);
+  if (strEl) strEl.textContent = (e.detail.streak || 1) + ' 🔥';
+});
 
 /* ────────────────────────────────────────────────────────────────
    UTILITIES
@@ -495,7 +587,7 @@ function renderShell() {
       '</nav>' +
       '<div class="nz-sb-foot">' +
         '<button class="nz-signout-btn" ' +
-          'onclick="window._nzSignOut && window._nzSignOut()">← Sign Out</button>' +
+          'onclick="nzSignOut()">← Sign Out</button>' +
       '</div>' +
     '</aside>' +
 
@@ -1834,7 +1926,7 @@ Pages.profile = function () {
       profileRow('Quiz Accuracy',  (d.quizAccuracy||0)+'%',        false) +
     '</div>' +
 
-    '<button onclick="window._nzSignOut && window._nzSignOut()" class="nz-btn" ' +
+    '<button onclick="nzSignOut()" class="nz-btn" ' +
       'style="width:100%;justify-content:center;' +
       'background:var(--primary-dim);color:var(--primary);' +
       'border:1px solid var(--primary);">← Sign Out</button>' +
@@ -2344,8 +2436,8 @@ window.nzPlannerToggle = function(i) {
   var tasks = JSON.parse(localStorage.getItem('nz-planner-tasks') || '[]');
   if (!tasks[i]) return;
   tasks[i].done = !tasks[i].done;
-  if (tasks[i].done && window._nzAddXP) {
-    window._nzAddXP(tasks[i].xp);
+  if (tasks[i].done) {
+    nzAwardXP(tasks[i].xp);
     window.nzAddNotif('task', '✅ Task Complete', 'You earned +' + tasks[i].xp + ' XP!');
     var history = JSON.parse(localStorage.getItem('nz-planner-history') || '{}');
     var todayKey = new Date().toISOString().slice(0, 10);
@@ -2577,7 +2669,7 @@ Pages.goals = function() {
     localStorage.setItem('nz-goals', JSON.stringify(goals));
     var ov = document.querySelector('.nz-overlay-bg'); if (ov) ov.remove();
     if (g.progress >= g.target && prev < g.target) {
-      if (window._nzAddXP) window._nzAddXP(100);
+      nzAwardXP(100);
       window.nzAddNotif('goal','🎯 Goal Complete!', g.title + ' — +100 XP!');
     }
     renderGoals();
@@ -2754,8 +2846,7 @@ Pages.chat = function() {
   function subscribeRoom(roomId) {
     if (_unsub) { try{_unsub();}catch(e){} _unsub=null; }
     if (!window._nzDb) return;
-    import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js').then(function(fs){
-      if (!window._nzFS) window._nzFS = fs;
+    nzFirestore().then(function(fs){
       var q = fs.query(
         fs.collection(window._nzDb,'chat_rooms',roomId,'messages'),
         fs.orderBy('timestamp','asc'), fs.limit(80)
@@ -2795,7 +2886,7 @@ Pages.chat = function() {
     var text=inp.value.trim(); inp.value='';
     if(!window._nzDb||!window._nzUser) return;
     var u2=window._nzUser, d2=getUD();
-    import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js').then(function(fs){
+    nzFirestore().then(function(fs){
       fs.addDoc(fs.collection(window._nzDb,'chat_rooms',activeRoom,'messages'),{
         text:text, uid:u2.uid,
         displayName:d2.displayName||u2.displayName||'Learner',
@@ -2845,7 +2936,7 @@ function srsGrade(item, grade) {
   item.interval = Math.max(0.5,(item.interval||1)*mult);
   item.due = Date.now() + item.interval*24*3600000;
   var xpMap = {again:2,hard:3,good:5,easy:10};
-  if (window._nzAddXP) window._nzAddXP(xpMap[grade]||5);
+  nzAwardXP(xpMap[grade]||5);
   saveSRS();
 }
 
@@ -3198,7 +3289,7 @@ function initWritingCanvas() {
     if (savedThumbs.length>20) savedThumbs=savedThumbs.slice(0,20);
     localStorage.setItem('nz-write-thumbs',JSON.stringify(savedThumbs));
     renderThumbs();
-    if (window._nzAddXP) window._nzAddXP(5);
+    nzAwardXP(5);
     nzShowToast('Practice saved! +5 XP');
     if (window.nzAddNotif) window.nzAddNotif('task','✏️ Practice Saved','+5 XP earned!');
   };
