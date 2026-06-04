@@ -918,7 +918,7 @@ window.handleGoogle = async () => {
     // GitHub Pages: immediate redirect causes null user on next page
     if (result && result.user) {
       // Small delay for Firebase to write session to localStorage
-      await new Promise(r => setTimeout(r, 1500));
+      await new Promise(r => setTimeout(r, 800));
       window.location.replace(DASHBOARD);
     }
   } catch (err) {
@@ -937,7 +937,7 @@ window.handleFacebook = async () => {
     const fbResult = await signInWithPopup(auth, fbProvider);
     showToast("Signed in with Facebook! Redirecting…", "success");
     if (fbResult && fbResult.user) {
-      await new Promise(r => setTimeout(r, 1500));
+      await new Promise(r => setTimeout(r, 800));
       window.location.replace(DASHBOARD);
     }
   } catch (err) {
@@ -1131,6 +1131,31 @@ function resetEmailForm() {
   if (emailInput) emailInput.value = "";
 }
 window.resetEmailForm = resetEmailForm;
+
+// ── login_js.js Compatibility Shim ──────────────────────────
+// Supports switchTab(tab, btn) call signature from older login_js.js
+// (login.html uses switchTab(tab) — this wrapper handles both forms)
+(function() {
+  var _origSwitchTab = window.switchTab;
+  window.switchTab = function(tab, btn) {
+    // If btn passed (login_js.js style), manually handle active class
+    if (btn && typeof btn === 'object') {
+      document.querySelectorAll('.tab-btn').forEach(function(b) {
+        b.classList.remove('active');
+      });
+      btn.classList.add('active');
+    }
+    if (typeof _origSwitchTab === 'function') _origSwitchTab(tab);
+  };
+
+  // validateEmail — exposed globally for any inline HTML usage
+  window.validateEmail = function(email) {
+    return /^\S+@\S+\.\S+$/.test(email);
+  };
+
+  // resetForm — alias to resetEmailForm for login_js.js compatibility
+  window.resetForm = window.resetEmailForm;
+})();
 </script>
 
 </body>
