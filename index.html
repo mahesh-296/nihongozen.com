@@ -92,12 +92,10 @@ const app  = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db   = getFirestore(app);
 
-// Safety fallback — if Firebase is slow/offline, redirect after 12s
-// Increased from 6s → 12s to handle slow connections
+// Safety fallback — if Firebase is slow/offline, redirect after 6s
 const fallback = setTimeout(() => {
-  console.warn("NihongoZen: Firebase auth timeout — redirecting to login");
   window.location.replace("login.html");
-}, 12000);
+}, 6000);
 
 onAuthStateChanged(auth, async (user) => {
   clearTimeout(fallback);
@@ -174,19 +172,8 @@ onAuthStateChanged(auth, async (user) => {
     detail: { user, data: window._nzUserData }
   }));
 
-  // Bootstrap the SPA — wrapped in try/catch to surface any JS errors
-  try {
-    window._nzBootstrap();
-  } catch(err) {
-    console.error("NihongoZen bootstrap error:", err);
-    // Show error on screen instead of staying on loading screen forever
-    const errEl = document.createElement('div');
-    errEl.style.cssText = 'position:fixed;inset:0;background:#0F0F14;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;z-index:9999;';
-    errEl.innerHTML = '<div style="font-family:sans-serif;color:#E8446A;font-size:16px;font-weight:700;">⚠️ App failed to load</div>' +
-      '<div style="font-family:monospace;color:#8888A0;font-size:12px;max-width:80%;text-align:center;">' + err.message + '</div>' +
-      '<button onclick="location.reload()" style="margin-top:8px;padding:10px 24px;background:#E8446A;color:#fff;border:none;border-radius:10px;cursor:pointer;font-size:14px;">Reload</button>';
-    document.body.appendChild(errEl);
-  }
+  // Bootstrap the SPA
+  window._nzBootstrap();
 });
 
 // ── XP helper ───────────────────────────────────────────────
@@ -212,60 +199,44 @@ window._nzAddXP = async (amount) => {
 <!-- ══════════════════════════════════════════════════════════
      APP JS — loaded after auth guard sets up globals
 ═══════════════════════════════════════════════════════════ -->
-<script src="js/core.js" defer></script>
-<script src="js/nz-data.js" defer></script>
-<script src="js/nz-kana.js" defer></script>
-<script src="js/nz-vocab-module.js" defer></script>
-<script src="js/pomodoro.js" defer></script>
-<script src="js/nz-pages.js" defer></script>
+<script src="js/core.js"></script>
+<script src="js/data.js"></script>
+<script src="js/pomodoro.js"></script>
+<script src="js/pages.js"></script>
 
-<script defer>
+<script>
 'use strict';
-
-/* Mark that all defer scripts have finished executing */
-window._nzReady = true;
 
 /* ── Bootstrap function called by auth guard after user confirmed ── */
 window._nzBootstrap = function() {
-  /* Safety: if defer scripts haven't finished yet, wait for them */
-  if (!window._nzReady || typeof renderShell !== 'function') {
-    // Try up to 40 times (2 seconds total) then show error
-    window._nzBootstrapRetries = (window._nzBootstrapRetries || 0) + 1;
-    if (window._nzBootstrapRetries > 40) {
-      console.error("NihongoZen: renderShell never became available. Check core.js / nz-pages.js loaded correctly.");
-      return;
-    }
-    setTimeout(window._nzBootstrap, 50);
-    return;
-  }
   // Build shell with real user data
   renderShell();
 
   // Register all routes
-  window.Router.register('dashboard', ()  => Pages.dashboard());
-  window.Router.register('kanji',     ()  => Pages.kanji());
-  window.Router.register('vocab',     ()  => Pages.vocab());
-  window.Router.register('grammar',   ()  => Pages.grammar());
-  window.Router.register('listening', ()  => Pages.listening());
-  window.Router.register('reading',   ()  => Pages.reading());
-  window.Router.register('kana',      ()  => Pages.kana());
-  window.Router.register('progress',  ()  => Pages.progress());
-  window.Router.register('timer',     ()  => Pages.timer());
-  window.Router.register('profile',   ()  => Pages.profile());
-  window.Router.register('jlpt-n5',   ()  => Pages.jlptLevel('n5'));
-  window.Router.register('jlpt-n4',   ()  => Pages.jlptLevel('n4'));
-  window.Router.register('jlpt-n3',   ()  => Pages.jlptLevel('n3'));
-  window.Router.register('jlpt-n2',   ()  => Pages.jlptLevel('n2'));
-  window.Router.register('jlpt-n1',   ()  => Pages.jlptLevel('n1'));
+  Router.register('dashboard', ()  => Pages.dashboard());
+  Router.register('kanji',     ()  => Pages.kanji());
+  Router.register('vocab',     (p) => Pages.vocab(p));
+  Router.register('grammar',   ()  => Pages.grammar());
+  Router.register('listening', ()  => Pages.listening());
+  Router.register('reading',   ()  => Pages.reading());
+  Router.register('kana',      ()  => Pages.kana());
+  Router.register('progress',  ()  => Pages.progress());
+  Router.register('timer',     ()  => Pages.timer());
+  Router.register('profile',   ()  => Pages.profile());
+  Router.register('jlpt-n5',   ()  => Pages.jlptLevel('n5'));
+  Router.register('jlpt-n4',   ()  => Pages.jlptLevel('n4'));
+  Router.register('jlpt-n3',   ()  => Pages.jlptLevel('n3'));
+  Router.register('jlpt-n2',   ()  => Pages.jlptLevel('n2'));
+  Router.register('jlpt-n1',   ()  => Pages.jlptLevel('n1'));
 
   // Navigate to hash route or dashboard
   const startPage = window.location.hash.replace('#','') || 'dashboard';
-  window.Router.go(startPage);
+  Router.go(startPage);
 
   // Handle browser back/forward
   window.addEventListener('popstate', () => {
     const hash = window.location.hash.replace('#','') || 'dashboard';
-    window.Router.go(hash);
+    Router.go(hash);
   });
 };
 </script>
