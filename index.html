@@ -1,72 +1,1510 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<meta name="description" content="NihongoZen — Japanese Language Learning Platform"/>
-<meta name="theme-color" content="#0F0F14"/>
-<title>NihongoZen — Japanese Learning</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NihongoZen — Master Japanese</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Noto+Serif+JP:wght@400;700&family=Noto+Sans+JP:wght@400;500;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    /* ── Variables ─────────────────────────────────────────── */
+    :root {
+      --background:           #0F0F14;
+      --background-secondary: #16161E;
+      --background-elevated:  #1E1E2A;
+      --foreground:           #F0F0F5;
+      --foreground-muted:     #8888A0;
+      --foreground-subtle:    #555568;
+      --primary:              #E8446A;
+      --primary-hover:        #F05578;
+      --primary-dim:          rgba(232,68,106,0.13);
+      --accent:               #C9973A;
+      --accent-dim:           rgba(201,151,58,0.13);
+      --card:                 #16161E;
+      --card-elevated:        #1E1E2A;
+      --border:               #2A2A38;
+      --input:                #1E1E2A;
+      --muted-foreground:     #8888A0;
+      --jlpt-n5:              #4CAF82;
+      --jlpt-n5-dim:          rgba(76,175,130,0.13);
+      --jlpt-n4:              #5B9BD5;
+      --jlpt-n4-dim:          rgba(91,155,213,0.13);
+      --jlpt-n3:              #C9973A;
+      --jlpt-n3-dim:          rgba(201,151,58,0.13);
+      --jlpt-n2:              #9B6DD5;
+      --jlpt-n2-dim:          rgba(155,109,213,0.13);
+      --jlpt-n1:              #E8446A;
+      --jlpt-n1-dim:          rgba(232,68,106,0.13);
+      --sidebar-width:        250px;
+      --sidebar-collapsed:    56px;
+      --topbar-height:        60px;
+    }
+    /* ── Reset ─────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--background);
+      color: var(--foreground);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+    a { text-decoration: none; color: inherit; }
+    button { font-family: inherit; cursor: pointer; }
+    h1,h2,h3,h4,h5,h6,p { margin: 0; }
+    input, textarea, select { font-family: inherit; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--background); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--foreground-subtle); }
 
-<!-- Google Fonts -->
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=Noto+Serif+JP:wght@400;700&family=Noto+Sans+JP:wght@400;500;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+    /* ── App Shell ─────────────────────────────────────────── */
+    .app-shell {
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
 
-<!-- Stylesheets -->
-<link rel="stylesheet" href="css/tokens.css"/>
-<link rel="stylesheet" href="css/layout.css"/>
-<link rel="stylesheet" href="css/components.css"/>
+    /* ── Sidebar ───────────────────────────────────────────── */
+    .sidebar {
+      display: none;
+      flex-direction: column;
+      flex-shrink: 0;
+      height: 100%;
+      border-right: 1px solid var(--border);
+      background: var(--background-secondary);
+      transition: width 0.3s ease;
+      overflow: hidden;
+      width: var(--sidebar-width);
+    }
+    @media (min-width: 1024px) { .sidebar { display: flex; } }
+    .sidebar.collapsed { width: var(--sidebar-collapsed); }
 
-<style>
-  /* Auth loading screen — shown until Firebase confirms user */
-  #auth-loading {
-    position: fixed; inset: 0; z-index: 9999;
-    background: #0F0F14;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    gap: 16px;
-    transition: opacity 0.4s ease;
-  }
-  #auth-loading.fade-out { opacity: 0; pointer-events: none; }
-  .auth-logo-mark {
-    width: 52px; height: 52px; border-radius: 14px;
-    background: linear-gradient(135deg, #E8446A, #B02050);
-    display: flex; align-items: center; justify-content: center;
-    font-family: 'Noto Serif JP', serif;
-    font-size: 24px; color: #fff; font-weight: 700;
-    box-shadow: 0 0 32px rgba(232,68,106,0.4);
-    animation: authPulse 1.8s ease-in-out infinite;
-  }
-  .auth-loading-text {
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    font-size: 13px; color: #8888A0;
-  }
-  .auth-loading-dots::after {
-    content: ''; animation: dots 1.5s steps(3,end) infinite;
-  }
-  @keyframes authPulse {
-    0%,100% { box-shadow: 0 0 20px rgba(232,68,106,0.3); }
-    50%      { box-shadow: 0 0 40px rgba(232,68,106,0.6); }
-  }
-  @keyframes dots {
-    0%   { content: '.'; }
-    33%  { content: '..'; }
-    66%  { content: '...'; }
-  }
-</style>
+    .sidebar-logo {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .sidebar-logo-inner { display: flex; align-items: center; gap: 8px; }
+    .logo-mark {
+      width: 28px; height: 28px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, var(--primary), #C03058);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Noto Serif JP', serif;
+      font-size: 13px; color: #fff; font-weight: 700;
+      flex-shrink: 0;
+    }
+    .logo-text { font-weight: 700; font-size: 15px; color: var(--foreground); white-space: nowrap; overflow: hidden; }
+    .sidebar-toggle-btn {
+      background: none; border: none;
+      padding: 6px; border-radius: 8px;
+      color: var(--muted-foreground);
+      transition: background 0.15s;
+      flex-shrink: 0;
+    }
+    .sidebar-toggle-btn:hover { background: var(--card-elevated); }
+
+    .sidebar-nav {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px 8px;
+    }
+    .nav-section-label {
+      font-size: 10px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.15em; color: var(--foreground-subtle);
+      padding: 12px 8px 6px;
+      white-space: nowrap; overflow: hidden;
+    }
+    .nav-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 8px; border-radius: 8px;
+      cursor: pointer; transition: all 0.15s;
+      border-left: 2px solid transparent;
+      margin-bottom: 2px;
+    }
+    .nav-item:hover { background: var(--card); }
+    .nav-item.active {
+      background: var(--primary-dim);
+      border-left-color: var(--primary);
+    }
+    .nav-item-icon { flex-shrink: 0; width: 16px; height: 16px; }
+    .nav-item-label {
+      font-size: 13px; font-weight: 500;
+      font-family: 'Noto Sans JP', sans-serif;
+      color: var(--foreground);
+      white-space: nowrap; overflow: hidden;
+      flex: 1;
+    }
+    .nav-item.active .nav-item-label { color: var(--primary); }
+    .nav-item.active .nav-item-icon { color: var(--primary) !important; }
+    .nav-badge {
+      font-size: 10px; font-family: 'JetBrains Mono', monospace;
+      padding: 1px 6px; border-radius: 20px;
+      background: var(--primary-dim); color: var(--primary);
+    }
+    .sidebar-user {
+      border-top: 1px solid var(--border);
+      padding: 12px;
+      flex-shrink: 0;
+    }
+    .sidebar-user-inner {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px; border-radius: 10px;
+      cursor: pointer; transition: background 0.15s;
+    }
+    .sidebar-user-inner:hover { background: var(--card-elevated); }
+    .user-avatar {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), #B02050);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 700; color: #fff;
+      flex-shrink: 0;
+    }
+    .user-info { flex: 1; min-width: 0; overflow: hidden; }
+    .user-name { font-size: 12px; font-weight: 700; color: var(--foreground); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .user-level { font-size: 10px; color: var(--muted-foreground); }
+
+    /* ── Main Content ──────────────────────────────────────── */
+    .main-wrap {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ── Topbar ────────────────────────────────────────────── */
+    .topbar {
+      flex-shrink: 0;
+      position: sticky; top: 0; z-index: 40;
+      height: var(--topbar-height);
+      background: rgba(30,30,42,0.7);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+    }
+    .topbar-inner {
+      display: flex; align-items: center;
+      height: 100%;
+      padding: 0 16px;
+      gap: 12px;
+    }
+    .topbar-logo {
+      display: flex; align-items: center; gap: 8px;
+      flex-shrink: 0;
+    }
+    @media (min-width: 1024px) { .topbar-logo { display: none; } }
+    .topbar-logo-text { font-weight: 700; font-size: 14px; color: var(--foreground); }
+
+    .topbar-nav {
+      display: none;
+      align-items: center; gap: 4px;
+      flex: 1; justify-content: center;
+    }
+    @media (min-width: 1280px) { .topbar-nav { display: flex; } }
+    .pill-nav-btn {
+      background: none; border: 1px solid transparent;
+      padding: 6px 12px; border-radius: 20px;
+      font-size: 13px; font-weight: 500;
+      font-family: 'Noto Sans JP', sans-serif;
+      color: var(--muted-foreground);
+      transition: all 0.15s; white-space: nowrap;
+    }
+    .pill-nav-btn:hover { color: var(--foreground); background: var(--card-elevated); }
+    .pill-nav-btn.active {
+      background: var(--primary-dim);
+      color: var(--primary);
+      border-color: var(--primary);
+    }
+    .topbar-spacer { flex: 1; }
+    @media (min-width: 1280px) { .topbar-spacer { flex: 0; } }
+
+    .topbar-right {
+      display: flex; align-items: center; gap: 6px;
+    }
+    .topbar-badge {
+      display: none;
+      align-items: center; gap: 6px;
+      padding: 6px 10px; border-radius: 20px;
+      background: var(--card-elevated);
+      border: 1px solid var(--border);
+      font-size: 12px;
+    }
+    @media (min-width: 640px) { .topbar-badge { display: flex; } }
+    .topbar-icon-btn {
+      background: none; border: none;
+      padding: 8px; border-radius: 8px;
+      color: var(--muted-foreground);
+      transition: background 0.15s;
+      position: relative;
+    }
+    .topbar-icon-btn:hover { background: var(--card-elevated); }
+    .notif-dot {
+      position: absolute; top: 6px; right: 6px;
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--primary);
+    }
+    .user-menu-btn {
+      background: none; border: none;
+      display: flex; align-items: center; gap: 8px;
+      padding: 6px 10px 6px 6px; border-radius: 20px;
+      transition: background 0.15s;
+    }
+    .user-menu-btn:hover { background: var(--card-elevated); }
+    .user-menu-btn .user-avatar { width: 28px; height: 28px; font-size: 11px; }
+    .user-menu-name { display: none; font-size: 13px; font-weight: 600; color: var(--foreground); }
+    @media (min-width: 768px) { .user-menu-name { display: block; } }
+
+    /* User Dropdown */
+    .dropdown-overlay {
+      position: fixed; inset: 0; z-index: 10;
+    }
+    .user-dropdown {
+      position: absolute; right: 0; top: calc(100% + 8px);
+      width: 192px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: var(--card-elevated);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+      z-index: 20;
+      overflow: hidden;
+      animation: fadeUp 0.15s ease forwards;
+    }
+    .dropdown-header {
+      padding: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .dropdown-header-name { font-size: 13px; font-weight: 700; color: var(--foreground); }
+    .dropdown-header-sub { font-size: 11px; color: var(--muted-foreground); }
+    .dropdown-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 12px;
+      cursor: pointer; transition: background 0.15s;
+      font-size: 13px; color: var(--foreground);
+    }
+    .dropdown-item:hover { background: var(--card); }
+    .dropdown-item svg { color: var(--muted-foreground); flex-shrink: 0; }
+    .dropdown-item.danger { color: var(--primary); }
+    .dropdown-item.danger svg { color: var(--primary); }
+    .dropdown-divider { border-top: 1px solid var(--border); }
+
+    .hamburger-btn {
+      background: none; border: none;
+      padding: 8px; border-radius: 8px;
+      color: var(--foreground);
+      transition: background 0.15s;
+    }
+    @media (min-width: 1280px) { .hamburger-btn { display: none; } }
+    .hamburger-btn:hover { background: var(--card-elevated); }
+
+    /* XP bar at bottom of topbar */
+    .topbar-xp-bar {
+      height: 2px; background: var(--card-elevated);
+    }
+    .topbar-xp-fill {
+      height: 100%;
+      background: var(--primary);
+      transition: width 1.2s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    /* Mobile drawer */
+    .mobile-overlay {
+      display: none;
+      position: fixed; inset: 0; z-index: 30;
+      background: rgba(0,0,0,0.6);
+    }
+    .mobile-overlay.open { display: block; }
+    .mobile-drawer {
+      position: fixed; top: 0; left: 0; bottom: 0; z-index: 40;
+      width: 280px;
+      background: var(--background-secondary);
+      border-right: 1px solid var(--border);
+      overflow-y: auto;
+      transform: translateX(-100%);
+      transition: transform 0.25s ease;
+    }
+    .mobile-drawer.open { transform: translateX(0); }
+    .mobile-drawer-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px; border-bottom: 1px solid var(--border);
+    }
+    .mobile-close-btn {
+      background: none; border: none;
+      padding: 6px; border-radius: 8px;
+      color: var(--muted-foreground);
+      transition: background 0.15s;
+    }
+    .mobile-close-btn:hover { background: var(--card-elevated); }
+    .mobile-nav { padding: 12px; }
+    .mobile-nav-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 12px; border-radius: 10px;
+      font-family: 'Noto Sans JP', sans-serif;
+      font-size: 14px; font-weight: 500;
+      color: var(--foreground);
+      cursor: pointer; transition: all 0.15s;
+      margin-bottom: 2px;
+    }
+    .mobile-nav-item:hover { background: var(--card); }
+    .mobile-nav-item.active { background: var(--primary-dim); color: var(--primary); }
+
+    /* ── Page Content ─────────────────────────────────────── */
+    .page-content {
+      flex: 1;
+      overflow-y: auto;
+      padding-bottom: 72px; /* mobile nav space */
+    }
+    @media (min-width: 1024px) { .page-content { padding-bottom: 0; } }
+    .content-inner {
+      max-width: 1600px;
+      margin: 0 auto;
+      padding: 24px 16px;
+    }
+    @media (min-width: 1024px) { .content-inner { padding: 24px 24px; } }
+    @media (min-width: 1280px) { .content-inner { padding: 24px 32px; } }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+    @media (min-width: 1024px) {
+      .dashboard-grid { grid-template-columns: 1fr 1fr 1fr; }
+    }
+    @media (min-width: 1280px) {
+      .dashboard-grid { grid-template-columns: 1fr 1fr 1fr 320px; }
+    }
+    .col-main {
+      display: flex; flex-direction: column; gap: 20px;
+    }
+    @media (min-width: 1024px) {
+      .col-main { grid-column: 1 / 3; }
+    }
+    @media (min-width: 1280px) {
+      .col-main { grid-column: 1 / 4; }
+    }
+    .col-side {
+      display: flex; flex-direction: column; gap: 20px;
+    }
+
+    /* ── Welcome Banner ───────────────────────────────────── */
+    .welcome-banner {
+      position: relative; overflow: hidden;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: linear-gradient(135deg, #1A0D12 0%, #16161E 60%, #0F0F14 100%);
+    }
+    .banner-watermark {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: flex-end;
+      padding-right: 32px;
+      pointer-events: none; user-select: none; opacity: 0.05;
+      font-family: 'Noto Serif JP', serif;
+      font-size: 160px; font-weight: 700;
+      color: var(--primary); line-height: 1;
+    }
+    .banner-body {
+      position: relative; z-index: 1;
+      padding: 24px;
+      display: flex;
+      flex-direction: column; gap: 20px;
+    }
+    @media (min-width: 768px) { .banner-body { flex-direction: row; align-items: center; } }
+    .banner-text { flex: 1; }
+    .banner-tagline {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px; color: var(--muted-foreground);
+      text-transform: uppercase; letter-spacing: 0.15em;
+      margin-bottom: 6px;
+    }
+    .banner-greeting {
+      font-size: clamp(18px, 2.5vw, 24px);
+      font-weight: 800; color: var(--foreground);
+      margin-bottom: 6px; letter-spacing: -0.4px;
+    }
+    .banner-greeting .accent { color: var(--primary); }
+    .banner-streak {
+      font-size: 14px; color: var(--muted-foreground);
+      margin-bottom: 16px;
+    }
+    .banner-streak .em { color: var(--accent); font-weight: 700; }
+    .banner-actions {
+      display: flex; align-items: center;
+      flex-wrap: wrap; gap: 10px;
+    }
+    .btn-continue {
+      display: flex; align-items: center; gap: 8px;
+      padding: 9px 16px; border-radius: 10px; border: none;
+      background: var(--primary); color: #fff;
+      font-size: 13px; font-weight: 700;
+      transition: opacity 0.2s, transform 0.15s;
+    }
+    .btn-continue:hover { opacity: 0.9; }
+    .btn-continue:active { transform: scale(0.97); }
+    .streak-badge {
+      display: flex; align-items: center; gap: 6px;
+      padding: 8px 12px; border-radius: 10px;
+      background: var(--card-elevated); border: 1px solid var(--border);
+      font-size: 13px;
+    }
+    .banner-ring-wrap {
+      flex-shrink: 0;
+      display: flex; align-items: center; gap: 16px;
+    }
+    .ring-label {
+      text-align: center;
+    }
+    .ring-label p { font-size: 11px; color: var(--muted-foreground); margin-top: 4px; }
+
+    /* XP Progress bar */
+    .banner-footer {
+      position: relative; z-index: 1;
+      padding: 0 24px 16px;
+    }
+    .xp-bar-row {
+      display: flex; justify-content: space-between;
+      font-size: 11px; margin-bottom: 5px;
+    }
+    .xp-bar-row span { color: var(--muted-foreground); }
+    .xp-bar-row .pct { font-family: 'JetBrains Mono', monospace; color: var(--primary); }
+    .xp-bar-track {
+      height: 6px; border-radius: 10px;
+      background: var(--card-elevated); overflow: hidden;
+    }
+    .xp-bar-fill {
+      height: 100%; border-radius: 10px;
+      background: linear-gradient(90deg, var(--primary), #F06080);
+      transition: width 1.2s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    /* ── Stats Grid ───────────────────────────────────────── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+    }
+    @media (min-width: 640px) { .stats-grid { grid-template-columns: repeat(4, 1fr); } }
+    .stat-card {
+      border-radius: 14px; border: 1px solid var(--border);
+      background: var(--card); padding: 16px;
+      cursor: default;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .stat-card:hover { transform: translateY(-3px); box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
+    .stat-card-top {
+      display: flex; justify-content: space-between;
+      align-items: center; margin-bottom: 12px;
+    }
+    .stat-icon {
+      width: 32px; height: 32px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .stat-delta {
+      display: flex; align-items: center; gap: 3px;
+      font-size: 11px; font-weight: 600;
+    }
+    .stat-delta.pos { color: #4ade80; }
+    .stat-delta.neg { color: var(--primary); }
+    .stat-val {
+      font-size: 30px; font-weight: 800;
+      font-variant-numeric: tabular-nums;
+      color: var(--foreground); letter-spacing: -1px;
+    }
+    .stat-unit { font-size: 13px; color: var(--muted-foreground); margin-left: 3px; }
+    .stat-name { font-size: 11px; font-weight: 600; color: var(--muted-foreground); margin: 2px 0; }
+    .stat-sub { font-size: 10px; color: var(--foreground-subtle); }
+
+    /* ── JLPT Cards ───────────────────────────────────────── */
+    .section-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .section-title { font-size: 15px; font-weight: 700; color: var(--foreground); }
+    .section-sub { font-size: 11px; color: var(--muted-foreground); font-family: 'JetBrains Mono', monospace; }
+
+    .jlpt-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+    @media (min-width: 640px) { .jlpt-grid { grid-template-columns: repeat(3, 1fr); } }
+    @media (min-width: 1280px) { .jlpt-grid { grid-template-columns: repeat(5, 1fr); } }
+
+    .jlpt-card {
+      border-radius: 14px; border: 1px solid;
+      background: var(--card); padding: 16px;
+      cursor: pointer; position: relative; overflow: hidden;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .jlpt-card:hover { transform: translateY(-3px); box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
+    .jlpt-watermark {
+      position: absolute; top: 8px; right: 8px;
+      font-family: 'Noto Serif JP', serif;
+      font-size: 48px; font-weight: 700;
+      opacity: 0.1; pointer-events: none; line-height: 1;
+    }
+    .jlpt-badge {
+      display: inline-block;
+      padding: 2px 8px; border-radius: 6px;
+      font-size: 11px; font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+      margin-bottom: 8px;
+    }
+    .jlpt-status { font-size: 10px; color: var(--muted-foreground); }
+    .jlpt-title {
+      font-family: 'Noto Serif JP', serif;
+      font-size: 18px; font-weight: 700;
+      margin-bottom: 2px;
+    }
+    .jlpt-subtitle { font-size: 11px; color: var(--muted-foreground); margin-bottom: 4px; }
+    .jlpt-desc { font-size: 11px; color: var(--foreground-subtle); line-height: 1.5; margin-bottom: 12px; }
+    .jlpt-bar-row {
+      display: flex; justify-content: space-between;
+      font-size: 10px; margin-bottom: 4px;
+    }
+    .jlpt-bar-row .count { color: var(--muted-foreground); }
+    .jlpt-bar-track {
+      height: 6px; border-radius: 6px;
+      background: var(--card-elevated); overflow: hidden;
+      margin-bottom: 12px;
+    }
+    .jlpt-bar-fill {
+      height: 100%; border-radius: 6px;
+      transition: width 1s cubic-bezier(0.4,0,0.2,1);
+    }
+    .jlpt-btn {
+      width: 100%; display: flex; align-items: center;
+      justify-content: center; gap: 4px;
+      padding: 7px; border-radius: 9px;
+      font-size: 11px; font-weight: 700; border: 1px solid;
+      transition: all 0.15s;
+    }
+    .jlpt-btn:active { transform: scale(0.97); }
+    .jlpt-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* ── Kanji Section ────────────────────────────────────── */
+    .kanji-wrap {
+      border-radius: 14px; border: 1px solid var(--border);
+      background: var(--card); overflow: hidden;
+    }
+    .kanji-tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border);
+      background: var(--card-elevated);
+    }
+    .kanji-tab-btn {
+      flex: 1; padding: 12px 0;
+      border: none; background: none;
+      font-size: 13px; font-weight: 600;
+      color: var(--muted-foreground);
+      position: relative; transition: all 0.15s;
+    }
+    .kanji-tab-btn.active { background: var(--card); }
+    .kanji-tab-indicator {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      height: 2px; border-radius: 2px;
+      display: none;
+    }
+    .kanji-tab-btn.active .kanji-tab-indicator { display: block; }
+    .kanji-grid {
+      padding: 16px;
+      display: grid;
+      gap: 8px;
+      grid-template-columns: repeat(auto-fill, minmax(76px, 1fr));
+    }
+    .kanji-cell {
+      position: relative;
+      border-radius: 10px; border: 1px solid var(--border);
+      background: var(--card-elevated);
+      padding: 8px; cursor: pointer;
+      display: flex; flex-direction: column;
+      align-items: center; gap: 3px;
+      transition: border-color 0.2s, transform 0.15s;
+    }
+    .kanji-cell:hover { border-color: var(--primary); transform: translateY(-1px); }
+    .kanji-cell:active { transform: scale(0.97); }
+    .kanji-learned-dot {
+      position: absolute; top: 5px; right: 5px;
+      width: 6px; height: 6px; border-radius: 50%;
+    }
+    .kanji-char {
+      font-family: 'Noto Serif JP', serif;
+      font-size: 26px; line-height: 1;
+    }
+    .kanji-reading {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px; color: var(--muted-foreground);
+      text-align: center; width: 100%;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .kanji-meaning {
+      font-size: 9px; color: var(--foreground-subtle);
+      text-align: center; width: 100%;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .kanji-hover-overlay {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(30,30,42,0.8); border-radius: 10px;
+      opacity: 0; transition: opacity 0.15s;
+      pointer-events: none;
+    }
+    .kanji-cell:hover .kanji-hover-overlay { opacity: 1; }
+
+    /* Kanji Modal */
+    .modal-backdrop {
+      position: fixed; inset: 0; z-index: 50;
+      background: rgba(0,0,0,0.8);
+      display: flex; align-items: center; justify-content: center;
+      padding: 16px;
+    }
+    .modal-box {
+      width: 100%; max-width: 440px;
+      border-radius: 20px; border: 1px solid var(--border);
+      background: var(--card); padding: 24px;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.6);
+      animation: fadeUp 0.2s ease forwards;
+    }
+    .modal-header {
+      display: flex; align-items: flex-start;
+      justify-content: space-between; margin-bottom: 16px;
+    }
+    .modal-kanji-area { display: flex; align-items: center; gap: 12px; }
+    .modal-kanji-char {
+      font-family: 'Noto Serif JP', serif;
+      font-size: 80px; line-height: 1;
+    }
+    .modal-close-btn {
+      background: none; border: none;
+      padding: 8px; border-radius: 10px;
+      color: var(--muted-foreground);
+      transition: background 0.15s;
+    }
+    .modal-close-btn:hover { background: var(--card-elevated); }
+    .modal-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 10px; margin-bottom: 14px;
+    }
+    .modal-cell {
+      border-radius: 10px;
+      background: var(--card-elevated);
+      border: 1px solid var(--border);
+      padding: 12px;
+    }
+    .modal-cell-header {
+      display: flex; justify-content: space-between;
+      align-items: center; margin-bottom: 4px;
+    }
+    .modal-cell-label { font-size: 10px; color: var(--muted-foreground); text-transform: uppercase; letter-spacing: 0.05em; }
+    .modal-cell-jp { font-family: 'Noto Serif JP', serif; font-size: 12px; color: var(--muted-foreground); }
+    .modal-cell-val { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--foreground); }
+    .modal-speak-btn {
+      background: none; border: none;
+      display: flex; align-items: center; gap: 4px;
+      font-size: 10px; color: var(--primary);
+      margin-top: 4px; padding: 0;
+      transition: opacity 0.2s;
+    }
+    .modal-speak-btn:hover { opacity: 0.7; }
+    .modal-example {
+      border-radius: 10px;
+      background: var(--card-elevated);
+      border: 1px solid var(--border);
+      padding: 12px; margin-bottom: 14px;
+    }
+    .modal-example-header {
+      display: flex; align-items: center; gap: 8px;
+      margin-bottom: 8px;
+    }
+    .modal-example-label { font-size: 11px; color: var(--muted-foreground); flex: 1; }
+    .modal-example-jp {
+      font-family: 'Noto Sans JP', sans-serif;
+      font-size: 14px; color: var(--foreground); margin-bottom: 4px;
+    }
+    .modal-example-en { font-size: 12px; color: var(--muted-foreground); font-style: italic; }
+    .modal-actions { display: flex; gap: 10px; }
+    .btn-mark-learned {
+      flex: 1; padding: 11px; border-radius: 10px;
+      font-size: 13px; font-weight: 700; border: 1px solid;
+      transition: all 0.15s;
+    }
+    .btn-mark-learned:active { transform: scale(0.97); }
+    .btn-modal-close {
+      padding: 11px 16px; border-radius: 10px;
+      font-size: 13px; font-weight: 600;
+      background: var(--card-elevated); border: 1px solid var(--border);
+      color: var(--muted-foreground); transition: color 0.15s;
+    }
+    .btn-modal-close:hover { color: var(--foreground); }
+
+    /* ── Vocabulary Section ───────────────────────────────── */
+    .vocab-mode-btns {
+      display: flex; gap: 8px;
+    }
+    .vocab-mode-btn {
+      padding: 6px 12px; border-radius: 8px;
+      font-size: 12px; font-weight: 600; border: 1px solid;
+      transition: all 0.15s;
+    }
+    .vocab-mode-btn:active { transform: scale(0.97); }
+
+    .vocab-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+    @media (min-width: 640px) { .vocab-grid { grid-template-columns: repeat(4, 1fr); } }
+
+    .vocab-card {
+      border-radius: 14px; border: 1px solid var(--border);
+      background: var(--card); padding: 16px;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      position: relative;
+    }
+    .vocab-card:hover { transform: translateY(-3px); box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
+    .vocab-card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px; }
+    .vocab-jp {
+      font-family: 'Noto Sans JP', sans-serif;
+      font-size: 20px; font-weight: 700; color: var(--foreground);
+    }
+    .vocab-speak-btn {
+      background: none; border: none;
+      padding: 4px; border-radius: 6px;
+      color: var(--primary); opacity: 0;
+      transition: opacity 0.15s, background 0.15s;
+    }
+    .vocab-card:hover .vocab-speak-btn { opacity: 1; }
+    .vocab-speak-btn:hover { background: var(--card-elevated); }
+    .vocab-romaji { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--muted-foreground); margin-bottom: 8px; }
+    .vocab-en { font-size: 13px; color: var(--foreground-subtle); margin-bottom: 12px; }
+    .vocab-cat {
+      display: inline-flex; align-items: center;
+      padding: 2px 8px; border-radius: 6px;
+      font-size: 10px; font-weight: 600;
+    }
+
+    /* Flashcard */
+    .flashcard-hint { font-size: 11px; color: var(--muted-foreground); text-align: center; margin-bottom: 12px; }
+    .flashcard-wrap {
+      width: 100%; max-width: 360px;
+      margin: 0 auto;
+      perspective: 1000px;
+      cursor: pointer; margin-bottom: 16px;
+    }
+    .flashcard-inner {
+      width: 100%; height: 200px;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.6s cubic-bezier(0.4,0,0.2,1);
+    }
+    .flashcard-inner.flipped { transform: rotateY(180deg); }
+    .flashcard-face {
+      position: absolute; inset: 0;
+      border-radius: 20px; border: 1px solid var(--border);
+      background: var(--card);
+      backface-visibility: hidden;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 10px; padding: 24px;
+    }
+    .flashcard-back {
+      transform: rotateY(180deg);
+      border-color: var(--primary);
+      border-width: 2px;
+    }
+    .flashcard-jp {
+      font-family: 'Noto Sans JP', sans-serif;
+      font-size: 48px; font-weight: 700; color: var(--foreground);
+    }
+    .flashcard-romaji { font-family: 'JetBrains Mono', monospace; font-size: 14px; color: var(--muted-foreground); }
+    .flashcard-audio-btn {
+      display: flex; align-items: center; gap: 6px;
+      padding: 6px 12px; border-radius: 8px; border: 1px solid;
+      font-size: 12px; color: var(--primary);
+      border-color: rgba(232,68,106,0.3);
+      background: var(--primary-dim);
+      transition: opacity 0.2s;
+    }
+    .flashcard-audio-btn:hover { opacity: 0.8; }
+    .flashcard-tip { font-size: 11px; color: var(--foreground-subtle); }
+    .flashcard-en { font-size: 17px; font-weight: 700; color: var(--foreground); text-align: center; }
+    .flashcard-nav {
+      display: flex; align-items: center; justify-content: center; gap: 12px;
+    }
+    .fc-nav-btn {
+      padding: 8px; border-radius: 10px;
+      background: var(--card-elevated); border: 1px solid var(--border);
+      color: var(--foreground); transition: border-color 0.15s;
+    }
+    .fc-nav-btn:hover { border-color: var(--primary); }
+    .fc-counter { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--muted-foreground); }
+    .fc-reset-btn {
+      padding: 8px; border-radius: 10px;
+      background: var(--card-elevated); border: 1px solid var(--border);
+      color: var(--muted-foreground); transition: border-color 0.15s;
+      margin-left: 8px;
+    }
+    .fc-reset-btn:hover { border-color: var(--primary); }
+
+    /* ── XP Level Card ────────────────────────────────────── */
+    .xp-card {
+      border-radius: 14px; border: 1px solid var(--border);
+      background: var(--card); padding: 20px;
+    }
+    .xp-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+    .xp-level-label { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted-foreground); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px; }
+    .xp-level-num {
+      font-size: 40px; font-weight: 900; color: var(--foreground);
+      font-variant-numeric: tabular-nums; letter-spacing: -2px;
+      line-height: 1;
+    }
+    .xp-level-rank { font-size: 13px; color: var(--muted-foreground); }
+    .xp-badge-icon {
+      width: 48px; height: 48px; border-radius: 14px;
+      background: linear-gradient(135deg, var(--accent), #A07020);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .xp-progress-row { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 6px; }
+    .xp-progress-row span { color: var(--muted-foreground); }
+    .xp-bar-track {
+      height: 8px; border-radius: 8px;
+      background: var(--card-elevated); overflow: hidden;
+      margin-bottom: 6px;
+    }
+    .xp-bar-fill {
+      height: 100%; border-radius: 8px;
+      background: linear-gradient(90deg, var(--accent), #E0B050);
+      transition: width 1s cubic-bezier(0.4,0,0.2,1);
+    }
+    .xp-to-next { font-size: 11px; color: var(--muted-foreground); margin-bottom: 16px; }
+    .week-dots-label { font-size: 11px; color: var(--muted-foreground); margin-bottom: 8px; }
+    .week-dots { display: flex; gap: 6px; }
+    .week-dot-wrap { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+    .week-dot {
+      width: 28px; height: 28px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; font-family: 'JetBrains Mono', monospace;
+      font-weight: 600; border: 1px solid;
+      transition: all 0.2s;
+    }
+    .week-dot.active { background: var(--primary-dim); border-color: var(--primary); color: var(--primary); }
+    .week-dot.inactive { background: var(--card-elevated); border-color: var(--border); color: var(--foreground-subtle); }
+    .week-dot-day { font-size: 9px; color: var(--foreground-subtle); }
+    .xp-footer {
+      margin-top: 16px; padding-top: 16px;
+      border-top: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .xp-target {
+      display: flex; align-items: center; gap: 8px;
+    }
+    .xp-target-badge {
+      padding: 2px 8px; border-radius: 6px;
+      font-size: 10px; font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+      background: var(--jlpt-n4-dim); color: var(--jlpt-n4);
+      border: 1px solid var(--jlpt-n4);
+    }
+    .xp-target-label { font-size: 11px; color: var(--muted-foreground); }
+    .xp-rank { font-size: 12px; font-weight: 700; color: var(--accent); }
+
+    /* ── Pomodoro Timer ───────────────────────────────────── */
+    .pomodoro-card {
+      border-radius: 14px; border: 1px solid var(--border);
+      background: var(--card); padding: 20px;
+    }
+    .pomodoro-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .pomodoro-title { font-size: 14px; font-weight: 700; color: var(--foreground); }
+    .session-dots { display: flex; gap: 4px; }
+    .session-dot {
+      width: 8px; height: 8px; border-radius: 50%; border: 1px solid;
+      transition: all 0.2s;
+    }
+    .pomodoro-modes {
+      display: flex; border: 1px solid var(--border); border-radius: 10px;
+      overflow: hidden; margin-bottom: 20px;
+    }
+    .pomodoro-mode-btn {
+      flex: 1; padding: 7px 4px;
+      border: none; font-size: 11px; font-weight: 600;
+      transition: all 0.15s;
+    }
+    .pomodoro-ring { display: flex; flex-direction: column; align-items: center; margin-bottom: 16px; }
+    .ring-wrap { position: relative; width: 128px; height: 128px; margin-bottom: 16px; }
+    .ring-wrap svg { width: 128px; height: 128px; transform: rotate(-90deg); }
+    .ring-center {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+    }
+    .ring-time {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 24px; font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      color: var(--foreground);
+      line-height: 1;
+    }
+    .ring-mode-label { font-size: 10px; color: var(--muted-foreground); margin-top: 3px; }
+    .pomodoro-btns { display: flex; align-items: center; gap: 10px; }
+    .btn-pomodoro-play {
+      display: flex; align-items: center; gap: 8px;
+      padding: 9px 20px; border-radius: 10px; border: none;
+      font-size: 13px; font-weight: 700; color: #fff;
+      transition: opacity 0.2s, transform 0.15s;
+    }
+    .btn-pomodoro-play:hover { opacity: 0.9; }
+    .btn-pomodoro-play:active { transform: scale(0.97); }
+    .btn-pomodoro-reset {
+      padding: 9px; border-radius: 10px;
+      background: var(--card-elevated); border: 1px solid var(--border);
+      color: var(--muted-foreground); transition: border-color 0.15s;
+    }
+    .btn-pomodoro-reset:hover { border-color: var(--primary); }
+    .pomodoro-sessions-label { font-size: 11px; color: var(--muted-foreground); margin-top: 10px; }
+
+    /* ── Activity Feed ────────────────────────────────────── */
+    .activity-card {
+      border-radius: 14px; border: 1px solid var(--border);
+      background: var(--card); padding: 20px;
+    }
+    .activity-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .activity-title { font-size: 14px; font-weight: 700; color: var(--foreground); }
+    .activity-when { font-size: 11px; color: var(--muted-foreground); }
+    .activity-list { display: flex; flex-direction: column; gap: 12px; }
+    .activity-item { display: flex; align-items: flex-start; gap: 12px; }
+    .activity-icon {
+      width: 28px; height: 28px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; margin-top: 2px;
+    }
+    .activity-label { font-size: 12px; font-weight: 600; color: var(--foreground); line-height: 1.3; }
+    .activity-detail { font-size: 11px; color: var(--muted-foreground); }
+    .activity-time { font-size: 10px; color: var(--foreground-subtle); flex-shrink: 0; }
+
+    /* ── Mobile Bottom Nav ────────────────────────────────── */
+    .mobile-bottom-nav {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      z-index: 30;
+      height: 56px;
+      border-top: 1px solid var(--border);
+      background: rgba(30,30,42,0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      display: flex;
+    }
+    @media (min-width: 1024px) { .mobile-bottom-nav { display: none; } }
+    .mob-nav-item {
+      flex: 1;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 2px; cursor: pointer;
+      transition: all 0.15s;
+    }
+    .mob-nav-item:active { transform: scale(0.93); }
+    .mob-nav-label { font-size: 10px; font-weight: 600; }
+
+    /* ── Utility ──────────────────────────────────────────── */
+    .fade-in { opacity: 0; animation: fadeUp 0.5s ease forwards; }
+    .s1 { animation-delay: 0.05s; }
+    .s2 { animation-delay: 0.12s; }
+    .s3 { animation-delay: 0.18s; }
+    .s4 { animation-delay: 0.24s; }
+    .s5 { animation-delay: 0.30s; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes bounceScale {
+      0%,100% { transform: scale(1); }
+      50%      { transform: scale(1.15); }
+    }
+
+    /* Auth guard hide */
+    /* auth-hidden removed */
+
+    /* Toast */
+    .toast-container {
+      position: fixed; bottom: 72px; left: 50%;
+      transform: translateX(-50%);
+      z-index: 9999; display: flex;
+      flex-direction: column; gap: 8px;
+      align-items: center; pointer-events: none;
+    }
+    @media (min-width: 1024px) { .toast-container { bottom: 24px; } }
+    .toast {
+      padding: 11px 18px; border-radius: 10px;
+      font-size: 13px; font-weight: 600;
+      white-space: nowrap;
+      pointer-events: auto;
+      animation: fadeUp 0.3s cubic-bezier(0.34,1.56,0.64,1) forwards;
+    }
+    .toast.success { background: var(--jlpt-n5); color: #fff; }
+    .toast.error   { background: var(--primary); color: #fff; }
+    .toast.info    { background: var(--card-elevated); color: var(--foreground); border: 1px solid var(--border); }
+    .toast.out     { animation: toastOut 0.3s ease forwards; }
+    @keyframes toastOut { to { opacity:0; transform: translateY(8px) scale(0.95); } }
+  </style>
 </head>
 <body>
 
-<!-- Auth Loading Screen -->
-<div id="auth-loading">
-  <div class="auth-logo-mark">禅</div>
-  <p class="auth-loading-text">Checking authentication<span class="auth-loading-dots"></span></p>
+<div class="toast-container" id="toast-container"></div>
+
+<!-- ══════════════════════════════════════════════════════════
+     APP SHELL
+═══════════════════════════════════════════════════════════ -->
+<div class="app-shell">
+
+  <!-- ── SIDEBAR ── -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-inner" id="sb-logo-inner">
+        <div class="logo-mark">禅</div>
+        <span class="logo-text">NihongoZen</span>
+      </div>
+      <button class="sidebar-toggle-btn" id="sidebar-toggle" title="Collapse">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+      </button>
+    </div>
+
+    <nav class="sidebar-nav" id="sidebar-nav">
+      <!-- Study -->
+      <p class="nav-section-label" data-label="Study">Study</p>
+      <div class="nav-item active" data-href="index.html">
+        <svg class="nav-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--primary)"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span class="nav-item-label">ホーム</span>
+      </div>
+      <div class="nav-item" data-href="kanji.html">
+        <svg class="nav-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--jlpt-n4)"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/><path d="m9 9.5 6 0"/><path d="m9 13.5 3 0"/></svg>
+        <span class="nav-item-label">漢字</span>
+        <span class="nav-badge">284</span>
+      </div>
+      <div class="nav-item" data-href="vocab.html">
+        <svg class="nav-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--muted-foreground)"><path d="m16 6 4 14"/><path d="M12 6v14"/><path d="M8 8v12"/><path d="M4 4v16"/></svg>
+        <span class="nav-item-label">語彙</span>
+      </div>
+      <div class="nav-item" data-href="listening.html">
+        <svg class="nav-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--muted-foreground)"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg>
+        <span class="nav-item-label">聴解</span>
+        <span class="nav-badge">3</span>
+      </div>
+      <div class="nav-item" data-href="reading.html">
+        <svg class="nav-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--muted-foreground)"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
+        <span class="nav-item-label">読解</span>
+      </div>
+      <div class="nav-item" data-href="grammar.html">
+        <svg class="nav-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--muted-foreground)"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        <span class="nav-item-label">文法</span>
+      </div>
+
+      <!-- JLPT -->
+      <p class="nav-section-label" data-label="JLPT">JLPT Levels</p>
+      <div class="nav-item" data-href="jlpt-n5.html">
+        <svg class="nav-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--jlpt-n5)"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+        <span class="nav-item-label">N5 初級</span>
+      </div>
+      <div class="nav-item" data-href="jlpt-n4.html">
+        <svg class="nav-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--jlpt-n4)"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+        <span class="nav-item-label">N4 初中級</span>
+      </div>
+      <div class="nav-item" data-href="jlpt-n3.html">
+        <svg class="nav-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--jlpt-n3)"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+        <span class="nav-item-label">N3 中級</span>
+      </div>
+
+      <!-- Tools -->
+      <p class="nav-section-label" data-label="Tools">Tools</p>
+      <div class="nav-item" data-href="progress.html">
+        <svg class="nav-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--muted-foreground)"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        <span class="nav-item-label">Progress</span>
+      </div>
+      <div class="nav-item" data-href="timer.html">
+        <svg class="nav-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--muted-foreground)"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <span class="nav-item-label">Timer</span>
+      </div>
+      <div class="nav-item" data-href="kana.html">
+        <svg class="nav-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--muted-foreground)"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
+        <span class="nav-item-label">Kana Chart</span>
+      </div>
+      <div class="nav-item" data-href="profile.html">
+        <svg class="nav-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--muted-foreground)"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span class="nav-item-label">Profile</span>
+      </div>
+    </nav>
+
+    <div class="sidebar-user">
+      <div class="sidebar-user-inner" id="sb-user-btn">
+        <div class="user-avatar" id="sb-avatar">K</div>
+        <div class="user-info" id="sb-user-info">
+          <div class="user-name" id="sb-username">Kenji</div>
+          <div class="user-level">Level 12 · Scholar</div>
+        </div>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--muted-foreground);flex-shrink:0" id="sb-settings-icon"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ── MAIN ── -->
+  <div class="main-wrap">
+
+    <!-- Topbar -->
+    <header class="topbar">
+      <div class="topbar-inner">
+        <!-- Mobile logo -->
+        <div class="topbar-logo">
+          <div class="logo-mark" style="width:26px;height:26px;font-size:11px;border-radius:7px;">禅</div>
+          <span class="topbar-logo-text">NihongoZen</span>
+        </div>
+
+        <!-- Desktop pill nav -->
+        <nav class="topbar-nav">
+          <button class="pill-nav-btn active">ホーム</button>
+          <button class="pill-nav-btn">漢字</button>
+          <button class="pill-nav-btn">語彙</button>
+          <button class="pill-nav-btn">聴解</button>
+          <button class="pill-nav-btn">読解</button>
+          <button class="pill-nav-btn">文法</button>
+          <button class="pill-nav-btn">かな</button>
+        </nav>
+
+        <div class="topbar-spacer"></div>
+
+        <div class="topbar-right">
+          <!-- Streak -->
+          <div class="topbar-badge">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--accent)"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
+            <span style="font-weight:700;color:var(--accent);font-variant-numeric:tabular-nums" id="topbar-streak">14</span>
+          </div>
+          <!-- XP -->
+          <div class="topbar-badge">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--primary)"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            <span style="font-weight:700;color:var(--foreground);font-variant-numeric:tabular-nums" id="topbar-xp">340 XP</span>
+          </div>
+          <!-- Notifications -->
+          <button class="topbar-icon-btn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            <span class="notif-dot"></span>
+          </button>
+          <!-- User menu -->
+          <div style="position:relative">
+            <button class="user-menu-btn" id="user-menu-btn" onclick="toggleUserMenu()">
+              <div class="user-avatar" style="width:28px;height:28px;font-size:11px" id="topbar-avatar">K</div>
+              <span class="user-menu-name" id="topbar-username">Kenji</span>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--muted-foreground)"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+            <div id="user-dropdown" style="display:none">
+              <div class="dropdown-overlay" onclick="closeUserMenu()"></div>
+              <div class="user-dropdown">
+                <div class="dropdown-header">
+                  <div class="dropdown-header-name" id="dropdown-username">Kenji Tanaka</div>
+                  <div class="dropdown-header-sub">Level 12 · Scholar</div>
+                </div>
+                <div class="dropdown-item" onclick="window.location.href='profile.html'">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                  Profile
+                </div>
+                <div class="dropdown-item" onclick="window.location.href='profile.html'">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+                  Settings
+                </div>
+                <div class="dropdown-item" onclick="window.location.href='progress.html'">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                  Progress
+                </div>
+                <div class="dropdown-divider"></div>
+                <div class="dropdown-item danger" id="signout-btn" onclick="doSignOut()">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                  Sign Out
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Mobile hamburger -->
+          <button class="hamburger-btn" id="hamburger-btn" onclick="openMobileDrawer()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="topbar-xp-bar"><div class="topbar-xp-fill" id="topbar-xp-bar" style="width:0%"></div></div>
+    </header>
+
+    <!-- Page content -->
+    <main class="page-content">
+      <div class="content-inner">
+        <div class="dashboard-grid">
+
+          <!-- ── MAIN COLUMN ── -->
+          <div class="col-main">
+
+            <!-- Welcome Banner -->
+            <div class="welcome-banner fade-in s1">
+              <div class="banner-watermark">禅</div>
+              <div class="banner-body">
+                <div class="banner-text">
+                  <p class="banner-tagline">今日も一緒に学びましょう</p>
+                  <h1 class="banner-greeting">おはようございます、<span class="accent" id="banner-name">Kenji</span> さん 👋</h1>
+                  <p class="banner-streak">You're on a <span class="em">14-day streak</span> 🔥 — keep the momentum going today!</p>
+                  <div class="banner-actions">
+                    <button class="btn-continue">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                      Continue Studying
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                    </button>
+                    <div class="streak-badge">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--accent)"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
+                      <span style="font-weight:700;color:var(--accent)">14</span>
+                      <span style="color:var(--muted-foreground);font-size:13px">day streak</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="banner-ring-wrap">
+                  <div class="ring-label">
+                    <div class="relative" style="position:relative;width:112px;height:112px">
+                      <svg width="112" height="112" viewBox="0 0 100 100" style="transform:rotate(-90deg)">
+                        <circle cx="50" cy="50" r="45" fill="none" stroke="var(--border)" stroke-width="6"/>
+                        <circle cx="50" cy="50" r="45" fill="none" stroke="var(--primary)" stroke-width="6"
+                          stroke-linecap="round"
+                          stroke-dasharray="282.74"
+                          id="banner-ring" stroke-dashoffset="282.74"
+                          style="transition: stroke-dashoffset 1.2s cubic-bezier(0.4,0,0.2,1)"/>
+                      </svg>
+                      <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
+                        <span style="font-size:20px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--foreground)">340</span>
+                        <span style="font-size:10px;color:var(--muted-foreground);font-family:'JetBrains Mono',monospace">/ 500 XP</span>
+                      </div>
+                    </div>
+                    <p>Today's XP</p>
+                  </div>
+                </div>
+              </div>
+              <div class="banner-footer">
+                <div class="xp-bar-row">
+                  <span>Daily XP Progress</span>
+                  <span class="pct">68%</span>
+                </div>
+                <div class="xp-bar-track">
+                  <div class="xp-bar-fill" id="banner-xp-bar" style="width:0%"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="stats-grid fade-in s2">
+              <div class="stat-card">
+                <div class="stat-card-top">
+                  <div class="stat-icon" style="background:var(--primary-dim)">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                  </div>
+                  <span class="stat-delta pos">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+                    +12%
+                  </span>
+                </div>
+                <div><span class="stat-val">340</span><span class="stat-unit">XP</span></div>
+                <p class="stat-name">XP Today</p>
+                <p class="stat-sub">Goal: 500 XP</p>
+                <p class="stat-sub" style="margin-top:2px">vs yesterday</p>
+              </div>
+              <div class="stat-card">
+                <div class="stat-card-top">
+                  <div class="stat-icon" style="background:var(--accent-dim)">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
+                  </div>
+                  <span class="stat-delta pos">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+                    +2
+                  </span>
+                </div>
+                <div><span class="stat-val">14</span><span class="stat-unit">days</span></div>
+                <p class="stat-name">Day Streak</p>
+                <p class="stat-sub">Best: 21 days</p>
+                <p class="stat-sub" style="margin-top:2px">this week</p>
+              </div>
+              <div class="stat-card">
+                <div class="stat-card-top">
+                  <div class="stat-icon" style="background:var(--jlpt-n4-dim)">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--jlpt-n4)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>
+                  </div>
+                  <span class="stat-delta pos">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+                    +8
+                  </span>
+                </div>
+                <div><span class="stat-val">284</span><span class="stat-unit">kanji</span></div>
+                <p class="stat-name">Kanji Learned</p>
+                <p class="stat-sub">N4 level: 72%</p>
+                <p class="stat-sub" style="margin-top:2px">this week</p>
+              </div>
+              <div class="stat-card">
+                <div class="stat-card-top">
+                  <div class="stat-icon" style="background:var(--jlpt-n3-dim)">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--jlpt-n3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
+                  </div>
+                  <span class="stat-delta neg">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 17 13.5 8.5 8.5 13.5 2 7"/><polyline points="16 17 22 17 22 11"/></svg>
+                    -4%
+                  </span>
+                </div>
+                <div><span class="stat-val">76</span><span class="stat-unit">%</span></div>
+                <p class="stat-name">Quiz Accuracy</p>
+                <p class="stat-sub">Needs improvement</p>
+                <p class="stat-sub" style="margin-top:2px">vs last week</p>
+              </div>
+            </div>
+
+            <!-- JLPT Level Cards -->
+            <div class="fade-in s3">
+              <div class="section-header">
+                <h2 class="section-title">JLPT Levels</h2>
+                <span class="section-sub">N5 → N1</span>
+              </div>
+              <div class="jlpt-grid" id="jlpt-grid"></div>
+            </div>
+
+            <!-- Kanji Section -->
+            <div class="fade-in s4">
+              <div class="section-header">
+                <h2 class="section-title">Kanji Study</h2>
+                <span id="kanji-learned-count" style="font-size:12px;color:var(--muted-foreground)">0 learned</span>
+              </div>
+              <div class="kanji-wrap">
+                <div class="kanji-tabs" id="kanji-tabs"></div>
+                <div class="kanji-grid" id="kanji-grid"></div>
+              </div>
+            </div>
+
+            <!-- Vocab Section -->
+            <div class="fade-in s5">
+              <div class="section-header">
+                <h2 class="section-title">Vocabulary</h2>
+                <div class="vocab-mode-btns">
+                  <button class="vocab-mode-btn" id="vocab-grid-btn" onclick="setVocabMode('grid')">Grid</button>
+                  <button class="vocab-mode-btn" id="vocab-fc-btn" onclick="setVocabMode('flashcard')">Flashcards</button>
+                </div>
+              </div>
+              <div id="vocab-grid-view"></div>
+              <div id="vocab-fc-view" style="display:none"></div>
+            </div>
+
+          </div><!-- /col-main -->
+
+          <!-- ── SIDE COLUMN ── -->
+          <div class="col-side">
+
+            <!-- XP Level Card -->
+            <div class="xp-card fade-in s2">
+              <div class="xp-top">
+                <div>
+                  <p class="xp-level-label">Current Level</p>
+                  <div style="display:flex;align-items:baseline;gap:8px">
+                    <span class="xp-level-num">12</span>
+                    <span class="xp-level-rank">Scholar</span>
+                  </div>
+                </div>
+                <div class="xp-badge-icon">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg>
+                </div>
+              </div>
+              <div class="xp-progress-row">
+                <span>4,820 XP</span><span>6,000 XP</span>
+              </div>
+              <div class="xp-bar-track">
+                <div class="xp-bar-fill" id="xp-level-bar" style="width:0%"></div>
+              </div>
+              <p class="xp-to-next">1,180 XP to Level 13</p>
+              <p class="week-dots-label">This week</p>
+              <div class="week-dots" id="week-dots"></div>
+              <div class="xp-footer">
+                <div class="xp-target">
+                  <span class="xp-target-badge">N4</span>
+                  <span class="xp-target-label">Current target</span>
+                </div>
+                <span class="xp-rank">Rank: Scholar</span>
+              </div>
+            </div>
+
+            <!-- Pomodoro Timer -->
+            <div class="pomodoro-card fade-in s3" id="pomodoro-card"></div>
+
+            <!-- Activity Feed -->
+            <div class="activity-card fade-in s4" id="activity-feed"></div>
+
+          </div><!-- /col-side -->
+        </div>
+      </div>
+    </main>
+
+    <!-- Mobile Bottom Nav -->
+    <nav class="mobile-bottom-nav">
+      <div class="mob-nav-item" onclick="window.location.href='index.html'">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span class="mob-nav-label" style="color:var(--primary)">Home</span>
+      </div>
+      <div class="mob-nav-item" onclick="window.location.href='kanji.html'">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--muted-foreground)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>
+        <span class="mob-nav-label" style="color:var(--muted-foreground)">Kanji</span>
+      </div>
+      <div class="mob-nav-item" onclick="window.location.href='vocab.html'">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--muted-foreground)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 6 4 14"/><path d="M12 6v14"/><path d="M8 8v12"/><path d="M4 4v16"/></svg>
+        <span class="mob-nav-label" style="color:var(--muted-foreground)">Vocab</span>
+      </div>
+      <div class="mob-nav-item" onclick="window.location.href='listening.html'">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--muted-foreground)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg>
+        <span class="mob-nav-label" style="color:var(--muted-foreground)">Listen</span>
+      </div>
+      <div class="mob-nav-item" onclick="window.location.href='profile.html'">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--muted-foreground)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span class="mob-nav-label" style="color:var(--muted-foreground)">Profile</span>
+      </div>
+    </nav>
+  </div><!-- /main-wrap -->
+</div><!-- /app-shell -->
+
+<!-- Mobile Drawer -->
+<div class="mobile-overlay" id="mobile-overlay" onclick="closeMobileDrawer()"></div>
+<div class="mobile-drawer" id="mobile-drawer">
+  <div class="mobile-drawer-header">
+    <div style="display:flex;align-items:center;gap:8px">
+      <div class="logo-mark">禅</div>
+      <span style="font-weight:700;color:var(--foreground)">NihongoZen</span>
+    </div>
+    <button class="mobile-close-btn" onclick="closeMobileDrawer()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <nav class="mobile-nav">
+    <div class="mobile-nav-item active">ホーム</div>
+    <div class="mobile-nav-item">漢字</div>
+    <div class="mobile-nav-item">語彙</div>
+    <div class="mobile-nav-item">聴解</div>
+    <div class="mobile-nav-item">読解</div>
+    <div class="mobile-nav-item">文法</div>
+    <div class="mobile-nav-item">かな</div>
+  </nav>
+</div>
+
+<!-- Kanji Modal -->
+<div class="modal-backdrop" id="kanji-modal" style="display:none" onclick="closeKanjiModal(event)">
+  <div class="modal-box" id="kanji-modal-box"></div>
 </div>
 
 <!-- ══════════════════════════════════════════════════════════
-     FIREBASE AUTH GUARD
-     Runs BEFORE app JS. Checks auth, redirects if not logged in,
-     then fires "nz:userReady" so the app can render with real user data.
+     AUTH GUARD (auth-guard.js logic inline)
 ═══════════════════════════════════════════════════════════ -->
 <script type="module">
 import { initializeApp }
@@ -92,103 +1530,72 @@ const app  = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db   = getFirestore(app);
 
-// Safety fallback — if Firebase is slow/offline, redirect after 6s
 const fallback = setTimeout(() => {
-  window.location.replace("login.html");
-}, 6000);
+  
+}, 4000);
 
 onAuthStateChanged(auth, async (user) => {
   clearTimeout(fallback);
 
   if (!user) {
-    // Not logged in → go to login
     window.location.replace("login.html");
     return;
   }
 
-  // ── Expose globally so pages.js can use real user data ──────
+  
+
   window._nzAuth    = auth;
   window._nzDb      = db;
   window._nzUser    = user;
-  window._nzSignOut = () =>
-    signOut(auth).then(() => window.location.replace("login.html"));
+  window._nzSignOut = () => signOut(auth).then(() => window.location.replace("login.html"));
 
-  // ── Create or update Firestore user document ────────────────
+  // Patch display name everywhere
+  const name = user.displayName ? user.displayName.split(" ")[0] : "Learner";
+  ["banner-name","topbar-username","sb-username","dropdown-username"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = id === "dropdown-username"
+      ? (user.displayName || "Learner")
+      : name;
+  });
+  ["topbar-avatar","sb-avatar"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = name[0].toUpperCase();
+  });
+
+  // Firestore
   const userRef  = doc(db, "users", user.uid);
   const userSnap = await getDoc(userRef);
 
   if (!userSnap.exists()) {
     await setDoc(userRef, {
-      uid:              user.uid,
-      displayName:      user.displayName || "Learner",
-      email:            user.email       || "",
-      photoURL:         user.photoURL    || "",
-      phone:            user.phoneNumber || "",
-      xp:               0,
-      xpGoal:           500,
-      streak:           1,
-      kanjiCount:       0,
-      lessonsCompleted: 0,
-      vocabMastered:    0,
-      quizAccuracy:     0,
-      level:            1,
-      levelXP:          0,
-      levelXPRequired:  200,
-      weeklyKanji:      0,
-      weeklyLessons:    0,
-      weeklyVocab:      0,
+      uid: user.uid, displayName: user.displayName || "Learner",
+      email: user.email || "", photoURL: user.photoURL || "",
+      xp: 0, xpGoal: 50, streak: 1, kanjiCount: 0,
+      lessonsCompleted: 0, vocabMastered: 0, quizAccuracy: 0,
+      level: 1, levelXP: 0, levelXPRequired: 200,
+      weeklyKanji: 0, weeklyLessons: 0, weeklyVocab: 0,
       weeklyAccuracyDelta: 0,
-      lastLogin:        serverTimestamp(),
-      createdAt:        serverTimestamp()
+      lastLogin: serverTimestamp(), createdAt: serverTimestamp()
     });
   } else {
     await updateDoc(userRef, { lastLogin: serverTimestamp() });
   }
 
-  // ── Load fresh user data ────────────────────────────────────
   const freshSnap = await getDoc(userRef);
   window._nzUserData = freshSnap.data();
-
-  // Sync State with real Firestore data
-  const d = window._nzUserData;
-  if (window.State) {
-    State.state.xpToday  = d.xp       || 0;
-    State.state.xpGoal   = d.xpGoal   || 500;
-    State.state.streak   = d.streak   || 1;
-    State.state.level    = d.level     || 1;
-    State.state.totalXP  = d.xp       || 0;
-    State.state.nextLevelXP = d.levelXPRequired || 200;
-  }
-
-  // ── Hide loading screen and launch the app ──────────────────
-  const loadingEl = document.getElementById("auth-loading");
-  if (loadingEl) {
-    loadingEl.classList.add("fade-out");
-    setTimeout(() => loadingEl.remove(), 400);
-  }
-
-  // Fire event for any listeners
-  document.dispatchEvent(new CustomEvent("nz:userReady", {
-    detail: { user, data: window._nzUserData }
-  }));
-
-  // Bootstrap the SPA
-  window._nzBootstrap();
+  document.dispatchEvent(new CustomEvent("nz:userReady", { detail: { user, data: freshSnap.data() } }));
 });
 
-// ── XP helper ───────────────────────────────────────────────
+// XP helper
 window._nzAddXP = async (amount) => {
   const user = auth.currentUser; if (!user) return;
   const userRef = doc(db, "users", user.uid);
   const snap = await getDoc(userRef); if (!snap.exists()) return;
   const d = snap.data();
-  const newXP = (d.xp||0)+amount;
-  const newLvlXP = (d.levelXP||0)+amount;
-  const req = d.levelXPRequired||200;
+  const newXP = (d.xp||0)+amount, newLvlXP=(d.levelXP||0)+amount, req=d.levelXPRequired||200;
   const lvlUp = newLvlXP >= req;
   await updateDoc(userRef, {
-    xp: newXP,
-    levelXP: lvlUp ? newLvlXP - req : newLvlXP,
+    xp: newXP, levelXP: lvlUp ? newLvlXP-req : newLvlXP,
     level: lvlUp ? (d.level||1)+1 : (d.level||1)
   });
   const fresh = await getDoc(userRef);
@@ -197,50 +1604,650 @@ window._nzAddXP = async (amount) => {
 </script>
 
 <!-- ══════════════════════════════════════════════════════════
-     APP JS — loaded after auth guard sets up globals
+     DASHBOARD JAVASCRIPT
 ═══════════════════════════════════════════════════════════ -->
-<script src="js/core.js"></script>
-<script src="nz-data.js"></script>
-<script src="nz-kana.js"></script>
-<script src="nz-vocab-module.js"></script>
-<script src="js/pomodoro.js"></script>
-<script src="nz-pages.js"></script>
-
 <script>
-'use strict';
+/* ── Audio (Web Speech API) ─────────────────────────────── */
+function speak(text, lang = 'ja-JP', rate = 0.85) {
+  if (!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const utt = new SpeechSynthesisUtterance(text);
+  utt.lang = lang; utt.rate = rate;
+  window.speechSynthesis.speak(utt);
+}
+function speakWord(jp, en) {
+  if (!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const jpUtt = new SpeechSynthesisUtterance(jp);
+  jpUtt.lang = 'ja-JP'; jpUtt.rate = 0.8;
+  jpUtt.onend = () => {
+    setTimeout(() => {
+      const enUtt = new SpeechSynthesisUtterance(en);
+      enUtt.lang = 'en-US'; enUtt.rate = 0.9;
+      window.speechSynthesis.speak(enUtt);
+    }, 600);
+  };
+  window.speechSynthesis.speak(jpUtt);
+}
+function speakExample(jp, en) {
+  if (!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const utt = new SpeechSynthesisUtterance(jp);
+  utt.lang = 'ja-JP'; utt.rate = 0.75;
+  utt.onend = () => {
+    setTimeout(() => {
+      const enUtt = new SpeechSynthesisUtterance(en);
+      enUtt.lang = 'en-US'; enUtt.rate = 0.9;
+      window.speechSynthesis.speak(enUtt);
+    }, 800);
+  };
+  window.speechSynthesis.speak(utt);
+}
 
-/* ── Bootstrap function called by auth guard after user confirmed ── */
-window._nzBootstrap = function() {
-  // Build shell with real user data
-  renderShell();
+/* ── Toast ──────────────────────────────────────────────── */
+function showToast(msg, type='info') {
+  const c = document.getElementById('toast-container');
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.textContent = msg;
+  c.appendChild(t);
+  setTimeout(() => { t.classList.add('out'); setTimeout(() => t.remove(), 300); }, 3000);
+}
 
-  // Register all routes
-  Router.register('dashboard', ()  => Pages.dashboard());
-  Router.register('kanji',     ()  => Pages.kanji());
-  Router.register('vocab',     ()  => Pages.vocab());
-  Router.register('grammar',   ()  => Pages.grammar());
-  Router.register('listening', ()  => Pages.listening());
-  Router.register('reading',   ()  => Pages.reading());
-  Router.register('kana',      ()  => Pages.kana());
-  Router.register('progress',  ()  => Pages.progress());
-  Router.register('timer',     ()  => Pages.timer());
-  Router.register('profile',   ()  => Pages.profile());
-  Router.register('jlpt-n5',   ()  => Pages.jlptLevel('n5'));
-  Router.register('jlpt-n4',   ()  => Pages.jlptLevel('n4'));
-  Router.register('jlpt-n3',   ()  => Pages.jlptLevel('n3'));
-  Router.register('jlpt-n2',   ()  => Pages.jlptLevel('n2'));
-  Router.register('jlpt-n1',   ()  => Pages.jlptLevel('n1'));
-
-  // Navigate to hash route or dashboard
-  const startPage = window.location.hash.replace('#','') || 'dashboard';
-  Router.go(startPage);
-
-  // Handle browser back/forward
-  window.addEventListener('popstate', () => {
-    const hash = window.location.hash.replace('#','') || 'dashboard';
-    Router.go(hash);
+/* ── Sidebar collapse ───────────────────────────────────── */
+let sidebarCollapsed = false;
+document.getElementById('sidebar-toggle').addEventListener('click', () => {
+  sidebarCollapsed = !sidebarCollapsed;
+  const sb = document.getElementById('sidebar');
+  const btn = document.getElementById('sidebar-toggle');
+  sb.classList.toggle('collapsed', sidebarCollapsed);
+  ['sb-logo-inner','sb-user-info','sb-settings-icon'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = sidebarCollapsed ? 'none' : '';
   });
+  document.querySelectorAll('.nav-section-label').forEach(el => {
+    el.style.display = sidebarCollapsed ? 'none' : '';
+  });
+  document.querySelectorAll('.nav-item-label, .nav-badge').forEach(el => {
+    el.style.display = sidebarCollapsed ? 'none' : '';
+  });
+  btn.innerHTML = sidebarCollapsed
+    ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>`
+    : `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>`;
+});
+
+/* ── User Menu ──────────────────────────────────────────── */
+function toggleUserMenu() {
+  const d = document.getElementById('user-dropdown');
+  d.style.display = d.style.display === 'none' ? 'block' : 'none';
+}
+function closeUserMenu() {
+  document.getElementById('user-dropdown').style.display = 'none';
+}
+function doSignOut() {
+  if (window._nzSignOut) window._nzSignOut();
+  else window.location.replace('login.html');
+}
+
+/* ── Mobile Drawer ──────────────────────────────────────── */
+function openMobileDrawer() {
+  document.getElementById('mobile-overlay').classList.add('open');
+  document.getElementById('mobile-drawer').classList.add('open');
+}
+function closeMobileDrawer() {
+  document.getElementById('mobile-overlay').classList.remove('open');
+  document.getElementById('mobile-drawer').classList.remove('open');
+}
+
+/* ── Animated bars on load ──────────────────────────────── */
+setTimeout(() => {
+  const bannerBar = document.getElementById('banner-xp-bar');
+  if (bannerBar) bannerBar.style.width = '68%';
+  const xpLevelBar = document.getElementById('xp-level-bar');
+  if (xpLevelBar) xpLevelBar.style.width = '80.3%'; // 4820/6000
+  const topbarBar = document.getElementById('topbar-xp-bar');
+  if (topbarBar) topbarBar.style.width = '68%';
+  // Animate banner ring
+  const ring = document.getElementById('banner-ring');
+  if (ring) {
+    const circumference = 282.74;
+    const progress = 340 / 500;
+    ring.style.strokeDashoffset = circumference * (1 - progress);
+  }
+}, 400);
+
+/* ══════════════════════════════════════════════════════════
+   JLPT LEVEL CARDS
+═══════════════════════════════════════════════════════════ */
+const jlptLevels = [
+  { id:'jlpt-n5', level:'N5', title:'初級', subtitle:'Beginner', desc:'Basic hiragana, katakana, and 100 kanji', kanji:'初', progress:94, total:100, learned:94, color:'var(--jlpt-n5)', dim:'var(--jlpt-n5-dim)', status:'Completed' },
+  { id:'jlpt-n4', level:'N4', title:'初中級', subtitle:'Elementary', desc:'300 kanji, everyday conversation', kanji:'中', progress:72, total:300, learned:216, color:'var(--jlpt-n4)', dim:'var(--jlpt-n4-dim)', status:'In Progress' },
+  { id:'jlpt-n3', level:'N3', title:'中級', subtitle:'Intermediate', desc:'650 kanji, news comprehension', kanji:'語', progress:28, total:650, learned:182, color:'var(--jlpt-n3)', dim:'var(--jlpt-n3-dim)', status:'In Progress' },
+  { id:'jlpt-n2', level:'N2', title:'上級', subtitle:'Upper-Inter.', desc:'1000 kanji, professional texts', kanji:'上', progress:5, total:1000, learned:50, color:'var(--jlpt-n2)', dim:'var(--jlpt-n2-dim)', status:'Unlocked' },
+  { id:'jlpt-n1', level:'N1', title:'最上級', subtitle:'Advanced', desc:'2000 kanji, native-level texts', kanji:'極', progress:0, total:2000, learned:0, color:'var(--jlpt-n1)', dim:'var(--jlpt-n1-dim)', status:'Locked' },
+];
+
+function renderJLPT() {
+  const grid = document.getElementById('jlpt-grid');
+  grid.innerHTML = jlptLevels.map(lv => `
+    <div class="jlpt-card" style="border-color:${lv.color}" id="jlpt-card-${lv.id}" onclick="${lv.status!=='Locked'?`window.location.href='jlpt-${lv.level.toLowerCase()}.html'`:''}">
+      <div class="jlpt-watermark" style="color:${lv.color}">${lv.kanji}</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <span class="jlpt-badge" style="background:${lv.dim};color:${lv.color};border:1px solid ${lv.color}">${lv.level}</span>
+        <span class="jlpt-status">${lv.status}</span>
+      </div>
+      <div class="jlpt-title" style="color:${lv.color}">${lv.title}</div>
+      <p class="jlpt-subtitle">${lv.subtitle}</p>
+      <p class="jlpt-desc">${lv.desc}</p>
+      <div class="jlpt-bar-row">
+        <span class="count">${lv.learned}/${lv.total}</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:${lv.color}">${lv.progress}%</span>
+      </div>
+      <div class="jlpt-bar-track">
+        <div class="jlpt-bar-fill" id="jlpt-bar-${lv.id}" style="width:0%;background-color:${lv.color}"></div>
+      </div>
+      <button class="jlpt-btn" style="background:${lv.progress>0?lv.dim:'var(--card-elevated)'};color:${lv.progress>0?lv.color:'var(--muted-foreground)'};border-color:${lv.progress>0?lv.color:'var(--border)'}" ${lv.status==='Locked'?'disabled':''}>
+        ${lv.status==='Locked'?'🔒 Locked':'Start Learning <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>'}
+      </button>
+    </div>
+  `).join('');
+  // Animate bars
+  setTimeout(() => {
+    jlptLevels.forEach(lv => {
+      const bar = document.getElementById(`jlpt-bar-${lv.id}`);
+      if (bar) bar.style.width = lv.progress + '%';
+    });
+  }, 600);
+}
+
+/* ══════════════════════════════════════════════════════════
+   KANJI SECTION
+═══════════════════════════════════════════════════════════ */
+const kanjiData = {
+  N5: [
+    { id:'k-n5-01', kanji:'日', reading:'にち・ひ', meaning:'Sun / Day', kun:'ひ、か', on:'ニチ、ジツ', example:'今日は晴れです。', exMeaning:'Today is sunny.', learned:true },
+    { id:'k-n5-02', kanji:'月', reading:'つき・げつ', meaning:'Moon / Month', kun:'つき', on:'ゲツ、ガツ', example:'月曜日に会います。', exMeaning:'We meet on Monday.', learned:true },
+    { id:'k-n5-03', kanji:'山', reading:'やま・さん', meaning:'Mountain', kun:'やま', on:'サン', example:'富士山は美しい。', exMeaning:'Mt. Fuji is beautiful.', learned:true },
+    { id:'k-n5-04', kanji:'川', reading:'かわ・せん', meaning:'River', kun:'かわ', on:'セン', example:'川で泳ぎます。', exMeaning:'I swim in the river.', learned:false },
+    { id:'k-n5-05', kanji:'木', reading:'き・もく', meaning:'Tree / Wood', kun:'き、こ', on:'モク、ボク', example:'木の下で休む。', exMeaning:'Rest under the tree.', learned:true },
+    { id:'k-n5-06', kanji:'火', reading:'ひ・か', meaning:'Fire', kun:'ひ', on:'カ', example:'火曜日は忙しい。', exMeaning:'Tuesday is busy.', learned:true },
+    { id:'k-n5-07', kanji:'水', reading:'みず・すい', meaning:'Water', kun:'みず', on:'スイ', example:'水を飲んでください。', exMeaning:'Please drink water.', learned:false },
+    { id:'k-n5-08', kanji:'土', reading:'つち・ど', meaning:'Earth / Soil', kun:'つち', on:'ド、ト', example:'土曜日に遊ぶ。', exMeaning:'Play on Saturday.', learned:true },
+    { id:'k-n5-09', kanji:'人', reading:'ひと・じん', meaning:'Person', kun:'ひと', on:'ジン、ニン', example:'あの人は先生です。', exMeaning:'That person is a teacher.', learned:true },
+    { id:'k-n5-10', kanji:'大', reading:'おお・だい', meaning:'Big / Large', kun:'おお', on:'ダイ、タイ', example:'大きな犬がいる。', exMeaning:'There is a big dog.', learned:false },
+    { id:'k-n5-11', kanji:'小', reading:'ちい・しょう', meaning:'Small', kun:'ちい、こ', on:'ショウ', example:'小さい猫が好き。', exMeaning:'I like small cats.', learned:true },
+    { id:'k-n5-12', kanji:'上', reading:'うえ・じょう', meaning:'Above / Up', kun:'うえ、のぼ', on:'ジョウ', example:'机の上にある。', exMeaning:'It is on the desk.', learned:true },
+  ],
+  N4: [
+    { id:'k-n4-01', kanji:'駅', reading:'えき', meaning:'Station', kun:'', on:'エキ', example:'駅まで歩きます。', exMeaning:'I walk to the station.', learned:true },
+    { id:'k-n4-02', kanji:'映', reading:'えい', meaning:'Reflect / Movie', kun:'うつ', on:'エイ', example:'映画を見ました。', exMeaning:'I watched a movie.', learned:false },
+    { id:'k-n4-03', kanji:'運', reading:'うん・はこ', meaning:'Transport / Luck', kun:'はこ', on:'ウン', example:'運動が好きです。', exMeaning:'I like exercise.', learned:true },
+    { id:'k-n4-04', kanji:'開', reading:'ひら・かい', meaning:'Open', kun:'ひら、あ', on:'カイ', example:'ドアを開けてください。', exMeaning:'Please open the door.', learned:false },
+    { id:'k-n4-05', kanji:'去', reading:'さ・きょ', meaning:'Past / Leave', kun:'さ', on:'キョ、コ', example:'去年日本に行った。', exMeaning:'I went to Japan last year.', learned:true },
+    { id:'k-n4-06', kanji:'急', reading:'いそ・きゅう', meaning:'Hurry / Sudden', kun:'いそ', on:'キュウ', example:'急いでください！', exMeaning:'Please hurry!', learned:true },
+  ],
+  N3: [
+    { id:'k-n3-01', kanji:'影', reading:'かげ・えい', meaning:'Shadow / Influence', kun:'かげ', on:'エイ', example:'影響を受けました。', exMeaning:'I was influenced.', learned:false },
+    { id:'k-n3-02', kanji:'演', reading:'えん', meaning:'Perform / Demonstrate', kun:'', on:'エン', example:'演劇を楽しんだ。', exMeaning:'Enjoyed the play.', learned:false },
+    { id:'k-n3-03', kanji:'応', reading:'おう', meaning:'Answer / Respond', kun:'こた', on:'オウ', example:'応援してください。', exMeaning:'Please cheer for me.', learned:true },
+    { id:'k-n3-04', kanji:'横', reading:'よこ・おう', meaning:'Side / Horizontal', kun:'よこ', on:'オウ', example:'横断歩道を渡る。', exMeaning:'Cross the crosswalk.', learned:false },
+  ],
 };
+
+let activeKanjiTab = 'N5';
+let learnedSet = new Set();
+let selectedKanji = null;
+
+function initKanji() {
+  // init learnedSet
+  Object.values(kanjiData).flat().filter(k => k.learned).forEach(k => learnedSet.add(k.id));
+  renderKanjiTabs();
+  renderKanjiGrid();
+  updateLearnedCount();
+}
+
+function jlptColor(level) {
+  return { N5:'var(--jlpt-n5)', N4:'var(--jlpt-n4)', N3:'var(--jlpt-n3)' }[level] || 'var(--primary)';
+}
+
+function renderKanjiTabs() {
+  const tabs = document.getElementById('kanji-tabs');
+  tabs.innerHTML = ['N5','N4','N3'].map(tab => `
+    <button class="kanji-tab-btn ${tab===activeKanjiTab?'active':''}" onclick="switchKanjiTab('${tab}')" style="${tab===activeKanjiTab?`color:${jlptColor(tab)}`:''}">
+      ${tab}
+      <div class="kanji-tab-indicator" style="background:${jlptColor(tab)}"></div>
+    </button>
+  `).join('');
+}
+
+function switchKanjiTab(tab) {
+  activeKanjiTab = tab;
+  renderKanjiTabs();
+  renderKanjiGrid();
+}
+
+function renderKanjiGrid() {
+  const grid = document.getElementById('kanji-grid');
+  const data = kanjiData[activeKanjiTab] || [];
+  const color = jlptColor(activeKanjiTab);
+  grid.innerHTML = data.map(k => `
+    <button class="kanji-cell" style="${learnedSet.has(k.id)?`border-color:${color}44`:''}" onclick="openKanjiModal('${k.id}')">
+      ${learnedSet.has(k.id) ? `<div class="kanji-learned-dot" style="background:${color}"></div>` : ''}
+      <span class="kanji-char" style="color:${color}">${k.kanji}</span>
+      <span class="kanji-reading">${k.reading.split('・')[0]}</span>
+      <span class="kanji-meaning">${k.meaning.split(' / ')[0]}</span>
+      <div class="kanji-hover-overlay">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+      </div>
+    </button>
+  `).join('');
+}
+
+function updateLearnedCount() {
+  document.getElementById('kanji-learned-count').textContent = learnedSet.size + ' learned';
+}
+
+function openKanjiModal(id) {
+  const k = Object.values(kanjiData).flat().find(k => k.id === id);
+  if (!k) return;
+  selectedKanji = k;
+  const color = jlptColor(activeKanjiTab);
+  const isLearned = learnedSet.has(k.id);
+  document.getElementById('kanji-modal-box').innerHTML = `
+    <div class="modal-header">
+      <div class="modal-kanji-area">
+        <span class="modal-kanji-char" style="color:${color}">${k.kanji}</span>
+        <div>
+          <span style="display:inline-block;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:700;font-family:'JetBrains Mono',monospace;background:${color}22;color:${color};border:1px solid ${color};margin-bottom:5px">${activeKanjiTab}</span>
+          <p style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--muted-foreground)">${k.reading}</p>
+          <p style="font-size:14px;font-weight:700;color:var(--foreground)">${k.meaning}</p>
+        </div>
+      </div>
+      <button class="modal-close-btn" onclick="closeKanjiModal()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-grid">
+      <div class="modal-cell">
+        <div class="modal-cell-header"><span class="modal-cell-label">On Reading</span><span class="modal-cell-jp">音</span></div>
+        <p class="modal-cell-val">${k.on||'—'}</p>
+        <button class="modal-speak-btn" onclick="speak('${k.on}','ja-JP')">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg> Speak
+        </button>
+      </div>
+      <div class="modal-cell">
+        <div class="modal-cell-header"><span class="modal-cell-label">Kun Reading</span><span class="modal-cell-jp">訓</span></div>
+        <p class="modal-cell-val">${k.kun||'—'}</p>
+        <button class="modal-speak-btn" onclick="speak('${k.kun||k.kanji}','ja-JP')">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg> Speak
+        </button>
+      </div>
+      <div class="modal-cell">
+        <div class="modal-cell-header"><span class="modal-cell-label">Meaning</span><span class="modal-cell-jp">意</span></div>
+        <p class="modal-cell-val">${k.meaning}</p>
+      </div>
+      <div class="modal-cell">
+        <div class="modal-cell-header"><span class="modal-cell-label">JLPT Level</span><span class="modal-cell-jp">級</span></div>
+        <p class="modal-cell-val" style="color:${color}">${activeKanjiTab}</p>
+      </div>
+    </div>
+    <div class="modal-example">
+      <div class="modal-example-header">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--muted-foreground)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        <span class="modal-example-label">Example Sentence</span>
+        <button class="modal-speak-btn" onclick="speakExample('${k.example}','${k.exMeaning}')">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg> Read aloud
+        </button>
+      </div>
+      <p class="modal-example-jp">${k.example}</p>
+      <p class="modal-example-en">${k.exMeaning}</p>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-mark-learned" id="modal-learn-btn"
+        style="background:${isLearned?'var(--card-elevated)':color};color:${isLearned?color:'#fff'};border-color:${color}"
+        onclick="toggleLearned('${k.id}')">
+        ${isLearned ? '✓ Learned' : 'Mark as Learned'}
+      </button>
+      <button class="btn-modal-close" onclick="closeKanjiModal()">Close</button>
+    </div>
+  `;
+  document.getElementById('kanji-modal').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+
+function toggleLearned(id) {
+  if (learnedSet.has(id)) learnedSet.delete(id);
+  else learnedSet.add(id);
+  const color = jlptColor(activeKanjiTab);
+  const isLearned = learnedSet.has(id);
+  const btn = document.getElementById('modal-learn-btn');
+  if (btn) {
+    btn.style.background = isLearned ? 'var(--card-elevated)' : color;
+    btn.style.color = isLearned ? color : '#fff';
+    btn.textContent = isLearned ? '✓ Learned' : 'Mark as Learned';
+  }
+  renderKanjiGrid();
+  updateLearnedCount();
+  showToast(isLearned ? 'Marked as learned!' : 'Removed from learned', 'success');
+}
+
+function closeKanjiModal(e) {
+  if (e && e.target !== e.currentTarget) return;
+  document.getElementById('kanji-modal').style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+/* ══════════════════════════════════════════════════════════
+   VOCAB SECTION
+═══════════════════════════════════════════════════════════ */
+const vocabWords = [
+  { id:'v1', jp:'勉強', romaji:'benkyou', en:'Study / Learning', cat:'Education', catColor:'var(--jlpt-n5)' },
+  { id:'v2', jp:'電車', romaji:'densha', en:'Train / Electric train', cat:'Transport', catColor:'var(--jlpt-n4)' },
+  { id:'v3', jp:'図書館', romaji:'toshokan', en:'Library', cat:'Places', catColor:'var(--jlpt-n5)' },
+  { id:'v4', jp:'難しい', romaji:'muzukashii', en:'Difficult / Hard', cat:'Adjectives', catColor:'var(--jlpt-n4)' },
+  { id:'v5', jp:'友達', romaji:'tomodachi', en:'Friend', cat:'People', catColor:'var(--jlpt-n5)' },
+  { id:'v6', jp:'仕事', romaji:'shigoto', en:'Work / Job', cat:'Work', catColor:'var(--jlpt-n4)' },
+  { id:'v7', jp:'自転車', romaji:'jitensha', en:'Bicycle', cat:'Transport', catColor:'var(--jlpt-n4)' },
+  { id:'v8', jp:'料理', romaji:'ryouri', en:'Cooking / Cuisine', cat:'Food', catColor:'var(--jlpt-n3)' },
+];
+
+let vocabMode = 'grid';
+let fcIndex = 0, fcFlipped = false;
+
+function setVocabMode(mode) {
+  vocabMode = mode;
+  document.getElementById('vocab-grid-view').style.display = mode === 'grid' ? '' : 'none';
+  document.getElementById('vocab-fc-view').style.display = mode === 'flashcard' ? '' : 'none';
+
+  const gridBtn = document.getElementById('vocab-grid-btn');
+  const fcBtn = document.getElementById('vocab-fc-btn');
+  gridBtn.style.background = mode==='grid' ? 'var(--primary-dim)' : 'var(--card-elevated)';
+  gridBtn.style.color = mode==='grid' ? 'var(--primary)' : 'var(--muted-foreground)';
+  gridBtn.style.borderColor = mode==='grid' ? 'var(--primary)' : 'var(--border)';
+  fcBtn.style.background = mode==='flashcard' ? 'var(--primary-dim)' : 'var(--card-elevated)';
+  fcBtn.style.color = mode==='flashcard' ? 'var(--primary)' : 'var(--muted-foreground)';
+  fcBtn.style.borderColor = mode==='flashcard' ? 'var(--primary)' : 'var(--border)';
+
+  if (mode === 'flashcard') { fcFlipped = false; renderFlashcard(); }
+}
+
+function initVocab() {
+  // Grid
+  document.getElementById('vocab-grid-view').innerHTML = `
+    <div class="vocab-grid">
+      ${vocabWords.map(w => `
+        <div class="vocab-card" onclick="speak('${w.jp}')">
+          <div class="vocab-card-top">
+            <span class="vocab-jp">${w.jp}</span>
+            <button class="vocab-speak-btn" onclick="event.stopPropagation();speakWord('${w.jp}','${w.en}')">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+            </button>
+          </div>
+          <p class="vocab-romaji">${w.romaji}</p>
+          <p class="vocab-en">${w.en}</p>
+          <span class="vocab-cat" style="background:${w.catColor}22;color:${w.catColor}">${w.cat}</span>
+        </div>
+      `).join('')}
+    </div>
+  `;
+  // Init flashcard view container
+  document.getElementById('vocab-fc-view').innerHTML = `
+    <p class="flashcard-hint">Click card to flip · ← → keys to navigate · Space to flip</p>
+    <div class="flashcard-wrap" onclick="flipCard()" id="fc-wrap">
+      <div class="flashcard-inner" id="fc-inner">
+        <div class="flashcard-face" id="fc-front"></div>
+        <div class="flashcard-face flashcard-back" id="fc-back"></div>
+      </div>
+    </div>
+    <div class="flashcard-nav">
+      <button class="fc-nav-btn" onclick="fcPrev()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+      </button>
+      <span class="fc-counter" id="fc-counter">1 / ${vocabWords.length}</span>
+      <button class="fc-nav-btn" onclick="fcNext()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+      </button>
+      <button class="fc-reset-btn" onclick="fcReset()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+      </button>
+    </div>
+  `;
+  // Style mode buttons
+  setVocabMode('grid');
+}
+
+function renderFlashcard() {
+  const w = vocabWords[fcIndex];
+  const front = document.getElementById('fc-front');
+  const back  = document.getElementById('fc-back');
+  const inner = document.getElementById('fc-inner');
+  const counter = document.getElementById('fc-counter');
+  if (!front || !back) return;
+  if (inner) inner.classList.toggle('flipped', fcFlipped);
+  if (counter) counter.textContent = `${fcIndex+1} / ${vocabWords.length}`;
+  front.innerHTML = `
+    <span class="flashcard-jp">${w.jp}</span>
+    <p class="flashcard-romaji">${w.romaji}</p>
+    <button class="flashcard-audio-btn" onclick="event.stopPropagation();speak('${w.jp}')">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+      Tap to hear
+    </button>
+    <p class="flashcard-tip">Click to reveal meaning</p>
+  `;
+  back.innerHTML = `
+    <p class="flashcard-en">${w.en}</p>
+    <span class="vocab-cat" style="background:${w.catColor}22;color:${w.catColor}">${w.cat}</span>
+    <button class="flashcard-audio-btn" onclick="event.stopPropagation();speakWord('${w.jp}','${w.en}')">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+      Hear both
+    </button>
+    <p class="flashcard-tip">Click to flip back</p>
+  `;
+}
+
+function flipCard() {
+  fcFlipped = !fcFlipped;
+  const inner = document.getElementById('fc-inner');
+  if (inner) inner.classList.toggle('flipped', fcFlipped);
+}
+function fcNext() {
+  fcFlipped = false;
+  const inner = document.getElementById('fc-inner');
+  if (inner) inner.classList.remove('flipped');
+  setTimeout(() => { fcIndex = (fcIndex+1) % vocabWords.length; renderFlashcard(); }, 150);
+}
+function fcPrev() {
+  fcFlipped = false;
+  const inner = document.getElementById('fc-inner');
+  if (inner) inner.classList.remove('flipped');
+  setTimeout(() => { fcIndex = (fcIndex-1+vocabWords.length) % vocabWords.length; renderFlashcard(); }, 150);
+}
+function fcReset() { fcFlipped = false; fcIndex = 0; renderFlashcard(); }
+
+// Keyboard controls
+document.addEventListener('keydown', e => {
+  if (vocabMode !== 'flashcard') return;
+  if (e.key === 'ArrowRight') fcNext();
+  else if (e.key === 'ArrowLeft') fcPrev();
+  else if (e.key === ' ') { e.preventDefault(); flipCard(); }
+});
+
+/* ══════════════════════════════════════════════════════════
+   WEEK DOTS
+═══════════════════════════════════════════════════════════ */
+const weekDots = [
+  { day:'M', active:true, xp:420 },
+  { day:'T', active:true, xp:380 },
+  { day:'W', active:true, xp:510 },
+  { day:'T', active:true, xp:290 },
+  { day:'F', active:true, xp:340 },
+  { day:'S', active:false, xp:0 },
+  { day:'S', active:false, xp:0 },
+];
+function renderWeekDots() {
+  document.getElementById('week-dots').innerHTML = weekDots.map(d => `
+    <div class="week-dot-wrap">
+      <div class="week-dot ${d.active?'active':'inactive'}" title="${d.active?d.xp+' XP':'No study'}">
+        ${d.active ? '✓' : d.day}
+      </div>
+      <span class="week-dot-day">${d.day}</span>
+    </div>
+  `).join('');
+}
+
+/* ══════════════════════════════════════════════════════════
+   POMODORO TIMER
+═══════════════════════════════════════════════════════════ */
+const pomModes = {
+  focus: { label:'Focus', duration:25*60, color:'var(--primary)' },
+  short: { label:'Short Break', duration:5*60, color:'var(--jlpt-n5)' },
+  long:  { label:'Long Break', duration:15*60, color:'var(--jlpt-n4)' },
+};
+let pomMode = 'focus';
+let pomTime = pomModes.focus.duration;
+let pomRunning = false;
+let pomSessions = 2;
+let pomInterval = null;
+
+function pomFmt(s) {
+  return String(Math.floor(s/60)).padStart(2,'0') + ':' + String(s%60).padStart(2,'0');
+}
+
+function renderPomodoro() {
+  const color = pomModes[pomMode].color;
+  const total = pomModes[pomMode].duration;
+  const circ = 2 * Math.PI * 54;
+  const offset = circ * (pomTime / total);
+
+  document.getElementById('pomodoro-card').innerHTML = `
+    <div class="pomodoro-header">
+      <span class="pomodoro-title">Pomodoro Timer</span>
+      <div class="session-dots">
+        ${[0,1,2,3].map(i => `
+          <div class="session-dot" style="background:${i<pomSessions?color:'var(--card-elevated)'};border-color:${i<pomSessions?color:'var(--border)'}"></div>
+        `).join('')}
+      </div>
+    </div>
+    <div class="pomodoro-modes">
+      ${Object.keys(pomModes).map(m => `
+        <button class="pomodoro-mode-btn" onclick="setPomMode('${m}')"
+          style="background:${pomMode===m?`${pomModes[m].color}22`:'transparent'};color:${pomMode===m?pomModes[m].color:'var(--muted-foreground)'}">
+          ${pomModes[m].label}
+        </button>
+      `).join('')}
+    </div>
+    <div class="pomodoro-ring">
+      <div class="ring-wrap">
+        <svg viewBox="0 0 120 120" style="transform:rotate(-90deg)">
+          <circle cx="60" cy="60" r="54" fill="none" stroke="var(--card-elevated)" stroke-width="6"/>
+          <circle cx="60" cy="60" r="54" fill="none" stroke="${color}" stroke-width="6"
+            stroke-linecap="round"
+            stroke-dasharray="${circ}"
+            stroke-dashoffset="${offset}"
+            style="transition:${pomRunning?'stroke-dashoffset 1s linear':'none'}"/>
+        </svg>
+        <div class="ring-center">
+          <span class="ring-time" id="pom-time">${pomFmt(pomTime)}</span>
+          <span class="ring-mode-label">${pomModes[pomMode].label}</span>
+        </div>
+      </div>
+      <div class="pomodoro-btns">
+        <button class="btn-pomodoro-play" style="background:${color}" onclick="togglePomodoro()">
+          ${pomRunning
+            ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg> Pause`
+            : `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg> Start`}
+        </button>
+        <button class="btn-pomodoro-reset" onclick="resetPomodoro()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+        </button>
+      </div>
+      <p class="pomodoro-sessions-label">${pomSessions} sessions completed today</p>
+    </div>
+  `;
+}
+
+function setPomMode(m) {
+  pomMode = m;
+  pomRunning = false;
+  clearInterval(pomInterval);
+  pomTime = pomModes[m].duration;
+  renderPomodoro();
+}
+
+function togglePomodoro() {
+  pomRunning = !pomRunning;
+  if (pomRunning) {
+    pomInterval = setInterval(() => {
+      pomTime--;
+      if (pomTime <= 0) {
+        clearInterval(pomInterval);
+        pomRunning = false;
+        if (pomMode === 'focus') pomSessions++;
+        pomTime = 0;
+        showToast(pomMode === 'focus' ? 'Focus session complete! 🎉' : 'Break time over!', 'success');
+      }
+      // Update display without full re-render for performance
+      const el = document.getElementById('pom-time');
+      if (el) el.textContent = pomFmt(pomTime);
+      // Update ring
+      renderPomodoro();
+    }, 1000);
+  } else {
+    clearInterval(pomInterval);
+  }
+  renderPomodoro();
+}
+
+function resetPomodoro() {
+  pomRunning = false;
+  clearInterval(pomInterval);
+  pomTime = pomModes[pomMode].duration;
+  renderPomodoro();
+}
+
+/* ══════════════════════════════════════════════════════════
+   ACTIVITY FEED
+═══════════════════════════════════════════════════════════ */
+const activities = [
+  { icon:`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>`, color:'var(--jlpt-n4)', label:'Studied N4 kanji', detail:'12 new kanji', time:'2h ago' },
+  { icon:`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>`, color:'var(--primary)', label:'Earned 120 XP', detail:'Quiz completed', time:'3h ago' },
+  { icon:`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`, color:'var(--jlpt-n5)', label:'N5 vocab review', detail:'98% accuracy', time:'5h ago' },
+  { icon:`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg>`, color:'var(--accent)', label:'Badge unlocked', detail:'Scholar rank', time:'Yesterday' },
+  { icon:`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>`, color:'var(--accent)', label:'14-day streak!', detail:'Milestone reached', time:'Yesterday' },
+];
+
+function renderActivity() {
+  document.getElementById('activity-feed').innerHTML = `
+    <div class="activity-header">
+      <span class="activity-title">Recent Activity</span>
+      <span class="activity-when">Today</span>
+    </div>
+    <div class="activity-list">
+      ${activities.map(a => `
+        <div class="activity-item">
+          <div class="activity-icon" style="background:${a.color}22;color:${a.color}">${a.icon}</div>
+          <div style="flex:1;min-width:0">
+            <p class="activity-label">${a.label}</p>
+            <p class="activity-detail">${a.detail}</p>
+          </div>
+          <span class="activity-time">${a.time}</span>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+/* ══════════════════════════════════════════════════════════
+   INIT ALL
+═══════════════════════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', () => {
+  renderJLPT();
+  initKanji();
+  initVocab();
+  renderWeekDots();
+  renderPomodoro();
+  renderActivity();
+});
 </script>
 
 </body>
