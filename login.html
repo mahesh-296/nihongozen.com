@@ -868,6 +868,23 @@ fbProvider.addScope("public_profile");
 
 const DASHBOARD = "index.html";
 
+// FIX: If user is already signed in, skip the login page entirely.
+// This prevents the flash of the login form for returning authenticated users
+// and eliminates the scenario where onAuthStateChanged on index.html fires
+// before the redirect, sees null (because we are still on login.html), and
+// loops back. By redirecting here synchronously we keep the user on the
+// correct page from the moment Firebase reports their session.
+import { onAuthStateChanged as _oASC }
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+const _loginGuardUnsub = _oASC(auth, (user) => {
+  _loginGuardUnsub(); // one-shot: unsubscribe immediately
+  if (user) {
+    // Already authenticated — send to dashboard without showing login UI.
+    window.location.replace(DASHBOARD);
+  }
+  // Not authenticated — fall through, show login form as normal.
+});
+
 // ── Unified localStorage key (canonical: nz_emailForSignIn) ───
 const EMAIL_STORAGE_KEY = "nz_emailForSignIn";
 
@@ -1023,7 +1040,7 @@ window.verifyOTP = async () => {
   try {
     await phoneConfirmResult.confirm(code);
     showToast("Verified! Redirecting…", "success");
-    setTimeout(() => window.location.replace(DASHBOARD), 600);
+    window.location.replace(DASHBOARD); // FIX: removed 600ms race window
   } catch (err) {
     showLoginError(err.code === "auth/invalid-verification-code"
       ? "Incorrect OTP. Please try again."
