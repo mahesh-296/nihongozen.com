@@ -1,11 +1,31 @@
 // ============================================================
-// NihongoZen — auth.js
+// NihongoZen — auth.js  (js/auth.js)
 // Protects: index.html, jlpt-practice.html
 // Unauthenticated users → redirected to login.html instantly
 // Calls window._nzBootstrap() once user + Firestore data ready
+//
+// ── FIXES APPLIED ────────────────────────────────────────────
+//  FIX-A  Duplicate-app crash
+//         initializeApp() now uses getApps()/getApp() guard so that
+//         re-entering this module (e.g. browser keeps the JS module
+//         cache between page loads in some environments) no longer
+//         throws "app/duplicate-app", which fell into the catch block
+//         and redirected the authenticated user straight back to login.
+//
+//  FIX-B  Fallback timer too short (6 s → 15 s)
+//         Google's OAuth popup + credential propagation + two Firestore
+//         round-trips can easily exceed 6 seconds on a slow connection.
+//         The old timer fired mid-flow and sent the user back to login
+//         even though sign-in had already succeeded.
+//
+//  FIX-C  _nzBootstrapReady flag never set
+//         auth-guard.js (legacy guard used on some pages) polls for
+//         window._nzBootstrapReady before calling _nzBootstrap().
+//         Without it the poll never resolves and the loading screen
+//         stays up permanently even for authenticated users.
 // ============================================================
 
-import { initializeApp, getApps, getApp }
+import { initializeApp, getApps, getApp }   // FIX-A: added getApps, getApp
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
   getAuth, onAuthStateChanged, signOut
@@ -25,41 +45,49 @@ const firebaseConfig = {
   measurementId:     "G-1WTJ5ML3R2"
 };
 
-// FIX #1: Guard against duplicate Firebase app initialisation.
-// login.html's module script also calls initializeApp() with the same
-// config. When auth.js runs on index.html that app is already registered,
-// so we reuse it instead of creating a second instance (which throws
-// "app/duplicate-app" and falls into the catch → redirect to login).
+// FIX-A: Reuse an already-initialised app instead of crashing.
+// login.html's own <script type="module"> also calls initializeApp()
+// with the same config. If the browser module cache shares the Firebase
+// SDK across navigations the default app already exists, so getApp()
+// returns it safely rather than throwing "app/duplicate-app" and
+// falling into the catch → redirect-to-login loop.
 const app  = getApps().length ? getApp() : initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db   = getFirestore(app);
 
 // ── Boot-once guard ───────────────────────────────────────────
+// onAuthStateChanged can fire more than once (token refresh, network
+// reconnect). This flag ensures the full bootstrap sequence only runs
+// the first time.
 let _bootstrapped = false;
 
 // ── Fallback timer ────────────────────────────────────────────
-// FIX #2: Increased fallback from 6 s to 15 s.
-// Google's OAuth popup can legitimately take several seconds after the
-// user completes verification before Firebase resolves the credential
-// and fires onAuthStateChanged. The previous 6 s timeout was too short —
-// it fired while the auth state was still resolving and redirected the
-// freshly-authenticated user back to login.html.
+// FIX-B: Raised from 6 000 ms to 15 000 ms.
+// The original 6 s limit was too aggressive: signInWithPopup resolves
+// on the login page, but the credential must propagate to Firebase's
+// persistence layer before onAuthStateChanged fires here on index.html.
+// Add two Firestore round-trips (getDoc + setDoc/updateDoc + getDoc)
+// on a slow connection and 6 s is easily breached, so the fallback
+// kicked in and sent a freshly-authenticated user back to login.html.
 const fallbackTimer = setTimeout(() => {
   window.location.replace("login.html");
-}, 15000);
+}, 15000);                                   // FIX-B: was 6000
 
 // ── Auth State Check ──────────────────────────────────────────
 onAuthStateChanged(auth, async (user) => {
   clearTimeout(fallbackTimer);
 
+  // Only run bootstrap once per page load
   if (_bootstrapped) return;
 
   if (!user) {
+    // Not logged in → go to login immediately
     window.location.replace("login.html");
     return;
   }
 
   try {
+    // Expose auth globals so every page script can reach them
     window._nzAuth = auth;
     window._nzDb   = db;
     window._nzUser = user;
@@ -79,6 +107,7 @@ onAuthStateChanged(auth, async (user) => {
     const userSnap = await getDoc(userRef);
 
     if (!userSnap.exists()) {
+      // First login — create default profile
       await setDoc(userRef, {
         uid:                 user.uid,
         displayName:         user.displayName || "Learner",
@@ -103,6 +132,7 @@ onAuthStateChanged(auth, async (user) => {
         createdAt:           serverTimestamp()
       });
     } else {
+      // Returning user — update streak using calendar-day boundaries
       const existingData = userSnap.data();
       const lastLoginTs  = existingData.lastLogin?.toDate?.() || new Date(0);
       const now          = new Date();
@@ -110,6 +140,7 @@ onAuthStateChanged(auth, async (user) => {
         (now.setHours(0,0,0,0) - new Date(lastLoginTs).setHours(0,0,0,0))
         / 86400000
       );
+      // 0 → same day (no change), 1 → consecutive (increment), >1 → reset
       const newStreak = diffDays === 1 ? (existingData.streak || 1) + 1
                       : diffDays  > 1 ? 1
                       : existingData.streak || 1;
@@ -120,28 +151,25 @@ onAuthStateChanged(auth, async (user) => {
       });
     }
 
-    // ── Fetch fresh data after write ────────────────────────────
+    // Fetch fresh document after any writes
     const freshSnap = await getDoc(userRef);
-    const data      = freshSnap.data();
-    window._nzUserData = data;
+    window._nzUserData = freshSnap.data();
 
-    // FIX #3: Set _bootstrapped AFTER all data is ready, then call
-    // _nzBootstrap. The flag is set here so any subsequent
-    // onAuthStateChanged fires (token refresh) skip the sequence, but
-    // the bootstrap call itself happens unconditionally at this point.
+    // Lock the bootstrap sequence before calling into the app
     _bootstrapped = true;
 
-    // FIX #4: Also set window._nzBootstrapReady = true so that the
-    // legacy waitForBootstrap() helper in auth-guard.js (if included
-    // on any page) can proceed. Without this flag it polls forever
-    // and _nzBootstrap() is never called, leaving the loading screen
-    // visible permanently even though the user is authenticated.
-    window._nzBootstrapReady = true;
+    // FIX-C: Signal that auth + Firestore data are ready.
+    // auth-guard.js (legacy) polls window._nzBootstrapReady before it
+    // calls _nzBootstrap(). Without this flag its poll never resolves,
+    // _nzBootstrap() is never invoked, and the loading overlay never
+    // lifts — even though the user is fully authenticated.
+    window._nzBootstrapReady = true;          // FIX-C: was missing entirely
 
+    // Call the bootstrap function defined in index.html, or poll for
+    // it if the deferred <script> blocks haven't executed yet.
     if (typeof window._nzBootstrap === "function") {
       window._nzBootstrap();
     } else {
-      // Deferred scripts still loading — poll until available
       const waitForBootstrap = setInterval(() => {
         if (typeof window._nzBootstrap === "function") {
           clearInterval(waitForBootstrap);
@@ -218,7 +246,6 @@ window._nzUpdateStreak = async () => {
     });
 
     window._nzUserData = { ...d, streak: newStreak };
-
     return newStreak;
   } catch (err) {
     console.error("[NihongoZen] _nzUpdateStreak failed:", err);
