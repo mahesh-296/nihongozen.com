@@ -830,7 +830,7 @@
      All logic is self-contained here; no external login_js.js needed.
 ═══════════════════════════════════════════════════════════ -->
 <script type="module">
-import { initializeApp }
+import { initializeApp, getApps, getApp }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
   getAuth,
@@ -855,7 +855,9 @@ const firebaseConfig = {
   measurementId:     "G-1WTJ5ML3R2"
 };
 
-const app        = initializeApp(firebaseConfig);
+// FIX: Guard against duplicate-app error if Firebase was already
+// initialised (e.g. when the page is re-entered mid-session).
+const app        = getApps().length ? getApp() : initializeApp(firebaseConfig);
 const auth       = getAuth(app);
 const provider   = new GoogleAuthProvider();
 provider.setCustomParameters({ prompt: "select_account" });
@@ -907,8 +909,11 @@ window.handleGoogle = async () => {
   btn.innerHTML = `<div class="spinner"></div> Signing in…`;
   try {
     await signInWithPopup(auth, provider);
-    showToast("Signed in! Redirecting…", "success");
-    setTimeout(() => window.location.replace(DASHBOARD), 600);
+    // FIX: Redirect immediately — no setTimeout delay.
+    // The previous 600 ms delay created a race: auth.js on index.html
+    // could fire onAuthStateChanged before the redirect completed and
+    // bounce the freshly-authenticated user back to login.html.
+    window.location.replace(DASHBOARD);
   } catch (err) {
     btn.disabled = false;
     btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 18 18" fill="none">
@@ -928,8 +933,8 @@ window.handleFacebook = async () => {
   btn.innerHTML = `<div class="spinner"></div> Signing in…`;
   try {
     await signInWithPopup(auth, fbProvider);
-    showToast("Signed in with Facebook! Redirecting…", "success");
-    setTimeout(() => window.location.replace(DASHBOARD), 600);
+    // FIX: Same race-condition fix as Google — redirect immediately.
+    window.location.replace(DASHBOARD);
   } catch (err) {
     btn.disabled = false;
     btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg> Facebook`;
