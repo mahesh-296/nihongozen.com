@@ -847,7 +847,8 @@
 </div><!-- /page-wrapper -->
 
 <!-- ══════════════════════════════════════════════════════════
-     AUTH.JS — Firebase Auth (Google + Email Magic Link + Phone OTP)
+     AUTH — Firebase Auth (Google + Email Magic Link + Phone OTP)
+     Connected to: auth-guard.js (used by index.html, jlpt-practice.html)
 ═══════════════════════════════════════════════════════════ -->
 <script type="module">
 import { initializeApp }
@@ -855,7 +856,7 @@ import { initializeApp }
 import {
   getAuth, GoogleAuthProvider, FacebookAuthProvider, signInWithPopup,
   sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink,
-  RecaptchaVerifier, signInWithPhoneNumber
+  RecaptchaVerifier, signInWithPhoneNumber, onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 // ── Firebase Config ───────────────────────────────────────
@@ -880,13 +881,23 @@ fbProvider.addScope("public_profile");
 
 const DASHBOARD = "index.html";
 
+// ── Shared error helper (defined here so module scope can use it) ──
+function _showError(msg) {
+  const el = document.getElementById("login-error");
+  if (el) { el.textContent = msg; el.style.display = "block"; }
+  // also call global showToast if already available
+  if (typeof window.showToast === "function") window.showToast(msg, "error");
+}
+
 // ── Email magic link settings ──────────────────────────────
+// Return URL must be login.html so signInWithEmailLink can complete here
 const actionCodeSettings = {
-  url:             window.location.origin + "/" + DASHBOARD,
+  url:             window.location.origin + "/login.html",
   handleCodeInApp: true
 };
 
-// ── Check for email sign-in link on page load ──────────────
+// ── Check for email sign-in link FIRST, before onAuthStateChanged ──
+// (Magic link return: complete sign-in, then onAuthStateChanged will redirect)
 if (isSignInWithEmailLink(auth, window.location.href)) {
   let email = localStorage.getItem("nz_emailForSignIn");
   if (!email) email = window.prompt("Please confirm your email address:");
@@ -894,11 +905,17 @@ if (isSignInWithEmailLink(auth, window.location.href)) {
     signInWithEmailLink(auth, email, window.location.href)
       .then(() => {
         localStorage.removeItem("nz_emailForSignIn");
-        window.location.replace(DASHBOARD);
+        // onAuthStateChanged below will redirect to DASHBOARD automatically
       })
-      .catch(err => showLoginError(err.message));
+      .catch(err => _showError(err.message));
   }
 }
+
+// ── If already logged in, skip login page ──────────────────
+// Must come AFTER the magic link check above
+onAuthStateChanged(auth, (user) => {
+  if (user) window.location.replace(DASHBOARD);
+});
 
 // ── Phone OTP state ─────────────────────────────────────────
 let recaptchaVerifier  = null;
@@ -913,7 +930,7 @@ window.handleGoogle = async () => {
   try {
     await signInWithPopup(auth, provider);
     showToast("Signed in! Redirecting…", "success");
-    setTimeout(() => window.location.replace(DASHBOARD), 600);
+    // onAuthStateChanged above will redirect to DASHBOARD automatically
   } catch (err) {
     btn.disabled = false;
     btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/><path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 009 18z" fill="#34A853"/><path d="M3.964 10.71A5.41 5.41 0 013.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 000 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/><path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 00.957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/></svg> Continue with Google`;
@@ -929,7 +946,7 @@ window.handleFacebook = async () => {
   try {
     await signInWithPopup(auth, fbProvider);
     showToast("Signed in with Facebook! Redirecting…", "success");
-    setTimeout(() => window.location.replace(DASHBOARD), 600);
+    // onAuthStateChanged above will redirect to DASHBOARD automatically
   } catch (err) {
     btn.disabled = false;
     btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg> Facebook`;
@@ -1008,7 +1025,7 @@ window.verifyOTP = async () => {
   try {
     await phoneConfirmResult.confirm(code);
     showToast("Verified! Redirecting…", "success");
-    setTimeout(() => window.location.replace(DASHBOARD), 600);
+    // onAuthStateChanged above will redirect to DASHBOARD automatically
   } catch (err) {
     showLoginError(err.code === "auth/invalid-verification-code"
       ? "Incorrect OTP. Please try again."
@@ -1017,13 +1034,8 @@ window.verifyOTP = async () => {
 };
 
 window.resetEmailForm = () => {
-  document.getElementById("email-form-section").style.display = "block";
-  document.getElementById("email-success-box").classList.remove("visible");
-  document.getElementById("otp-toggle-btn").style.display = "flex";
-  document.getElementById("emailInput").value = "";
-  const btn = document.getElementById("emailLogin");
-  btn.disabled = false;
-  btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Send Magic Link <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>`;
+  // Delegates to global resetEmailForm defined in the UI helpers script below
+  if (typeof resetEmailForm === "function") resetEmailForm();
 };
 
 // ── Apple — Coming Soon (Facebook is now live above) ─────────
@@ -1032,18 +1044,16 @@ document.getElementById("btn-apple-login")?.addEventListener("click", (e) => {
   showToast("Apple Sign-In — Coming Soon!", "info");
 });
 
-// ── UI Helpers ──────────────────────────────────────────────
+// ── UI Helpers (module-scoped, also exposed globally) ───────
 function showLoginError(msg) {
-  const el = document.getElementById("login-error");
-  if (el) { el.textContent = msg; el.style.display = "block"; }
-  showToast(msg, "error");
+  _showError(msg);
 }
 window.showLoginError = showLoginError;
 
 function showLoginSuccess(msg) {
   const el = document.getElementById("login-success");
   if (el) { el.textContent = msg; el.style.display = "block"; }
-  showToast(msg, "success");
+  if (typeof window.showToast === "function") window.showToast(msg, "success");
 }
 window.showLoginSuccess = showLoginSuccess;
 </script>
