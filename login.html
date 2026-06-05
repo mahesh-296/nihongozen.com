@@ -830,7 +830,7 @@
      All logic is self-contained here; no external login_js.js needed.
 ═══════════════════════════════════════════════════════════ -->
 <script type="module">
-import { initializeApp, getApps, getApp }
+import { initializeApp, getApps, getApp }   // FIX-D: added getApps, getApp
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
   getAuth,
@@ -855,8 +855,8 @@ const firebaseConfig = {
   measurementId:     "G-1WTJ5ML3R2"
 };
 
-// FIX: Guard against duplicate-app error if Firebase was already
-// initialised (e.g. when the page is re-entered mid-session).
+// FIX-D: Guard against duplicate-app error if the Firebase default
+// app was already registered (module cache between navigations).
 const app        = getApps().length ? getApp() : initializeApp(firebaseConfig);
 const auth       = getAuth(app);
 const provider   = new GoogleAuthProvider();
@@ -909,10 +909,11 @@ window.handleGoogle = async () => {
   btn.innerHTML = `<div class="spinner"></div> Signing in…`;
   try {
     await signInWithPopup(auth, provider);
-    // FIX: Redirect immediately — no setTimeout delay.
-    // The previous 600 ms delay created a race: auth.js on index.html
-    // could fire onAuthStateChanged before the redirect completed and
-    // bounce the freshly-authenticated user back to login.html.
+    // FIX-E: Redirect immediately after signInWithPopup resolves.
+    // The original 600 ms setTimeout created a race window where
+    // auth.js on index.html could fire onAuthStateChanged, see
+    // user === null mid-transition, and bounce back to login.html.
+    // Redirecting synchronously closes that window entirely.
     window.location.replace(DASHBOARD);
   } catch (err) {
     btn.disabled = false;
@@ -933,7 +934,7 @@ window.handleFacebook = async () => {
   btn.innerHTML = `<div class="spinner"></div> Signing in…`;
   try {
     await signInWithPopup(auth, fbProvider);
-    // FIX: Same race-condition fix as Google — redirect immediately.
+    // FIX-F: Same race-condition fix as Google (FIX-E).
     window.location.replace(DASHBOARD);
   } catch (err) {
     btn.disabled = false;
