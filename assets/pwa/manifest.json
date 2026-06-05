@@ -3,6 +3,6 @@
   "short_name": "NZ",
   "start_url": "index.html",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#ff4d6d"
+  "background_color": "#0F0F14",
+  "theme_color": "#E8446A"
 }
