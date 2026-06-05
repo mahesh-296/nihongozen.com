@@ -37,6 +37,15 @@ const fallbackTimer = setTimeout(() => {
   document.documentElement.style.visibility = "visible";
 }, 4000);
 
+// ── Wait for bootstrap to be ready before using it ────────────
+function waitForBootstrap(callback) {
+  if (window._nzBootstrapReady && typeof window._nzBootstrap === 'function') {
+    callback();
+  } else {
+    setTimeout(() => waitForBootstrap(callback), 50);
+  }
+}
+
 // ── Auth State Check ──────────────────────────────────────────
 onAuthStateChanged(auth, async (user) => {
   clearTimeout(fallbackTimer);
@@ -94,10 +103,10 @@ onAuthStateChanged(auth, async (user) => {
   const data      = freshSnap.data();
   window._nzUserData = data;
 
-  // Fire event so index.html scripts can react
-  document.dispatchEvent(new CustomEvent("nz:userReady", {
-    detail: { user, data }
-  }));
+  // ── Wait for bootstrap to be ready, then call it ────────────
+  waitForBootstrap(() => {
+    window._nzBootstrap();
+  });
 });
 
 // ── XP update helper ─────────────────────────────────────────
