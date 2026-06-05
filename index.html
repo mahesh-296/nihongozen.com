@@ -3288,12 +3288,22 @@ window.speak       = speak;
 'use strict';
 
 /* ── Bootstrap function called by auth.js after user confirmed ── */
+/* FIX: Added _bootstrapDone guard — auth.js can call this from a
+   setInterval poll. Without this guard, if the interval fires more
+   than once before renderShell is available, renderShell and
+   nz:userReady would execute multiple times, causing duplicate
+   shell renders and double route-registration. */
+var _bootstrapDone = false;
 window._nzBootstrap = function() {
+  if (_bootstrapDone) return; // FIX: run once only
+
   /* Wait for defer scripts to finish executing */
   if (typeof renderShell !== 'function') {
     setTimeout(window._nzBootstrap, 50);
     return;
   }
+
+  _bootstrapDone = true; // FIX: lock before any async work
 
   /* Hide loading screen */
   var loadingEl = document.getElementById('auth-loading');
@@ -3307,18 +3317,27 @@ window._nzBootstrap = function() {
   /* Sync State object if it exists */
   var d = window._nzUserData || {};
   if (window.State && window.State.state) {
-    window.State.state.xpToday  = d.xp       || 0;
-    window.State.state.xpGoal   = d.xpGoal   || 500;
-    window.State.state.streak   = d.streak   || 1;
-    window.State.state.level    = d.level     || 1;
-    window.State.state.totalXP  = d.xp       || 0;
-    window.State.state.nextLevelXP = d.levelXPRequired || 200;
+    window.State.state.xpToday     = d.xp                || 0;
+    window.State.state.xpGoal      = d.xpGoal            || 500;
+    window.State.state.streak      = d.streak            || 1;
+    window.State.state.level       = d.level             || 1;
+    window.State.state.totalXP     = d.xp                || 0;
+    window.State.state.nextLevelXP = d.levelXPRequired   || 200;
   }
 
   /* Build shell with real user data */
   renderShell();
 
-  /* Fire userReady so the inline nz-pages listener can register routes */
+  /* FIX: Fire nz:userReady AFTER renderShell() so the route-registration
+     listener in nz-pages finds a real DOM to work with.
+     auth.js previously never fired this event at all (root cause of
+     routes never registering). Now auth.js calls _nzBootstrap(), and
+     _nzBootstrap owns the dispatch — keeping the sequence correct:
+       auth confirms user → auth.js calls _nzBootstrap()
+       → renderShell() builds the DOM
+       → nz:userReady fires
+       → route-registration listener wires up the router
+       → Router.go('dashboard') renders the first page             */
   document.dispatchEvent(new CustomEvent('nz:userReady', {
     detail: { user: window._nzUser, data: window._nzUserData }
   }));
