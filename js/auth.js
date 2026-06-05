@@ -5,7 +5,7 @@
 // Calls window._nzBootstrap() once user + Firestore data ready
 // ============================================================
 
-import { initializeApp }
+import { initializeApp, getApps, getApp }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
   getAuth, onAuthStateChanged, signOut
@@ -25,50 +25,45 @@ const firebaseConfig = {
   measurementId:     "G-1WTJ5ML3R2"
 };
 
-const app  = initializeApp(firebaseConfig);
+// FIX #1: Guard against duplicate Firebase app initialisation.
+// login.html's module script also calls initializeApp() with the same
+// config. When auth.js runs on index.html that app is already registered,
+// so we reuse it instead of creating a second instance (which throws
+// "app/duplicate-app" and falls into the catch → redirect to login).
+const app  = getApps().length ? getApp() : initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db   = getFirestore(app);
 
 // ── Boot-once guard ───────────────────────────────────────────
-// BUG FIX #10: onAuthStateChanged can fire multiple times (token
-// refresh, etc.). This flag ensures we only bootstrap the app once.
 let _bootstrapped = false;
 
 // ── Fallback timer ────────────────────────────────────────────
-// BUG FIX #3 + #4: The original code hid document.documentElement
-// visibility here, which conflicted with index.html's own #auth-loading
-// overlay and caused a blank page on slow connections.
-// We no longer touch document visibility — index.html's loading screen
-// handles that entirely. The fallback only calls _nzBootstrap so the
-// app doesn't hang forever if Firebase is slow or offline.
+// FIX #2: Increased fallback from 6 s to 15 s.
+// Google's OAuth popup can legitimately take several seconds after the
+// user completes verification before Firebase resolves the credential
+// and fires onAuthStateChanged. The previous 6 s timeout was too short —
+// it fired while the auth state was still resolving and redirected the
+// freshly-authenticated user back to login.html.
 const fallbackTimer = setTimeout(() => {
-  // If auth hasn't resolved in 6 seconds, redirect to login for safety
   window.location.replace("login.html");
-}, 6000);
+}, 15000);
 
 // ── Auth State Check ──────────────────────────────────────────
 onAuthStateChanged(auth, async (user) => {
   clearTimeout(fallbackTimer);
 
-  // BUG FIX #10: Only run the full bootstrap sequence once
   if (_bootstrapped) return;
 
   if (!user) {
-    // Not logged in → redirect immediately
     window.location.replace("login.html");
     return;
   }
 
-  // BUG FIX #6: Wrap entire Firestore sequence in try/catch so a
-  // network error or permission-denied doesn't leave the page hidden
   try {
-    // Expose auth globals for all page scripts
     window._nzAuth = auth;
     window._nzDb   = db;
     window._nzUser = user;
 
-    // BUG FIX #11: _nzSignOut now catches errors and shows feedback
-    // instead of silently failing and leaving the user on a protected page
     window._nzSignOut = async () => {
       try {
         await signOut(auth);
@@ -84,8 +79,6 @@ onAuthStateChanged(auth, async (user) => {
     const userSnap = await getDoc(userRef);
 
     if (!userSnap.exists()) {
-      // First login — create default profile
-      // BUG FIX #5: xpGoal was incorrectly set to 50; correct default is 500
       await setDoc(userRef, {
         uid:                 user.uid,
         displayName:         user.displayName || "Learner",
@@ -93,7 +86,7 @@ onAuthStateChanged(auth, async (user) => {
         photoURL:            user.photoURL    || "",
         phone:               user.phoneNumber || "",
         xp:                  0,
-        xpGoal:              500,   // FIX: was 50
+        xpGoal:              500,
         streak:              1,
         kanjiCount:          0,
         lessonsCompleted:    0,
@@ -110,9 +103,6 @@ onAuthStateChanged(auth, async (user) => {
         createdAt:           serverTimestamp()
       });
     } else {
-      // BUG FIX #9: Auto-update streak on every login, not just account
-      // creation. The original code only set streak=1 at creation and
-      // never updated it automatically when the user returned.
       const existingData = userSnap.data();
       const lastLoginTs  = existingData.lastLogin?.toDate?.() || new Date(0);
       const now          = new Date();
@@ -120,9 +110,6 @@ onAuthStateChanged(auth, async (user) => {
         (now.setHours(0,0,0,0) - new Date(lastLoginTs).setHours(0,0,0,0))
         / 86400000
       );
-      // diffDays === 0 → same day, no streak change
-      // diffDays === 1 → consecutive day, increment
-      // diffDays  > 1 → streak broken, reset to 1
       const newStreak = diffDays === 1 ? (existingData.streak || 1) + 1
                       : diffDays  > 1 ? 1
                       : existingData.streak || 1;
@@ -138,18 +125,23 @@ onAuthStateChanged(auth, async (user) => {
     const data      = freshSnap.data();
     window._nzUserData = data;
 
-    // ── Mark bootstrapped before calling bootstrap fn ───────────
+    // FIX #3: Set _bootstrapped AFTER all data is ready, then call
+    // _nzBootstrap. The flag is set here so any subsequent
+    // onAuthStateChanged fires (token refresh) skip the sequence, but
+    // the bootstrap call itself happens unconditionally at this point.
     _bootstrapped = true;
 
-    // BUG FIX #2: The original auth.js dispatched nz:userReady but
-    // never called window._nzBootstrap(), which index.html requires
-    // to hide the loading screen and render the shell. Without this
-    // call the app shows a permanent loading spinner.
+    // FIX #4: Also set window._nzBootstrapReady = true so that the
+    // legacy waitForBootstrap() helper in auth-guard.js (if included
+    // on any page) can proceed. Without this flag it polls forever
+    // and _nzBootstrap() is never called, leaving the loading screen
+    // visible permanently even though the user is authenticated.
+    window._nzBootstrapReady = true;
+
     if (typeof window._nzBootstrap === "function") {
       window._nzBootstrap();
     } else {
-      // _nzBootstrap not yet defined (deferred scripts still loading)
-      // — poll until it's available, then call it
+      // Deferred scripts still loading — poll until available
       const waitForBootstrap = setInterval(() => {
         if (typeof window._nzBootstrap === "function") {
           clearInterval(waitForBootstrap);
@@ -159,16 +151,12 @@ onAuthStateChanged(auth, async (user) => {
     }
 
   } catch (err) {
-    // BUG FIX #6: Show the page on error so the user isn't stuck on a
-    // blank screen. Log the error and redirect to login as a safe fallback.
     console.error("[NihongoZen] Auth / Firestore error:", err);
     window.location.replace("login.html");
   }
 });
 
 // ── XP update helper ─────────────────────────────────────────
-// BUG FIX #7: Wrapped in try/catch; errors are now logged instead
-// of failing silently and losing the XP award.
 window._nzAddXP = async (amount) => {
   if (!amount || amount <= 0) return;
   const user = auth.currentUser;
@@ -191,7 +179,6 @@ window._nzAddXP = async (amount) => {
       level:   lvlUp ? (d.level || 1) + 1 : (d.level || 1)
     });
 
-    // Sync cached user data so UI reads are always fresh
     const fresh = await getDoc(userRef);
     window._nzUserData = fresh.data();
 
@@ -204,9 +191,6 @@ window._nzAddXP = async (amount) => {
 };
 
 // ── Streak update helper ──────────────────────────────────────
-// BUG FIX #8: Wrapped in try/catch; errors are now logged.
-// BUG FIX #9: Streak diff now uses date-boundary comparison (midnight)
-// so crossing midnight correctly counts as a new day regardless of time.
 window._nzUpdateStreak = async () => {
   const user = auth.currentUser;
   if (!user) return;
@@ -220,7 +204,6 @@ window._nzUpdateStreak = async () => {
     const lastLogin = d.lastLogin?.toDate?.() || new Date(0);
     const now       = new Date();
 
-    // Compare calendar days (midnight boundaries) not raw milliseconds
     const lastMidnight = new Date(lastLogin).setHours(0, 0, 0, 0);
     const nowMidnight  = new Date(now).setHours(0, 0, 0, 0);
     const diffDays     = Math.floor((nowMidnight - lastMidnight) / 86400000);
@@ -234,7 +217,6 @@ window._nzUpdateStreak = async () => {
       lastLogin: serverTimestamp()
     });
 
-    // Sync cached data
     window._nzUserData = { ...d, streak: newStreak };
 
     return newStreak;
