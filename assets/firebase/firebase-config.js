@@ -1,14 +1,15 @@
 import { initializeApp } from "firebase/app";
 import { getAuth, sendSignInLinkToEmail } from "firebase/auth";
 
-//firebaseConfig = {
+// ── Firebase Configuration ────────────────────────────────────
+const firebaseConfig = {
   apiKey: "AIzaSyCP2Uwo1lx996q0l3nkC7RhAesVuIHEXiA",
   authDomain: "nihongo-zen-cd97d.firebaseapp.com",
   projectId: "nihongo-zen-cd97d",
   storageBucket: "nihongo-zen-cd97d.firebasestorage.app",
   messagingSenderId: "513320956483",
-  appId: "1:513320956483:web:84729a0c4c44b76af65af6",
-  measurementId: "G-PCERH9R58D",
+  appId: "1:513320956483:web:a1069825e0df3587f65af6",
+  measurementId: "G-1WTJ5ML3R2",
 };
 
 // Initialize Firebase
