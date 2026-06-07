@@ -33,6 +33,15 @@
       --font-serif-jp:        'Noto Serif JP', serif;
       --font-sans-jp:         'Noto Sans JP', sans-serif;
       --font-mono:            'JetBrains Mono', monospace;
+
+      /* ── Sakura Palette ── */
+      --sakura-deep:     #1A0A12;
+      --sakura-mid:      #2A1020;
+      --sakura-pink:     #F2A7C3;
+      --sakura-blush:    #E86A9A;
+      --sakura-rose:     #C94070;
+      --sakura-pale:     rgba(242,167,195,0.12);
+      --sakura-mist:     rgba(242,167,195,0.06);
     }
 
     /* ── Reset & Base ────────────────────────────────────── */
@@ -63,11 +72,11 @@
       padding: 40px;
       position: relative;
       overflow: hidden;
-      background: linear-gradient(160deg, #1A0810 0%, #0F0F14 50%, #0A0A12 100%);
+      background: linear-gradient(160deg, #1A0812 0%, #100818 50%, #0A0612 100%);
     }
     @media (min-width: 768px) { .left-panel { display: flex; } }
 
-    /* Watermark 学 */
+    /* Watermark 花 */
     .watermark {
       position: absolute;
       inset: 0;
@@ -81,33 +90,86 @@
       font-family: var(--font-serif-jp);
       font-size: clamp(160px, 22vw, 280px);
       font-weight: 700;
-      opacity: 0.04;
-      color: var(--primary);
+      opacity: 0.05;
+      color: var(--sakura-pink);
       line-height: 1;
     }
 
-    /* Subtle grid lines */
+    /* Sakura mist grid */
     .left-panel::before {
       content: '';
       position: absolute;
       inset: 0;
       background-image:
-        linear-gradient(rgba(232,68,106,0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(232,68,106,0.03) 1px, transparent 1px);
+        linear-gradient(var(--sakura-mist) 1px, transparent 1px),
+        linear-gradient(90deg, var(--sakura-mist) 1px, transparent 1px);
       background-size: 40px 40px;
       pointer-events: none;
     }
 
-    /* Top glow */
+    /* Top blossom glow */
     .left-panel::after {
       content: '';
       position: absolute;
-      top: -120px;
-      left: -80px;
-      width: 400px;
-      height: 400px;
-      background: radial-gradient(circle, rgba(232,68,106,0.12) 0%, transparent 70%);
+      top: -100px;
+      left: -60px;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(232,106,154,0.18) 0%, rgba(200,60,100,0.06) 50%, transparent 75%);
       pointer-events: none;
+    }
+
+    /* ── Falling Petals ── */
+    .petal-canvas {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 1;
+    }
+    .petal {
+      position: absolute;
+      top: -30px;
+      width: 10px;
+      height: 10px;
+      opacity: 0;
+      animation: petalFall linear infinite;
+    }
+    .petal svg { width: 100%; height: 100%; }
+    @keyframes petalFall {
+      0%   { opacity: 0; transform: translateY(0) rotate(0deg) scale(0.8); }
+      5%   { opacity: 0.85; }
+      90%  { opacity: 0.6; }
+      100% { opacity: 0; transform: translateY(110vh) rotate(720deg) scale(1.1); }
+    }
+
+    /* ── Sakura Branch SVG ── */
+    .sakura-branch {
+      position: absolute;
+      top: 0; right: 0;
+      width: 320px;
+      pointer-events: none;
+      opacity: 0.18;
+      z-index: 2;
+    }
+    .sakura-branch-bottom {
+      position: absolute;
+      bottom: 80px; left: -20px;
+      width: 260px;
+      pointer-events: none;
+      opacity: 0.12;
+      z-index: 2;
+      transform: scaleX(-1) rotate(180deg);
+    }
+
+    /* Bottom right glow blob */
+    .sakura-glow-br {
+      position: absolute;
+      bottom: -80px; right: -80px;
+      width: 360px; height: 360px;
+      background: radial-gradient(circle, rgba(200,64,112,0.14) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
     }
 
     .left-logo {
@@ -121,7 +183,7 @@
       width: 36px;
       height: 36px;
       border-radius: 10px;
-      background: linear-gradient(135deg, var(--primary), #C03058);
+      background: linear-gradient(135deg, var(--sakura-blush), var(--sakura-rose));
       display: flex;
       align-items: center;
       justify-content: center;
@@ -130,7 +192,7 @@
       color: #fff;
       font-weight: 700;
       flex-shrink: 0;
-      box-shadow: 0 0 20px rgba(232,68,106,0.4);
+      box-shadow: 0 0 24px rgba(232,106,154,0.5);
     }
     .logo-name {
       font-weight: 700;
@@ -151,9 +213,10 @@
     .tagline-jp {
       font-family: var(--font-sans-jp);
       font-size: 12px;
-      color: var(--foreground-muted);
-      letter-spacing: 0.12em;
+      color: var(--sakura-pink);
+      letter-spacing: 0.15em;
       margin-bottom: 14px;
+      opacity: 0.8;
     }
 
     .headline {
@@ -164,7 +227,7 @@
       letter-spacing: -1.5px;
       margin-bottom: 22px;
     }
-    .headline .accent { color: var(--primary); }
+    .headline .accent { color: var(--sakura-blush); }
 
     .sub-headline {
       font-size: 15px;
@@ -197,14 +260,14 @@
       width: 22px;
       height: 22px;
       border-radius: 50%;
-      background: var(--primary-dim);
-      border: 1px solid var(--primary);
+      background: var(--sakura-pale);
+      border: 1px solid var(--sakura-blush);
       display: flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
     }
-    .feature-dot svg { width: 11px; height: 11px; color: var(--primary); }
+    .feature-dot svg { width: 11px; height: 11px; color: var(--sakura-blush); }
     .feature-text { font-size: 13px; color: var(--foreground); }
 
     /* Stats Strip */
@@ -214,8 +277,8 @@
       gap: 12px;
       padding: 16px;
       border-radius: 14px;
-      border: 1px solid var(--border);
-      background: rgba(30,30,42,0.4);
+      border: 1px solid rgba(242,167,195,0.2);
+      background: rgba(26,8,18,0.5);
       backdrop-filter: blur(8px);
     }
     .stat-cell { text-align: center; }
@@ -237,7 +300,7 @@
       position: relative;
       z-index: 10;
       font-size: 11px;
-      color: var(--foreground-subtle);
+      color: rgba(242,167,195,0.4);
     }
 
     /* ── Right Panel ─────────────────────────────────────── */
@@ -396,7 +459,7 @@
       padding: 13px 16px;
       border-radius: 14px;
       border: none;
-      background: linear-gradient(135deg, var(--primary), #C03058);
+      background: linear-gradient(135deg, var(--sakura-blush), var(--sakura-rose));
       color: #fff;
       font-size: 14px;
       font-weight: 800;
@@ -599,6 +662,11 @@
     @keyframes spin    { to { transform: rotate(360deg); } }
     @keyframes toastIn { from { opacity: 0; transform: translateY(10px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
     @keyframes toastOut { to { opacity: 0; transform: translateY(10px) scale(0.95); } }
+    @keyframes sakuraSway {
+      0%, 100% { transform: translateX(0) rotate(0deg); }
+      25% { transform: translateX(18px) rotate(12deg); }
+      75% { transform: translateX(-12px) rotate(-8deg); }
+    }
 
     .fade-in { opacity: 0; animation: fadeUp 0.5s ease forwards; }
   </style>
@@ -612,7 +680,39 @@
 
   <!-- ── LEFT PANEL ── -->
   <div class="left-panel">
-    <div class="watermark"><span>学</span></div>
+    <div class="watermark"><span>花</span></div>
+
+    <!-- Sakura branches -->
+    <svg class="sakura-branch" viewBox="0 0 320 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <!-- Main branch -->
+      <path d="M300 10 Q240 60 180 100 Q140 130 80 180 Q40 210 10 260" stroke="#E86A9A" stroke-width="3" stroke-linecap="round" fill="none" opacity="0.7"/>
+      <path d="M180 100 Q200 80 230 50" stroke="#E86A9A" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.5"/>
+      <path d="M140 130 Q120 110 100 80" stroke="#E86A9A" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.5"/>
+      <path d="M100 165 Q130 155 155 135" stroke="#E86A9A" stroke-width="1.5" stroke-linecap="round" fill="none" opacity="0.4"/>
+      <!-- Blossoms -->
+      <g opacity="0.9">
+        <circle cx="232" cy="47" r="6" fill="#F2A7C3"/><circle cx="224" cy="42" r="4" fill="#F2C4D8"/><circle cx="240" cy="42" r="4" fill="#E8709A"/><circle cx="228" cy="54" r="4" fill="#F2A7C3"/><circle cx="237" cy="53" r="4" fill="#F2C4D8"/>
+        <circle cx="103" cy="78" r="6" fill="#F2A7C3"/><circle cx="95" cy="73" r="4" fill="#F2C4D8"/><circle cx="111" cy="73" r="4" fill="#E8709A"/><circle cx="99" cy="85" r="4" fill="#F2A7C3"/><circle cx="108" cy="84" r="4" fill="#F2C4D8"/>
+        <circle cx="158" cy="133" r="5" fill="#F2A7C3"/><circle cx="151" cy="129" r="3.5" fill="#F2C4D8"/><circle cx="165" cy="129" r="3.5" fill="#E8709A"/><circle cx="154" cy="139" r="3.5" fill="#F2A7C3"/>
+        <circle cx="83" cy="178" r="6" fill="#F2A7C3"/><circle cx="75" cy="173" r="4" fill="#F2C4D8"/><circle cx="91" cy="173" r="4" fill="#E8709A"/><circle cx="79" cy="185" r="4" fill="#F2A7C3"/><circle cx="88" cy="184" r="4" fill="#F2C4D8"/>
+        <circle cx="38" cy="212" r="5" fill="#F2A7C3"/><circle cx="31" cy="208" r="3.5" fill="#F2C4D8"/><circle cx="45" cy="208" r="3.5" fill="#E8709A"/><circle cx="34" cy="218" r="3.5" fill="#F2A7C3"/>
+      </g>
+    </svg>
+
+    <svg class="sakura-branch-bottom" viewBox="0 0 260 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M250 10 Q200 50 150 90 Q110 120 60 170 Q30 195 5 215" stroke="#E86A9A" stroke-width="2.5" stroke-linecap="round" fill="none" opacity="0.7"/>
+      <path d="M150 90 Q170 70 200 45" stroke="#E86A9A" stroke-width="1.8" stroke-linecap="round" fill="none" opacity="0.5"/>
+      <g opacity="0.85">
+        <circle cx="200" cy="43" r="5" fill="#F2A7C3"/><circle cx="193" cy="38" r="3.5" fill="#F2C4D8"/><circle cx="207" cy="38" r="3.5" fill="#E8709A"/><circle cx="196" cy="49" r="3.5" fill="#F2A7C3"/>
+        <circle cx="65" cy="168" r="5.5" fill="#F2A7C3"/><circle cx="57" cy="163" r="3.8" fill="#F2C4D8"/><circle cx="73" cy="163" r="3.8" fill="#E8709A"/><circle cx="61" cy="175" r="3.8" fill="#F2A7C3"/>
+      </g>
+    </svg>
+
+    <!-- Bottom glow -->
+    <div class="sakura-glow-br"></div>
+
+    <!-- Falling petals canvas -->
+    <div class="petal-canvas" id="petalCanvas"></div>
 
     <!-- Logo -->
     <div class="left-logo fade-in" style="animation-delay:0.05s">
@@ -622,7 +722,7 @@
 
     <!-- Main content -->
     <div class="left-content">
-      <p class="tagline-jp fade-in" style="animation-delay:0.1s">日本語を極める</p>
+      <p class="tagline-jp fade-in" style="animation-delay:0.1s">🌸 桜のように美しく咲け</p>
       <h1 class="headline fade-in" style="animation-delay:0.15s">
         Master<br>
         <span class="accent">Japanese.</span>
@@ -689,7 +789,7 @@
 
     <!-- Mobile Logo -->
     <div class="mobile-logo">
-      <div class="logo-mark" style="width:32px;height:32px;border-radius:8px;font-size:14px;">禅</div>
+      <div class="logo-mark" style="width:32px;height:32px;border-radius:8px;font-size:14px;background:linear-gradient(135deg,#E86A9A,#C94070);box-shadow:0 0 18px rgba(232,106,154,0.5);">禅</div>
       <span style="font-weight:700;font-size:18px;color:var(--foreground)">NihongoZen</span>
     </div>
 
@@ -1163,6 +1263,74 @@ function resetEmailForm() {
   if (emailInput) emailInput.value = "";
 }
 window.resetEmailForm = resetEmailForm;
+</script>
+
+<!-- ── Cherry Blossom Petals ─────────────────────────────── -->
+<script>
+(function() {
+  const canvas = document.getElementById('petalCanvas');
+  if (!canvas) return;
+
+  // Sakura petal SVG paths (5-petal flower shape)
+  const petalSVGs = [
+    // Rounded petal
+    `<svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><ellipse cx="10" cy="10" rx="6" ry="9" fill="{c}" opacity="0.9" transform="rotate({r} 10 10)"/></svg>`,
+    // Five-petal blossom
+    `<svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><g transform="translate(10,10)">${[0,72,144,216,288].map(a=>`<ellipse cx="${Math.cos(a*Math.PI/180)*4.5}" cy="${Math.sin(a*Math.PI/180)*4.5}" rx="3.2" ry="5" fill="{c}" opacity="0.85" transform="rotate(${a} ${Math.cos(a*Math.PI/180)*4.5} ${Math.sin(a*Math.PI/180)*4.5})"/>`).join('')}</g></svg>`,
+    // Simple leaf petal
+    `<svg viewBox="0 0 20 22" xmlns="http://www.w3.org/2000/svg"><path d="M10 2 Q16 8 14 14 Q12 20 10 20 Q8 20 6 14 Q4 8 10 2Z" fill="{c}" opacity="0.88"/></svg>`
+  ];
+
+  const colors = ['#F2A7C3','#F2C4D8','#E86A9A','#FFCCE0','#F9B8D0','#EF8DB0'];
+
+  function spawnPetal() {
+    const el = document.createElement('div');
+    el.className = 'petal';
+
+    const size   = 8 + Math.random() * 14;
+    const left   = Math.random() * 100;
+    const dur    = 8 + Math.random() * 14;
+    const delay  = Math.random() * 12;
+    const color  = colors[Math.floor(Math.random() * colors.length)];
+    const rot    = Math.floor(Math.random() * 360);
+    const svgTpl = petalSVGs[Math.floor(Math.random() * petalSVGs.length)];
+    const svg    = svgTpl.replace(/\{c\}/g, color).replace(/\{r\}/g, rot);
+    const sway   = 20 + Math.random() * 40;
+
+    el.style.cssText = `
+      left: ${left}%;
+      width: ${size}px;
+      height: ${size}px;
+      animation-duration: ${dur}s;
+      animation-delay: ${delay}s;
+      animation-name: petalFall;
+      filter: drop-shadow(0 0 3px ${color}88);
+    `;
+
+    // Add horizontal sway via a nested keyframe using Web Animations API
+    el.innerHTML = svg;
+    canvas.appendChild(el);
+
+    // Add a gentle side drift
+    el.animate([
+      { marginLeft: '0px' },
+      { marginLeft: `${sway}px` },
+      { marginLeft: `-${sway/2}px` },
+      { marginLeft: `${sway/3}px` },
+      { marginLeft: '0px' }
+    ], { duration: (dur * 1000), iterations: Infinity, easing: 'ease-in-out', delay: delay * 1000 });
+
+    // Remove and respawn after each cycle
+    setTimeout(() => {
+      el.remove();
+      spawnPetal();
+    }, (dur + delay) * 1000 + 500);
+  }
+
+  // Spawn initial batch
+  const count = window.innerWidth < 900 ? 10 : 22;
+  for (let i = 0; i < count; i++) spawnPetal();
+})();
 </script>
 
 </body>
