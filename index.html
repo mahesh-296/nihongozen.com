@@ -3143,21 +3143,49 @@ Pages.vocab = function() {
 function injectVocabSRSButtons() {
   var page = document.querySelector('#nz-content .nz-page');
   if (!page || document.getElementById('nz-vocab-srs-row')) return;
+
+  /* ── Inject polished header matching the design image ── */
+  var existingHeader = page.querySelector('#nz-vocab-header-block');
+  if (!existingHeader) {
+    var headerBlock = document.createElement('div');
+    headerBlock.id = 'nz-vocab-header-block';
+    headerBlock.style.cssText = 'margin-bottom:20px;';
+    headerBlock.innerHTML =
+      '<div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">' +
+        '<span style="font-family:\'Noto Serif JP\',serif;font-size:22px;color:var(--fg);font-weight:700;letter-spacing:-.3px;">語彙</span>' +
+        '<h1 style="font-size:22px;font-weight:800;color:var(--fg);margin:0;letter-spacing:-.4px;">Vocabulary Study</h1>' +
+      '</div>' +
+      '<p style="font-size:13px;color:var(--fg-muted);margin:0;">Master vocabulary from N5 to N1 level</p>';
+    page.insertBefore(headerBlock, page.firstChild);
+  }
+
+  /* ── SRS Review row with styled level buttons ── */
   var srsRow = document.createElement('div');
   srsRow.id = 'nz-vocab-srs-row';
-  srsRow.style.cssText = 'display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;align-items:center;';
+  srsRow.style.cssText = 'display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px;align-items:center;';
   srsRow.innerHTML =
-    '<span style="font-size:12px;font-weight:700;color:var(--fg-muted);">🔁 SRS Review by Level:</span>' +
+    '<span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--fg-muted);">' +
+      '<span style="font-size:14px;">🔁</span> SRS Review by Level:' +
+    '</span>' +
     ['N5','N4','N3','N2','N1'].map(function(lv){
-      var c=jlptColor(lv);
+      var c = jlptColor(lv);
       return '<button onclick="window.nzVocabLevelSRS(\'' + lv + '\')" ' +
-        'style="padding:6px 14px;border-radius:8px;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;' +
-        'border:1px solid ' + c + ';background:' + c + '18;color:' + c + ';transition:all .15s;" ' +
-        'onmouseover="this.style.background=\'' + c + '\';this.style.color=\'#fff\'" ' +
-        'onmouseout="this.style.background=\'' + c + '18\';this.style.color=\'' + c + '\'">' + lv + '</button>';
+        'style="padding:7px 16px;border-radius:9px;font-size:13px;font-weight:800;font-family:inherit;cursor:pointer;' +
+        'letter-spacing:.02em;' +
+        'border:1.5px solid ' + c + ';background:transparent;color:' + c + ';' +
+        'transition:all .15s;box-shadow:0 0 0 0 ' + c + '40;" ' +
+        'onmouseover="this.style.background=\'' + c + '\';this.style.color=\'#fff\';this.style.boxShadow=\'0 0 12px ' + c + '60\'" ' +
+        'onmouseout="this.style.background=\'transparent\';this.style.color=\'' + c + '\';this.style.boxShadow=\'0 0 0 0 ' + c + '40\'">' +
+        lv + '</button>';
     }).join('');
-  var second = page.children[1];
-  if (second) page.insertBefore(srsRow, second); else page.appendChild(srsRow);
+
+  /* Insert SRS row after the header block */
+  var headerEl = page.querySelector('#nz-vocab-header-block');
+  if (headerEl && headerEl.nextSibling) {
+    page.insertBefore(srsRow, headerEl.nextSibling);
+  } else {
+    page.appendChild(srsRow);
+  }
 }
 
 /* ════════════════════════════════════════════════════════════════
