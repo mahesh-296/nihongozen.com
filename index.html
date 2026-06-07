@@ -3137,15 +3137,15 @@ function initWritingCanvas() {
 var _origVocabPage = Pages.vocab;
 Pages.vocab = function() {
   _origVocabPage();
-  setTimeout(injectVocabSRSButtons, 80);
+  setTimeout(injectVocabSRSButtons, 20);
 };
 
 function injectVocabSRSButtons() {
-  var root=document.getElementById('nz-vocab-root');
-  if (!root||document.getElementById('nz-vocab-srs-row')) return;
-  var srsRow=document.createElement('div');
-  srsRow.id='nz-vocab-srs-row';
-  srsRow.style.cssText='display:flex;flex-wrap:wrap;gap:8px;padding:12px 20px 0;align-items:center;';
+  var page = document.querySelector('#nz-content .nz-page');
+  if (!page || document.getElementById('nz-vocab-srs-row')) return;
+  var srsRow = document.createElement('div');
+  srsRow.id = 'nz-vocab-srs-row';
+  srsRow.style.cssText = 'display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;align-items:center;';
   srsRow.innerHTML =
     '<span style="font-size:12px;font-weight:700;color:var(--fg-muted);">🔁 SRS Review by Level:</span>' +
     ['N5','N4','N3','N2','N1'].map(function(lv){
@@ -3156,7 +3156,8 @@ function injectVocabSRSButtons() {
         'onmouseover="this.style.background=\'' + c + '\';this.style.color=\'#fff\'" ' +
         'onmouseout="this.style.background=\'' + c + '18\';this.style.color=\'' + c + '\'">' + lv + '</button>';
     }).join('');
-  root.insertBefore(srsRow, root.firstChild);
+  var second = page.children[1];
+  if (second) page.insertBefore(srsRow, second); else page.appendChild(srsRow);
 }
 
 /* ════════════════════════════════════════════════════════════════
