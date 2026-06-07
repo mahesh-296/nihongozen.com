@@ -912,150 +912,15 @@ Pages.kanji = function () {
 
 /* ── VOCAB ── */
 Pages.vocab = function () {
-  var LEVELS    = ['N5','N4','N3','N2','N1'];
-  var activeTab = 'N5';
-  var searchVal = '';
-
-  var levelDescriptions = {
-    N5: 'Beginner · ~800 words · basic everyday vocabulary',
-    N4: 'Elementary · ~1,500 words · common expressions & phrases',
-    N3: 'Intermediate · ~3,750 words · broader everyday topics',
-    N2: 'Upper-Intermediate · ~6,000 words · news, formal contexts',
-    N1: 'Advanced · ~10,000 words · nuanced, literary & specialist'
-  };
-
-  function getWords(lv) {
-    var vpw = typeof VocabPageWords !== 'undefined' ? VocabPageWords : [];
-    var list = vpw.filter(function(w){ return w.level === lv; });
-    if (!searchVal) return list;
-    var s = searchVal.toLowerCase();
-    return list.filter(function(w){
-      return (w.word||w.jp||'').includes(s) ||
-             (w.reading||'').toLowerCase().includes(s) ||
-             (w.meaning||w.en||'').toLowerCase().includes(s) ||
-             (w.category||'').toLowerCase().includes(s);
-    });
+  setHTML('<div id="nz-vocab-root" style="min-height:60vh;"></div>');
+  if (window.VocabPage && typeof VocabPage.mount === 'function') {
+    VocabPage.mount('nz-vocab-root');
+  } else {
+    var root = $id('nz-vocab-root');
+    if (root) root.innerHTML =
+      '<div style="padding:40px;text-align:center;color:var(--fg-muted);">' +
+      'Vocabulary module loading…</div>';
   }
-
-  function countAll() {
-    var vpw = typeof VocabPageWords !== 'undefined' ? VocabPageWords : [];
-    var counts = {};
-    LEVELS.forEach(function(lv){ counts[lv] = 0; });
-    vpw.forEach(function(w){ if (counts[w.level] !== undefined) counts[w.level]++; });
-    return counts;
-  }
-
-  function renderPage() {
-    var counts  = countAll();
-    var words   = getWords(activeTab);
-    var color   = jlptColor(activeTab);
-    var total   = typeof VocabPageWords !== 'undefined' ? VocabPageWords.length : 0;
-
-    var tabsHtml = LEVELS.map(function(lv){
-      var c   = jlptColor(lv);
-      var act = lv === activeTab;
-      return '<button id="vc-tab-' + lv + '" onclick="nzVocabTab(\'' + lv + '\')" ' +
-        'style="padding:10px 15px;font-size:13px;font-weight:700;font-family:inherit;' +
-        'cursor:pointer;border:none;flex:1;' +
-        'border-bottom:2px solid ' + (act ? c : 'transparent') + ';' +
-        'background:' + (act ? c + '18' : 'transparent') + ';' +
-        'color:' + (act ? c : 'var(--fg-muted)') + ';' +
-        'transition:all .15s;white-space:nowrap;">' +
-        lv + '<br>' +
-        '<span style="font-size:10px;font-weight:600;opacity:.75;">' + counts[lv] + '</span>' +
-        '</button>';
-    }).join('');
-
-    var wordsHtml;
-    if (!words.length) {
-      wordsHtml = '<div style="padding:48px;text-align:center;color:var(--fg-muted);">' +
-        (searchVal ? 'No results for "' + H(searchVal) + '"' : 'No vocabulary found for ' + activeTab) +
-        '</div>';
-    } else {
-      wordsHtml = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:9px;">' +
-        words.map(function(w){
-          var jp  = w.word || w.jp || '';
-          var rd  = w.reading || '';
-          var en  = w.meaning || w.en || '';
-          var cat = w.category || '';
-          return '<div style="background:var(--card);border:1px solid var(--border);' +
-            'border-radius:var(--radius-lg);padding:14px 15px;' +
-            'border-left:3px solid ' + color + ';' +
-            'transition:all .15s;cursor:pointer;" ' +
-            'onmouseover="this.style.borderColor=\'' + color + '\';this.style.transform=\'translateY(-2px)\';this.style.boxShadow=\'var(--shadow)\';" ' +
-            'onmouseout="this.style.borderColor=\'var(--border)\';this.style.transform=\'\';this.style.boxShadow=\'\';this.style.borderLeftColor=\'' + color + '\';" ' +
-            'onclick="speak(\'' + H(jp) + '\')">' +
-            '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:4px;">' +
-              '<span style="font-family:\'Noto Sans JP\',sans-serif;font-size:18px;font-weight:700;color:var(--fg);line-height:1.2;">' + H(jp) + '</span>' +
-              '<span style="color:' + color + ';font-size:14px;flex-shrink:0;margin-top:2px;">🔊</span>' +
-            '</div>' +
-            (rd ? '<div style="font-family:var(--font-mono);font-size:11px;color:var(--fg-muted);margin-bottom:5px;">' + H(rd) + '</div>' : '') +
-            '<div style="font-size:12px;color:var(--fg);margin-bottom:' + (cat ? '6' : '0') + 'px;line-height:1.4;">' + H(en) + '</div>' +
-            (cat ? '<span style="font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;' +
-              'background:' + color + '18;color:' + color + ';border:1px solid ' + color + '30;">' + H(cat) + '</span>' : '') +
-            '</div>';
-        }).join('') +
-      '</div>';
-    }
-
-    setHTML(
-      '<div id="nz-vocab-root" class="nz-page nz-fadein">' +
-
-      /* header */
-      '<div style="margin-bottom:20px;">' +
-        '<h1 style="font-size:22px;font-weight:800;color:var(--fg);margin:0 0 4px;letter-spacing:-.4px;">語彙 Vocabulary</h1>' +
-        '<p style="font-size:13px;color:var(--fg-muted);margin:0;">' + total.toLocaleString() + ' words sorted by JLPT level — click any card to hear it</p>' +
-      '</div>' +
-
-      /* tabs */
-      '<div style="display:flex;border:1px solid var(--border);border-radius:12px;overflow:hidden;background:var(--card);margin-bottom:16px;">' +
-        tabsHtml +
-      '</div>' +
-
-      /* level description + search row */
-      '<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px;">' +
-        '<div style="flex:1;min-width:180px;">' +
-          '<span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:6px;' +
-            'background:' + color + '18;color:' + color + ';border:1px solid ' + color + '30;' +
-            'font-family:var(--font-mono);">' + activeTab + '</span> ' +
-          '<span style="font-size:12px;color:var(--fg-muted);">' + levelDescriptions[activeTab] + '</span>' +
-        '</div>' +
-        '<div style="position:relative;">' +
-          '<span style="position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--fg-muted);font-size:13px;pointer-events:none;">🔍</span>' +
-          '<input id="vc-search" type="text" placeholder="Search ' + activeTab + ' words…" value="' + H(searchVal) + '" ' +
-            'oninput="nzVocabSearch(this.value)" ' +
-            'style="padding:9px 14px 9px 34px;border-radius:10px;border:1px solid var(--border);' +
-            'background:var(--card);color:var(--fg);font-size:13px;font-family:inherit;' +
-            'outline:none;width:230px;box-sizing:border-box;" ' +
-            'onfocus="this.style.borderColor=\'var(--primary)\'" ' +
-            'onblur="this.style.borderColor=\'var(--border)\'">' +
-        '</div>' +
-        '<span style="font-size:12px;color:var(--fg-muted);white-space:nowrap;">' +
-          words.length + ' word' + (words.length !== 1 ? 's' : '') + (searchVal ? ' found' : '') +
-        '</span>' +
-      '</div>' +
-
-      /* word grid */
-      wordsHtml +
-
-      '</div>'
-    );
-
-    window.nzVocabTab = function(lv) {
-      activeTab = lv;
-      searchVal = '';
-      renderPage();
-    };
-    window.nzVocabSearch = function(v) {
-      searchVal = v;
-      renderPage();
-      /* restore focus & cursor position */
-      var inp = $id('vc-search');
-      if (inp) { inp.focus(); inp.setSelectionRange(v.length, v.length); }
-    };
-  }
-
-  renderPage();
 };
 
 /* ── GRAMMAR ── */
