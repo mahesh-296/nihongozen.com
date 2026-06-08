@@ -516,7 +516,7 @@ var BasicVocabPage = (() => {
    ========================================================= */
 var VocabPage = (() => {
   let mode           = 'grid';
-  let activeLevel    = 'N4';
+  let activeLevel    = 'N5';
   let activeCategory = 'All';
   let cardIndex      = 0;
   let flipped        = false;
@@ -549,7 +549,7 @@ var VocabPage = (() => {
   /* ── Filter ──────────────────────────────────────────── */
   function getFiltered() {
     let words = typeof VocabPageWords !== 'undefined' ? VocabPageWords : [];
-    if (activeLevel !== 'All') words = words.filter(w => (w.level||'N4') === activeLevel);
+    if (activeLevel !== 'All') words = words.filter(w => (w.level||'N5') === activeLevel);
     if (activeCategory !== 'All') words = words.filter(w => w.category === activeCategory);
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
@@ -623,7 +623,7 @@ var VocabPage = (() => {
 
   /* ── SRS level pills ─────────────────────────────────── */
   function renderSRSPills(container) {
-    return ['N4','N3','N2','N1'].map(lvl => `
+    return ['N5','N4','N3','N2','N1'].map(lvl => `
       <button class="srs-pill-${lvl}"
         style="padding:6px 14px;border-radius:8px;font-size:13px;font-weight:700;
                background:transparent;border:1px solid ${LEVEL_COLORS[lvl]};
@@ -637,7 +637,7 @@ var VocabPage = (() => {
   function renderLevelTabs() {
     const wrap = document.getElementById('vocab-level-tabs');
     if (!wrap) return;
-    wrap.innerHTML = ['N4','N3','N2','N1'].map(lvl => `
+    wrap.innerHTML = ['N5','N4','N3','N2','N1'].map(lvl => `
       <button class="nz-lvl-tab ${activeLevel===lvl?'active':''}"
         data-level="${lvl}"
         style="padding:10px 18px;font-size:14px;font-weight:700;
@@ -929,7 +929,7 @@ var VocabPage = (() => {
     /* SRS pills click → jump to level */
     const srsWrap=document.getElementById('vocab-srs-pills');
     if(srsWrap){
-      srsWrap.innerHTML=['N4','N3','N2','N1'].map(lvl=>`
+      srsWrap.innerHTML=['N5','N4','N3','N2','N1'].map(lvl=>`
         <button class="srs-pill-${lvl}"
           data-level="${lvl}"
           style="padding:6px 14px;border-radius:8px;font-size:13px;font-weight:700;
