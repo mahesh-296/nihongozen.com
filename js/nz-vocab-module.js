@@ -1,7 +1,7 @@
 'use strict';
 /**
  * NihongoZen — Vocabulary Page
- * 2104 words · 77 categories
+ * 2156 words · 20 categories
  * Converted from vocab.tsx — same style, layout, audio functionality
  */
 
