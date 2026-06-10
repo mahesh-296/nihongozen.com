@@ -3844,11 +3844,12 @@ const NZChapterVocab = (() => {
       /* Chapter pill badge */
       .nzcv-ch-num {
         display:inline-block;
-        padding:1px 6px; border-radius:4px;
+        padding:2px 7px; border-radius:4px;
         font-size:10px; font-weight:700;
         background:var(--card-elevated,#1a1a1a);
         color:var(--fg-muted); margin-right:6px;
-        font-family:'JetBrains Mono',monospace;
+        font-family:'Noto Sans JP',sans-serif;
+        white-space:nowrap;
       }
       /* Level tab active underline */
       .nzcv-lvl-tab { position:relative; }
@@ -4055,11 +4056,10 @@ const NZChapterVocab = (() => {
     const chapters = NZChapterData[activeLevel] || [];
     const color = COLORS[activeLevel];
     sb.innerHTML = chapters.map((ch, i) => {
-      const label = activeLevel === 'N4'
-        ? `Ch ${ch.ch} <span style="font-size:9px;opacity:0.6;">(Bk II)</span>`
-        : `Ch ${ch.ch}`;
+      // Kanji chapter label: 第N課
+      const kanjiLabel = `第${ch.ch}課`;
       return `<button class="nzcv-ch-btn ${i===activeChapter?'active':''}" data-idx="${i}">
-        <span class="nzcv-ch-num" style="color:${color};background:${color}18;">${ch.ch}</span>
+        <span class="nzcv-ch-num" style="color:${color};background:${color}18;">${kanjiLabel}</span>
         <span style="font-size:11px;">${esc(ch.title)}</span>
       </button>`;
     }).join('');
@@ -4417,7 +4417,12 @@ const NZChapterVocab = (() => {
   }
 
   /* ── Open / close ────────────────────────────────────── */
-  function open() {
+  function open(levelOverride) {
+    // If a specific level is passed, set it before opening
+    if (levelOverride && ['N5','N4','N3','N2','N1'].includes(levelOverride)) {
+      activeLevel = levelOverride;
+      activeChapter = 0; cardIndex = 0; flipped = false; searchQuery = '';
+    }
     const existing = document.getElementById('nzcv-overlay');
     if (!existing) buildModal();
     else {
@@ -4982,7 +4987,7 @@ var BasicVocabPage = (() => {
    ========================================================= */
 var VocabPage = (() => {
   let mode           = 'grid';
-  let activeLevel    = 'N5';
+  let activeLevel    = '';        // empty = no level chosen yet; shows prompt
   let activeCategory = 'All';
   let cardIndex      = 0;
   let flipped        = false;
@@ -4990,6 +4995,65 @@ var VocabPage = (() => {
   let speakTimer     = null;
   let keyHandler     = null;
   let searchQuery    = '';
+
+  /* ── CSS injection ───────────────────────────────────── */
+  (function injectVocabPageStyles() {
+    if (document.getElementById('vocab-page-styles')) return;
+    const s = document.createElement('style');
+    s.id = 'vocab-page-styles';
+    s.textContent = `
+      /* SRS pill level colors */
+      .srs-pill-N5 { color:#22c55e !important; border-color:#22c55e !important; }
+      .srs-pill-N4 { color:#06b6d4 !important; border-color:#06b6d4 !important; }
+      .srs-pill-N3 { color:#eab308 !important; border-color:#eab308 !important; }
+      .srs-pill-N2 { color:#a855f7 !important; border-color:#a855f7 !important; }
+      .srs-pill-N1 { color:#ef4444 !important; border-color:#ef4444 !important; }
+      /* Level tab active underline */
+      .nz-lvl-tab { position:relative; }
+      .nz-lvl-tab.active::after {
+        content:''; position:absolute;
+        bottom:-2px; left:50%; transform:translateX(-50%);
+        width:70%; height:2px;
+        background:#22c55e; border-radius:2px;
+      }
+      /* VocabPage flip */
+      #vocab-flip-inner.flipped { transform:rotateY(180deg); }
+      /* Equalizer for speak buttons */
+      .nz-eq { display:flex; align-items:flex-end; gap:2px; height:14px; }
+      .nz-eq-bar {
+        width:3px; border-radius:2px;
+        background:var(--primary,#e8446a);
+        animation:nzEqBounce 0.8s ease-in-out infinite;
+      }
+      .nz-eq-bar:nth-child(1){animation-delay:0s;    height:6px;}
+      .nz-eq-bar:nth-child(2){animation-delay:0.15s; height:12px;}
+      .nz-eq-bar:nth-child(3){animation-delay:0.3s;  height:8px;}
+      @keyframes nzEqBounce {
+        0%,100%{transform:scaleY(0.4);}
+        50%    {transform:scaleY(1);}
+      }
+      /* Search bar */
+      .nz-search-wrap {
+        flex:1; display:flex; align-items:center; gap:8px;
+        background:var(--card-elevated,#1a1a1a);
+        border:1px solid var(--border,#2a2a2a);
+        border-radius:12px; padding:0 14px; height:38px;
+      }
+      .nz-search-wrap input {
+        flex:1; background:transparent; border:none; outline:none;
+        color:var(--fg,#f0f0f0); font-size:13px; font-family:inherit;
+      }
+      .nz-search-wrap input::placeholder { color:var(--fg-muted,#666); }
+      /* Nav button hover */
+      .nz-nav-btn:hover { border-color:var(--primary,#e8446a) !important; }
+      /* vocab-prompt-lvl hover */
+      .vocab-prompt-lvl:hover { opacity:0.8; transform:translateY(-1px); }
+      /* Scrollbar hide */
+      #vocab-level-tabs::-webkit-scrollbar,
+      #vocab-cat-tabs::-webkit-scrollbar { display:none; }
+    `;
+    document.head.appendChild(s);
+  })();
 
   /* ── Audio ───────────────────────────────────────────── */
   function speak(text, lang='ja-JP', rate=0.85) {
@@ -5018,38 +5082,22 @@ var VocabPage = (() => {
     // VocabPageWords is intentionally excluded here — it lives only in the Basic Vocab overlay.
     const chData = (typeof NZChapterData !== 'undefined' ? NZChapterData : null) ||
                    (typeof window.NZChapterData !== 'undefined' ? window.NZChapterData : null) || {};
-    const level = activeLevel === 'All' ? null : activeLevel;
+    if (!activeLevel) return [];   // no level selected → show empty prompt
+    const level = activeLevel;
     let words = [];
-    if (level) {
-      (chData[level] || []).forEach(ch => {
-        (ch.vocab || []).forEach(w => {
-          words.push({
-            id: 'chv-' + level + '-' + (w.jp || Math.random()),
-            jp: w.jp || '',
-            romaji: w.romaji || '',
-            en: w.en || '',
-            category: ch.title || level,
-            color: (({ N5:'#22c55e', N4:'#06b6d4', N3:'#eab308', N2:'#a855f7', N1:'#ef4444' })[level]) || 'var(--primary)',
-            level
-          });
+    (chData[level] || []).forEach(ch => {
+      (ch.words || []).forEach(w => {
+        words.push({
+          id: 'chv-' + level + '-' + (w.jp || Math.random()),
+          jp: w.jp || '',
+          romaji: w.romaji || '',
+          en: w.en || '',
+          category: ch.title || level,
+          color: (({ N5:'#22c55e', N4:'#06b6d4', N3:'#eab308', N2:'#a855f7', N1:'#ef4444' })[level]) || 'var(--primary)',
+          level
         });
       });
-    } else {
-      // 'All' — collect from every level
-      ['N5','N4','N3','N2','N1'].forEach(lv => {
-        (chData[lv] || []).forEach(ch => {
-          (ch.vocab || []).forEach(w => {
-            words.push({
-              id: 'chv-' + lv + '-' + (w.jp || Math.random()),
-              jp: w.jp || '', romaji: w.romaji || '', en: w.en || '',
-              category: ch.title || lv,
-              color: (({ N5:'#22c55e', N4:'#06b6d4', N3:'#eab308', N2:'#a855f7', N1:'#ef4444' })[lv]) || 'var(--primary)',
-              level: lv
-            });
-          });
-        });
-      });
-    }
+    });
     if (activeCategory !== 'All') words = words.filter(w => w.category === activeCategory);
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
@@ -5133,7 +5181,7 @@ var VocabPage = (() => {
       </button>`).join('');
   }
 
-  /* ── Level tabs (N5 N4 N3 N2 N1 row with green underline) */
+  /* ── Level tabs (N5 N4 N3 N2 N3 row with green underline) */
   function renderLevelTabs() {
     const wrap = document.getElementById('vocab-level-tabs');
     if (!wrap) return;
@@ -5159,12 +5207,11 @@ var VocabPage = (() => {
   function renderCatTabs() {
     const c = document.getElementById('vocab-cat-tabs');
     if (!c) return;
+    if (!activeLevel) { c.innerHTML = ''; return; }
     // Build category list from NZChapterData chapter titles for the active level
     const chData = (typeof NZChapterData !== 'undefined' ? NZChapterData : null) ||
                    (typeof window.NZChapterData !== 'undefined' ? window.NZChapterData : null) || {};
-    const levelList = activeLevel === 'All'
-      ? ['N5','N4','N3','N2','N1'].flatMap(lv => chData[lv] || [])
-      : (chData[activeLevel] || []);
+    const levelList = chData[activeLevel] || [];
     const cats = ['All', ...new Set(levelList.map(ch => ch.title || activeLevel))];
     c.innerHTML = cats.map(cat=>{
       const active=cat===activeCategory;
@@ -5191,7 +5238,31 @@ var VocabPage = (() => {
     const area=document.getElementById('vocab-main-area');
     if(!area) return;
     if(!filtered.length){
-      area.innerHTML=`<p style="color:var(--fg-muted);text-align:center;padding:40px;">No words found for ${activeLevel}.</p>`;
+      // Show a prompt to choose a level via the SRS pills or level tabs
+      area.innerHTML=`
+        <div style="text-align:center;padding:60px 20px;">
+          <div style="font-size:3rem;margin-bottom:12px;">📖</div>
+          <h3 style="font-size:18px;font-weight:700;color:var(--fg);margin-bottom:8px;">
+            Select a Level to Begin
+          </h3>
+          <p style="font-size:13px;color:var(--fg-muted);max-width:380px;margin:0 auto 20px;">
+            Choose a JLPT level from the tabs above or click an SRS Review level pill to start studying chapter vocabulary.
+          </p>
+          <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+            ${['N5','N4','N3','N2','N1'].map(lvl=>{
+              const col=LEVEL_COLORS[lvl];
+              return `<button class="vocab-prompt-lvl" data-level="${lvl}"
+                style="padding:8px 18px;border-radius:10px;font-size:13px;font-weight:700;
+                       border:2px solid ${col};color:${col};background:${col}18;
+                       cursor:pointer;font-family:inherit;transition:all 0.15s;">${lvl}</button>`;
+            }).join('')}
+          </div>
+        </div>`;
+      area.querySelectorAll('.vocab-prompt-lvl').forEach(btn=>{
+        btn.addEventListener('click',()=>{
+          activeLevel=btn.dataset.level; cardIndex=0; flipped=false; render();
+        });
+      });
       return;
     }
     area.innerHTML=`
@@ -5432,28 +5503,58 @@ var VocabPage = (() => {
   <div id="vocab-main-area"></div>
 </div>`;
 
-    /* SRS pills click → launch chapter-based SRS review for that level */
+    /* SRS pills click → open chapter modal at the chosen level */
+    const SRS_COLORS_VP = { N5:'#22c55e', N4:'#06b6d4', N3:'#eab308', N2:'#a855f7', N1:'#ef4444' };
     const srsWrap=document.getElementById('vocab-srs-pills');
     if(srsWrap){
       srsWrap.innerHTML=['N5','N4','N3','N2','N1'].map(lvl=>`
         <button class="srs-pill-${lvl}"
           data-level="${lvl}"
           style="padding:6px 14px;border-radius:8px;font-size:13px;font-weight:700;
-                 background:transparent;border:1px solid currentColor;
-                 cursor:pointer;font-family:inherit;transition:background 0.15s;">
+                 background:transparent;border:1px solid ${SRS_COLORS_VP[lvl]};
+                 color:${SRS_COLORS_VP[lvl]};cursor:pointer;font-family:inherit;transition:all 0.15s;">
           ${lvl}
         </button>`).join('');
       srsWrap.querySelectorAll('button').forEach(btn=>{
         btn.addEventListener('mouseenter',()=>{ btn.style.background='rgba(255,255,255,0.07)'; });
         btn.addEventListener('mouseleave',()=>{ btn.style.background='transparent'; });
         btn.addEventListener('click',()=>{
-          // Launch the chapter-vocab SRS review for this level
-          if (typeof window.nzVocabLevelSRS === 'function') {
-            window.nzVocabLevelSRS(btn.dataset.level);
+          const level = btn.dataset.level;
+          // Open the chapter modal then set its level
+          if (window.NZChapterVocab) {
+            window.NZChapterVocab.open(level);
           }
+          // Hook NZChapterController after modal opens
+          const waitForModal = setInterval(() => {
+            if (document.getElementById('nzcv-overlay')?.classList.contains('open')) {
+              clearInterval(waitForModal);
+              if (window.NZChapterController) window.NZChapterController.onModalOpen(level);
+            }
+          }, 60);
+          // Also update the main vocab page level tab to match
+          activeLevel = level; cardIndex=0; flipped=false;
+          searchQuery='';
+          const si=document.getElementById('vocab-search-input'); if(si) si.value='';
+          render();
         });
       });
     }
+
+    // Global hook so NZChapterController can call it
+    window.nzVocabLevelSRS = function(level) {
+      activeLevel = level; cardIndex=0; flipped=false; searchQuery='';
+      const si=document.getElementById('vocab-search-input'); if(si) si.value='';
+      render();
+      if (window.NZChapterVocab) {
+        window.NZChapterVocab.open(level);
+        const waitForModal = setInterval(() => {
+          if (document.getElementById('nzcv-overlay')?.classList.contains('open')) {
+            clearInterval(waitForModal);
+            if (window.NZChapterController) window.NZChapterController.onModalOpen(level);
+          }
+        }, 60);
+      }
+    };
 
     /* Search */
     container.querySelector('#vocab-search-input').addEventListener('input',e=>{
@@ -6303,7 +6404,9 @@ const NZChapterController = (() => {
     if (!sb) return;
     const chapters = chapterList(activeTab);
     const color    = COLORS[activeLevel];
-    sb.innerHTML = chapters.map((ch, i) => `
+    sb.innerHTML = chapters.map((ch, i) => {
+      const kanjiLabel = `第${ch.ch}課`;
+      return `
       <button class="nzcv-ch-btn ${i===activeChapter?'active':''}" data-idx="${i}"
         style="width:100%;padding:9px 16px;background:transparent;border:none;
                text-align:left;cursor:pointer;font-family:inherit;font-size:12px;
@@ -6314,9 +6417,10 @@ const NZChapterController = (() => {
         <span style="display:inline-block;padding:1px 6px;border-radius:4px;
                      font-size:10px;font-weight:700;margin-right:6px;
                      background:${color}18;color:${color};
-                     font-family:'JetBrains Mono',monospace;">${ch.ch}</span>
+                     font-family:'Noto Sans JP',sans-serif;">${kanjiLabel}</span>
         <span style="font-size:11px;">${esc(ch.title)}</span>
-      </button>`).join('');
+      </button>`;
+    }).join('');
     sb.querySelectorAll('.nzcv-ch-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         activeChapter = parseInt(btn.dataset.idx);
@@ -7125,10 +7229,18 @@ const NZChapterController = (() => {
      OPEN HOOK
      Called after NZChapterVocab.open() builds the modal DOM
      ═══════════════════════════════════════════════════════ */
-  function onModalOpen() {
+  function onModalOpen(levelOverride) {
     ensureTabBar();
     // Give the vocab overlay a tick to finish its DOM setup
     setTimeout(() => {
+      // If a level was specified (e.g. from an SRS pill), sync it
+      if (levelOverride && ['N5','N4','N3','N2','N1'].includes(levelOverride)) {
+        activeLevel   = levelOverride;
+        activeChapter = 0;
+        quizState     = { active:false, idx:0, score:0, answered:false };
+        passageState  = { open:false, passageIdx:0, showTrans:false, reading:false };
+        dialogueState = { open:false, dialogueIdx:0, scriptVisible:false };
+      }
       patchLevelTabs();
       // Mirror whatever level NZChapterVocab has active
       syncSidebar();
@@ -7164,7 +7276,6 @@ const NZChapterController = (() => {
       btn.textContent = '📖 Chapters';
       btn.addEventListener('click', () => {
         window.NZChapterVocab.open();
-        // Hook into the modal after it renders
         const waitForModal = setInterval(() => {
           if (document.getElementById('nzcv-overlay')?.classList.contains('open')) {
             clearInterval(waitForModal);
@@ -7176,7 +7287,6 @@ const NZChapterController = (() => {
       if (marker) {
         marker.parentNode.insertBefore(btn, marker);
       } else {
-        // Fallback: append to the vocab section header if it exists
         const vocabSection = document.querySelector('#vocab-section, .nz-vocab-section-wrap, [id*="vocab"]');
         if (vocabSection) vocabSection.prepend(btn);
       }
