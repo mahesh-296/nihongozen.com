@@ -5478,6 +5478,267 @@ var VocabPage = (() => {
   return { mount, cleanup, render };
 })();
 
+/* ================================================================
+   VOCAB SRS — Chapter Picker + Flashcard Runner
+   Called by the SRS pills (N5–N1) in VocabPage.
+   Relies on NZChapterData (field: words[]) defined above.
+   Helpers gradeBtn / srsGrade / getSRSItems / saveSRS / setHTML
+   and NzRouter are expected from index.html globals.
+================================================================ */
+
+(function() {
+
+  /* ── 第N課 label helper ── */
+  function chLabel(chNum) {
+    return '第' + chNum + '課';
+  }
+
+  /* ── Level accent colours ── */
+  var LCOL = { N5:'#22c55e', N4:'#06b6d4', N3:'#eab308', N2:'#a855f7', N1:'#ef4444' };
+
+  /* ── HTML-escape ── */
+  function esc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+
+  /* ── Speak ── */
+  function speak(text) {
+    if (!window.speechSynthesis || !text) return;
+    window.speechSynthesis.cancel();
+    var u = new SpeechSynthesisUtterance(String(text));
+    u.lang = 'ja-JP'; u.rate = 0.85;
+    window.speechSynthesis.speak(u);
+  }
+
+  /* ────────────────────────────────────────────────────────
+     nzVocabLevelSRS — shows chapter-picker overlay for a level
+  ──────────────────────────────────────────────────────── */
+  window.nzVocabLevelSRS = function(level) {
+    var chData = (typeof NZChapterData !== 'undefined' ? NZChapterData : null) ||
+                 (typeof window.NZChapterData !== 'undefined' ? window.NZChapterData : null);
+    var chapters = (chData && chData[level]) ? chData[level] : [];
+    if (!chapters.length) {
+      if (typeof nzShowToast === 'function') nzShowToast('No chapter vocab found for ' + level);
+      return;
+    }
+
+    var color = LCOL[level] || 'var(--primary)';
+
+    /* Remove any stale picker */
+    var old = document.getElementById('nz-chsrs-overlay');
+    if (old) old.remove();
+
+    var ov = document.createElement('div');
+    ov.id = 'nz-chsrs-overlay';
+    ov.style.cssText =
+      'position:fixed;inset:0;z-index:3000;background:rgba(0,0,0,0.75);' +
+      'backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;';
+
+    var cards = chapters.map(function(ch, idx) {
+      var label    = chLabel(ch.ch || (idx + 1));
+      var words    = ch.words || ch.vocab || [];
+      var subtitle = ch.title || '';
+      return (
+        '<button onclick="window.nzVocabChapterSRS(\'' + esc(level) + '\',' + idx + ')" ' +
+        'style="background:var(--card);border:1px solid var(--border);border-radius:12px;' +
+        'padding:14px 16px;text-align:left;cursor:pointer;font-family:inherit;' +
+        'transition:border-color .15s,transform .15s;display:flex;flex-direction:column;gap:5px;" ' +
+        'onmouseover="this.style.borderColor=\'' + color + '\';this.style.transform=\'translateY(-2px)\'" ' +
+        'onmouseout="this.style.borderColor=\'var(--border)\';this.style.transform=\'\'">' +
+          '<span style="font-family:\'Noto Serif JP\',serif;font-size:15px;font-weight:700;color:' + color + ';">' +
+            esc(label) +
+          '</span>' +
+          '<span style="font-size:11px;color:var(--fg-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:150px;" title="' + esc(subtitle) + '">' +
+            esc(subtitle) +
+          '</span>' +
+          '<span style="font-size:10px;color:var(--fg-muted);margin-top:1px;">' + words.length + ' words</span>' +
+        '</button>'
+      );
+    }).join('');
+
+    ov.innerHTML =
+      '<div style="background:var(--bg-secondary,#111);border:1px solid var(--border);border-radius:20px;' +
+      'padding:28px;width:min(94vw,660px);max-height:84vh;display:flex;flex-direction:column;gap:0;">' +
+
+        /* Header */
+        '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">' +
+          '<div style="display:flex;align-items:center;gap:10px;">' +
+            '<span style="font-size:11px;font-weight:800;color:' + color + ';background:' + color + '18;' +
+              'border:1px solid ' + color + ';padding:3px 10px;border-radius:6px;font-family:monospace,var(--font-mono);">' + esc(level) + '</span>' +
+            '<span style="font-size:15px;font-weight:700;color:var(--fg);">SRS Review — Choose a Chapter</span>' +
+          '</div>' +
+          '<button onclick="document.getElementById(\'nz-chsrs-overlay\').remove()" ' +
+            'style="background:none;border:none;color:var(--fg-muted);cursor:pointer;font-size:22px;line-height:1;padding:0 2px;">×</button>' +
+        '</div>' +
+
+        '<p style="font-size:12px;color:var(--fg-muted);margin:0 0 18px;">Select a chapter to start its SRS flashcard review.</p>' +
+
+        /* Scrollable chapter grid */
+        '<div style="overflow-y:auto;flex:1;padding-right:4px;scrollbar-width:thin;scrollbar-color:var(--border) transparent;">' +
+          '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:10px;">' +
+            cards +
+          '</div>' +
+        '</div>' +
+
+      '</div>';
+
+    document.body.appendChild(ov);
+    /* Close on backdrop click */
+    ov.addEventListener('click', function(e) { if (e.target === ov) ov.remove(); });
+  };
+
+  /* ────────────────────────────────────────────────────────
+     nzVocabChapterSRS — runs flashcard SRS for one chapter
+  ──────────────────────────────────────────────────────── */
+  window.nzVocabChapterSRS = function(level, chIdx) {
+    /* Close picker */
+    var ov = document.getElementById('nz-chsrs-overlay');
+    if (ov) ov.remove();
+
+    var chData = (typeof NZChapterData !== 'undefined' ? NZChapterData : null) ||
+                 (typeof window.NZChapterData !== 'undefined' ? window.NZChapterData : null);
+    var chapters = (chData && chData[level]) ? chData[level] : [];
+    var ch = chapters[chIdx];
+    if (!ch) { if (typeof nzShowToast === 'function') nzShowToast('Chapter not found'); return; }
+
+    var words = ch.words || ch.vocab || [];
+    if (!words.length) { if (typeof nzShowToast === 'function') nzShowToast('No words in this chapter'); return; }
+
+    var label = chLabel(ch.ch || (chIdx + 1));
+    var color = LCOL[level] || 'var(--primary)';
+
+    /* ── Load words into SRS deck (no duplicates) ── */
+    var srsItems = (typeof getSRSItems === 'function') ? getSRSItems() : [];
+    words.forEach(function(w) {
+      var wid = 'srs-chv-' + level + '-ch' + (ch.ch || chIdx) + '-' + (w.jp || Math.random());
+      if (!srsItems.find(function(x){ return x.id === wid; })) {
+        srsItems.push({
+          id: wid,
+          front: w.jp || '',
+          reading: w.romaji || '',
+          back: w.en || '',
+          type: 'vocab',
+          level: level,
+          chapterLabel: label,
+          interval: 1,
+          due: Date.now()
+        });
+      }
+    });
+    if (typeof saveSRS === 'function') { window._srsItems = srsItems; saveSRS(); }
+
+    /* ── Build ordered item list for this chapter ── */
+    var chIds = words.map(function(w) {
+      return 'srs-chv-' + level + '-ch' + (ch.ch || chIdx) + '-' + (w.jp || '');
+    });
+    var allItems = (typeof getSRSItems === 'function') ? getSRSItems() : srsItems;
+    var items = allItems.filter(function(i){ return chIds.indexOf(i.id) !== -1 && i.due <= Date.now(); });
+    if (!items.length) items = allItems.filter(function(i){ return chIds.indexOf(i.id) !== -1; });
+    if (!items.length) { if (typeof nzShowToast === 'function') nzShowToast('No cards for ' + label); return; }
+
+    var idx     = 0;
+    var revealed = false;
+    var done     = 0;
+
+    /* ── Grade button helper (mirrors index.html gradeBtn) ── */
+    function gBtn(grade, label2, col) {
+      if (typeof gradeBtn === 'function') return gradeBtn(grade, label2, col);
+      return '<button onclick="window._nzChGrade(\'' + grade + '\')" ' +
+        'style="padding:10px;border-radius:10px;border:1px solid ' + col + ';background:' + col + '18;' +
+        'color:' + col + ';font-weight:700;font-size:12px;cursor:pointer;font-family:inherit;">' +
+        label2 + '</button>';
+    }
+
+    function renderCard() {
+      var item = items[idx];
+      var content = document.getElementById('nz-content');
+      if (!content) return;
+
+      if (!item || idx >= items.length) {
+        /* ── Done screen ── */
+        content.innerHTML =
+          '<div class="nz-page nz-fadein" style="max-width:560px;">' +
+            '<button onclick="window.Router&&Router.go(\'vocab\')" ' +
+              'style="display:flex;align-items:center;gap:6px;background:none;border:none;' +
+              'color:var(--fg-muted);cursor:pointer;font-size:13px;font-weight:600;' +
+              'font-family:inherit;padding:0;margin-bottom:20px;" ' +
+              'onmouseover="this.style.color=\'var(--fg)\'" onmouseout="this.style.color=\'var(--fg-muted)\'">← Back to Vocab</button>' +
+            '<div style="text-align:center;padding:40px;background:var(--card);border:1px solid var(--border);border-radius:16px;">' +
+              '<div style="font-size:48px;margin-bottom:12px;">🎉</div>' +
+              '<div style="font-size:18px;font-weight:700;color:var(--fg);margin-bottom:6px;">' +
+                esc(level) + ' ' + esc(label) + ' review done!' +
+              '</div>' +
+              '<div style="font-size:13px;color:var(--fg-muted);">Reviewed ' + done + ' words.</div>' +
+            '</div>' +
+          '</div>';
+        return;
+      }
+
+      /* ── Flashcard ── */
+      content.innerHTML =
+        '<div class="nz-page nz-fadein" style="max-width:560px;">' +
+
+          /* Back button */
+          '<button onclick="window.Router&&Router.go(\'vocab\')" ' +
+            'style="display:flex;align-items:center;gap:6px;background:none;border:none;' +
+            'color:var(--fg-muted);cursor:pointer;font-size:13px;font-weight:600;' +
+            'font-family:inherit;padding:0;margin-bottom:20px;" ' +
+            'onmouseover="this.style.color=\'var(--fg)\'" onmouseout="this.style.color=\'var(--fg-muted)\'">← Back to Vocab</button>' +
+
+          /* Level + chapter + counter row */
+          '<div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;">' +
+            '<span style="font-size:11px;font-weight:800;color:' + color + ';background:' + color + '18;' +
+              'border:1px solid ' + color + ';padding:3px 10px;border-radius:6px;font-family:monospace;">' + esc(level) + '</span>' +
+            '<span style="font-family:\'Noto Serif JP\',serif;font-size:13px;font-weight:700;color:' + color + ';">' + esc(label) + '</span>' +
+            '<span style="font-size:14px;font-weight:700;color:var(--fg);">Vocab SRS Review</span>' +
+            '<span style="font-size:12px;color:var(--fg-muted);margin-left:auto;">' + (idx + 1) + ' / ' + items.length + '</span>' +
+          '</div>' +
+
+          /* Card */
+          '<div style="background:var(--card);border:1px solid var(--border-strong,var(--border));' +
+            'border-radius:18px;padding:32px;text-align:center;margin-bottom:16px;box-shadow:var(--shadow,none);">' +
+            '<div style="font-family:\'Noto Sans JP\',sans-serif;font-size:56px;color:' + color + ';' +
+              'line-height:1;margin-bottom:8px;cursor:pointer;" ' +
+              'onclick="(function(){var s=window.speechSynthesis;if(!s)return;s.cancel();' +
+              'var u=new SpeechSynthesisUtterance(\'' + esc(item.front) + '\');u.lang=\'ja-JP\';u.rate=0.85;s.speak(u);})()" ' +
+              'title="Tap to hear">' + esc(item.front) + '</div>' +
+            (item.reading
+              ? '<div style="font-family:monospace,var(--font-mono);font-size:14px;color:var(--fg-muted);margin-bottom:16px;">' + esc(item.reading) + '</div>'
+              : '<div style="margin-bottom:16px;"></div>') +
+            (revealed
+              ? '<div style="font-size:16px;font-weight:700;color:var(--fg);padding:14px;' +
+                'background:var(--card-elevated,#1a1a1a);border-radius:10px;border:1px solid var(--border);">' + esc(item.back) + '</div>'
+              : '<button onclick="window._nzChReveal()" class="nz-btn nz-btn-pri" style="width:100%;justify-content:center;">Show Answer</button>') +
+          '</div>' +
+
+          /* Grade buttons */
+          (revealed
+            ? '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;">' +
+              gBtn('again', '😰 Again', 'var(--primary)') +
+              gBtn('hard',  '😓 Hard',  'var(--n3,#eab308)') +
+              gBtn('good',  '😊 Good',  'var(--n4,#06b6d4)') +
+              gBtn('easy',  '😄 Easy',  'var(--n5,#22c55e)') +
+              '</div>'
+            : '') +
+
+        '</div>';
+
+      /* ── Reveal & grade handlers ── */
+      window._nzChReveal = function() { revealed = true; renderCard(); };
+      window._nzChGrade  = function(g) {
+        if (typeof srsGrade === 'function') srsGrade(item, g);
+        done++; idx++; revealed = false; renderCard();
+      };
+      window.nzSRSGrade = window._nzChGrade; /* alias used by gradeBtn HTML */
+    }
+
+    renderCard();
+  };
+
+}());
+
 // ============================================================
 // Source: nz-kanji-module__3_.js
 // ============================================================
