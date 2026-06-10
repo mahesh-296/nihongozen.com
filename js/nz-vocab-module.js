@@ -5014,8 +5014,42 @@ var VocabPage = (() => {
 
   /* ── Filter ──────────────────────────────────────────── */
   function getFiltered() {
-    let words = typeof VocabPageWords !== 'undefined' ? VocabPageWords : [];
-    if (activeLevel !== 'All') words = words.filter(w => (w.level||'N5') === activeLevel);
+    // Pull words from NZChapterData for the active JLPT level tab.
+    // VocabPageWords is intentionally excluded here — it lives only in the Basic Vocab overlay.
+    const chData = (typeof NZChapterData !== 'undefined' ? NZChapterData : null) ||
+                   (typeof window.NZChapterData !== 'undefined' ? window.NZChapterData : null) || {};
+    const level = activeLevel === 'All' ? null : activeLevel;
+    let words = [];
+    if (level) {
+      (chData[level] || []).forEach(ch => {
+        (ch.vocab || []).forEach(w => {
+          words.push({
+            id: 'chv-' + level + '-' + (w.jp || Math.random()),
+            jp: w.jp || '',
+            romaji: w.romaji || '',
+            en: w.en || '',
+            category: ch.title || level,
+            color: (({ N5:'#22c55e', N4:'#06b6d4', N3:'#eab308', N2:'#a855f7', N1:'#ef4444' })[level]) || 'var(--primary)',
+            level
+          });
+        });
+      });
+    } else {
+      // 'All' — collect from every level
+      ['N5','N4','N3','N2','N1'].forEach(lv => {
+        (chData[lv] || []).forEach(ch => {
+          (ch.vocab || []).forEach(w => {
+            words.push({
+              id: 'chv-' + lv + '-' + (w.jp || Math.random()),
+              jp: w.jp || '', romaji: w.romaji || '', en: w.en || '',
+              category: ch.title || lv,
+              color: (({ N5:'#22c55e', N4:'#06b6d4', N3:'#eab308', N2:'#a855f7', N1:'#ef4444' })[lv]) || 'var(--primary)',
+              level: lv
+            });
+          });
+        });
+      });
+    }
     if (activeCategory !== 'All') words = words.filter(w => w.category === activeCategory);
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
@@ -5125,7 +5159,13 @@ var VocabPage = (() => {
   function renderCatTabs() {
     const c = document.getElementById('vocab-cat-tabs');
     if (!c) return;
-    const cats = ['All', ...new Set((VocabPageWords||[]).map(w=>w.category))];
+    // Build category list from NZChapterData chapter titles for the active level
+    const chData = (typeof NZChapterData !== 'undefined' ? NZChapterData : null) ||
+                   (typeof window.NZChapterData !== 'undefined' ? window.NZChapterData : null) || {};
+    const levelList = activeLevel === 'All'
+      ? ['N5','N4','N3','N2','N1'].flatMap(lv => chData[lv] || [])
+      : (chData[activeLevel] || []);
+    const cats = ['All', ...new Set(levelList.map(ch => ch.title || activeLevel))];
     c.innerHTML = cats.map(cat=>{
       const active=cat===activeCategory;
       return `<button class="vocab-cat-btn"
@@ -5392,7 +5432,7 @@ var VocabPage = (() => {
   <div id="vocab-main-area"></div>
 </div>`;
 
-    /* SRS pills click → jump to level */
+    /* SRS pills click → launch chapter-based SRS review for that level */
     const srsWrap=document.getElementById('vocab-srs-pills');
     if(srsWrap){
       srsWrap.innerHTML=['N5','N4','N3','N2','N1'].map(lvl=>`
@@ -5407,9 +5447,10 @@ var VocabPage = (() => {
         btn.addEventListener('mouseenter',()=>{ btn.style.background='rgba(255,255,255,0.07)'; });
         btn.addEventListener('mouseleave',()=>{ btn.style.background='transparent'; });
         btn.addEventListener('click',()=>{
-          activeLevel=btn.dataset.level; cardIndex=0; flipped=false; searchQuery='';
-          const si=document.getElementById('vocab-search-input'); if(si) si.value='';
-          render();
+          // Launch the chapter-vocab SRS review for this level
+          if (typeof window.nzVocabLevelSRS === 'function') {
+            window.nzVocabLevelSRS(btn.dataset.level);
+          }
         });
       });
     }
