@@ -4481,7 +4481,6 @@ if (document.readyState === 'loading') {
   style.id = 'vocab-page-styles';
   style.textContent = `
     /* ── Scrollbar hide ─────────────────────────────────── */
-    #vocab-cat-tabs::-webkit-scrollbar,
     #vocab-level-tabs::-webkit-scrollbar,
     #bv-cat-tabs::-webkit-scrollbar { display: none; }
 
@@ -4983,7 +4982,7 @@ var BasicVocabPage = (() => {
 var VocabPage = (() => {
   let mode           = 'grid';
   let activeLevel    = 'N5';
-  let activeCategory = 'All';
+  let activeChapter  = 0;         // index into NZChapterData[activeLevel]
   let cardIndex      = 0;
   let flipped        = false;
   let speakingId     = null;
@@ -5013,10 +5012,14 @@ var VocabPage = (() => {
   }
 
   /* ── Filter ──────────────────────────────────────────── */
+  function getCurrentChapterData() {
+    if (typeof NZChapterData === 'undefined') return null;
+    const chapters = NZChapterData[activeLevel] || [];
+    return chapters[activeChapter] || chapters[0] || null;
+  }
   function getFiltered() {
-    let words = typeof VocabPageWords !== 'undefined' ? VocabPageWords : [];
-    if (activeLevel !== 'All') words = words.filter(w => (w.level||'N5') === activeLevel);
-    if (activeCategory !== 'All') words = words.filter(w => w.category === activeCategory);
+    const ch = getCurrentChapterData();
+    let words = ch ? (ch.words || []) : [];
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       words = words.filter(w =>
@@ -5063,14 +5066,14 @@ var VocabPage = (() => {
   function handleSpeakBtn(e, word) {
     e.stopPropagation();
     if (speakTimer) clearTimeout(speakTimer);
-    speakingId=word.id;
+    speakingId=word.jp;
     speakWord(word.jp, word.en);
     updateSpeakBtns();
     speakTimer=setTimeout(()=>{speakingId=null;updateSpeakBtns();},3000);
   }
   function updateSpeakBtns() {
     document.querySelectorAll('.vocab-speak-btn').forEach(btn=>{
-      const playing=btn.dataset.id===speakingId;
+      const playing=btn.dataset.jp===speakingId;
       btn.style.background=playing?'var(--primary-dim)':'transparent';
       btn.style.color=playing?'var(--primary)':'var(--fg-muted)';
       btn.innerHTML=playing
@@ -5114,33 +5117,51 @@ var VocabPage = (() => {
       </button>`).join('');
     wrap.querySelectorAll('.nz-lvl-tab').forEach(btn=>{
       btn.addEventListener('click',()=>{
-        activeLevel=btn.dataset.level; cardIndex=0; flipped=false;
+        activeLevel=btn.dataset.level; activeChapter=0; cardIndex=0; flipped=false;
         searchQuery=''; const si=document.getElementById('vocab-search-input'); if(si) si.value='';
         render();
       });
     });
   }
 
-  /* ── Category tabs ───────────────────────────────────── */
-  function renderCatTabs() {
-    const c = document.getElementById('vocab-cat-tabs');
+  /* ── Chapter navigation buttons ─────────────────────── */
+  function renderChapterBtns() {
+    const c = document.getElementById('vocab-ch-btns');
     if (!c) return;
-    const cats = ['All', ...new Set((VocabPageWords||[]).map(w=>w.category))];
-    c.innerHTML = cats.map(cat=>{
-      const active=cat===activeCategory;
-      return `<button class="vocab-cat-btn"
-        data-cat="${esc(cat)}"
-        style="background:${active?'var(--primary)':'var(--card-elevated)'};
-               color:${active?'#fff':'var(--fg-muted)'};
-               border:1px solid ${active?'var(--primary)':'var(--border)'};
-               white-space:nowrap;flex-shrink:0;padding:5px 12px;border-radius:20px;
-               font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all 0.15s;">
-        ${esc(cat)}
-      </button>`;
-    }).join('');
-    c.querySelectorAll('.vocab-cat-btn').forEach(btn=>{
+    const chapters = (typeof NZChapterData !== 'undefined' && NZChapterData[activeLevel]) ? NZChapterData[activeLevel] : [];
+    const color = LEVEL_COLORS[activeLevel] || '#22c55e';
+    const bookLabel = activeLevel==='N4' ? 'Minna no Nihongo II' :
+                      activeLevel==='N5' ? 'Minna no Nihongo I' :
+                      activeLevel==='N3' ? 'Minna no Nihongo Chukyu' :
+                      `Sou Matome ${activeLevel}`;
+    c.innerHTML = `
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-shrink:0;">
+        <span style="font-size:11px;font-weight:700;color:${color};background:${color}18;
+                     padding:3px 10px;border-radius:6px;white-space:nowrap;">
+          ${bookLabel}
+        </span>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        ${chapters.map((ch, i) => {
+          const active = i === activeChapter;
+          const chNum = activeLevel==='N4' ? ch.chBook||ch.ch : ch.ch;
+          return `<button class="vocab-ch-nav-btn"
+            data-idx="${i}"
+            title="${ch.title||''}"
+            style="padding:5px 11px;border-radius:8px;font-size:12px;font-weight:700;
+                   font-family:inherit;cursor:pointer;transition:all 0.15s;
+                   border:1px solid ${active?color:'var(--border)'};
+                   background:${active?color+'22':'var(--card-elevated)'};
+                   color:${active?color:'var(--fg-muted)'};">
+            Ch ${chNum}
+          </button>`;
+        }).join('')}
+      </div>`;
+    c.querySelectorAll('.vocab-ch-nav-btn').forEach(btn=>{
       btn.addEventListener('click',()=>{
-        activeCategory=btn.dataset.cat; cardIndex=0; flipped=false; render();
+        activeChapter=parseInt(btn.dataset.idx); cardIndex=0; flipped=false; searchQuery='';
+        const si=document.getElementById('vocab-search-input'); if(si) si.value='';
+        render();
       });
     });
   }
@@ -5150,16 +5171,19 @@ var VocabPage = (() => {
     const filtered=getFiltered();
     const area=document.getElementById('vocab-main-area');
     if(!area) return;
+    const color = LEVEL_COLORS[activeLevel] || '#22c55e';
+    const ch = getCurrentChapterData();
     if(!filtered.length){
-      area.innerHTML=`<p style="color:var(--fg-muted);text-align:center;padding:40px;">No words found for ${activeLevel}.</p>`;
+      const msg = ch ? `No words found.` : `No chapter data available for ${activeLevel}.`;
+      area.innerHTML=`<p style="color:var(--fg-muted);text-align:center;padding:40px;">${msg}</p>`;
       return;
     }
     area.innerHTML=`
-<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;">
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;padding:16px;">
   ${filtered.map(word=>`
-    <div class="vocab-card" data-id="${esc(word.id)}"
+    <div class="vocab-card" data-jp="${esc(word.jp)}"
       style="border-radius:12px;border:1px solid var(--border);background:var(--card);
-             padding:16px;cursor:pointer;border-left:3px solid ${word.color||LEVEL_COLORS[word.level||'N5']};
+             padding:16px;cursor:pointer;border-left:3px solid ${color};
              position:relative;transition:transform 0.2s,box-shadow 0.2s;">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px;">
         <div>
@@ -5168,32 +5192,30 @@ var VocabPage = (() => {
           <p style="font-family:'JetBrains Mono',monospace;font-size:11px;
                     color:var(--fg-muted);font-style:italic;">${esc(word.romaji||'')}</p>
         </div>
-        <button class="vocab-speak-btn" data-id="${esc(word.id)}"
+        <button class="vocab-speak-btn" data-jp="${esc(word.jp)}" data-en="${esc(word.en)}"
           style="padding:6px;border-radius:8px;border:none;background:transparent;
                  color:var(--fg-muted);cursor:pointer;flex-shrink:0;transition:all 0.15s;">
           ${speakerIcon(15)}
         </button>
       </div>
-      <p style="font-size:13px;color:var(--fg);margin-bottom:12px;">${esc(word.en)}</p>
-      <div style="display:flex;align-items:center;gap:6px;">
-        <span style="padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600;
-                     background:${(word.color||LEVEL_COLORS[word.level||'N5'])}22;
-                     color:${word.color||LEVEL_COLORS[word.level||'N5']};">${esc(word.category)}</span>
-      </div>
+      <p style="font-size:13px;color:var(--fg);margin-bottom:0;">${esc(word.en)}</p>
     </div>
   `).join('')}
 </div>`;
     area.querySelectorAll('.vocab-card').forEach(card=>{
       card.addEventListener('click',e=>{
         if(e.target.closest('.vocab-speak-btn')) return;
-        const w=(VocabPageWords||[]).find(x=>x.id===card.dataset.id);
-        if(w) speak(w.jp);
+        speak(card.dataset.jp);
       });
     });
     area.querySelectorAll('.vocab-speak-btn').forEach(btn=>{
       btn.addEventListener('click',e=>{
-        const w=(VocabPageWords||[]).find(x=>x.id===btn.dataset.id);
-        if(w) handleSpeakBtn(e,w);
+        e.stopPropagation();
+        if(speakTimer) clearTimeout(speakTimer);
+        speakingId=btn.dataset.jp;
+        speakWord(btn.dataset.jp, btn.dataset.en);
+        updateSpeakBtns();
+        speakTimer=setTimeout(()=>{speakingId=null;updateSpeakBtns();},3000);
       });
     });
   }
@@ -5208,7 +5230,7 @@ var VocabPage = (() => {
     const counter=document.getElementById('vocab-fc-counter');
     const inner=document.getElementById('vocab-flip-inner');
     if(inner) inner.classList.toggle('flipped',flipped);
-    const col=word.color||LEVEL_COLORS[word.level||'N5'];
+    const col=LEVEL_COLORS[activeLevel]||'#22c55e';
     if(front) front.innerHTML=`
       <div style="font-family:'Noto Sans JP',sans-serif;font-size:52px;font-weight:700;color:var(--fg);">${esc(word.jp)}</div>
       <p style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--fg-muted);">${esc(word.romaji||'')}</p>
@@ -5220,10 +5242,8 @@ var VocabPage = (() => {
       <p style="font-size:11px;color:var(--fg-muted);margin-top:6px;">Click to reveal meaning</p>`;
     if(back) back.innerHTML=`
       <p style="font-size:22px;font-weight:700;color:var(--fg);text-align:center;margin-bottom:10px;">${esc(word.en)}</p>
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
-        <span style="padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;
-                     background:${col}22;color:${col};">${esc(word.category)}</span>
-      </div>
+      <span style="padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;
+                   background:${col}22;color:${col};margin-bottom:10px;">${esc(activeLevel)}</span>
       <button id="fc-speak-back" style="display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:8px;
         border:1px solid rgba(232,68,106,0.3);background:rgba(232,68,106,0.1);color:var(--primary);
         font-size:12px;cursor:pointer;font-family:inherit;">
@@ -5318,11 +5338,21 @@ var VocabPage = (() => {
   function render() {
     renderModeBtns();
     renderLevelTabs();
-    renderCatTabs();
+    renderChapterBtns();
     const lbl=document.getElementById('vocab-count-label');
     if(lbl){
+      const ch=getCurrentChapterData();
       const total=getFiltered().length;
-      lbl.textContent=`Master vocabulary from N5 to N1 level`;
+      if(ch){
+        const bookLabel = activeLevel==='N4' ? `Minna no Nihongo II` :
+                          activeLevel==='N5' ? `Minna no Nihongo I` :
+                          activeLevel==='N3' ? `Minna no Nihongo Chukyu` :
+                          `Sou Matome ${activeLevel}`;
+        const chNum = activeLevel==='N4' ? (ch.chBook||ch.ch) : ch.ch;
+        lbl.textContent=`${bookLabel} — Chapter ${chNum}: ${ch.title||''} · ${total} words`;
+      } else {
+        lbl.textContent=`Chapter vocabulary · ${activeLevel}`;
+      }
     }
     if(mode==='grid'){detachKeys();renderGrid();}
     else renderFlashcard();
@@ -5344,7 +5374,7 @@ var VocabPage = (() => {
         語彙 Vocabulary Study
       </h1>
       <p id="vocab-count-label" style="font-size:13px;color:var(--fg-muted);">
-        Master vocabulary from N5 to N1 level
+        Chapter vocabulary study
       </p>
     </div>
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
@@ -5382,10 +5412,9 @@ var VocabPage = (() => {
     </div>
   </div>
 
-  <!-- ═══ Category scroll tabs ═══ -->
-  <div id="vocab-cat-tabs"
-    style="display:flex;gap:8px;overflow-x:auto;padding-bottom:10px;margin-bottom:20px;
-           scrollbar-width:none;">
+  <!-- ═══ Chapter navigation buttons ═══ -->
+  <div id="vocab-ch-btns"
+    style="margin-bottom:20px;">
   </div>
 
   <!-- ═══ Main content area ═══ -->
@@ -5407,7 +5436,7 @@ var VocabPage = (() => {
         btn.addEventListener('mouseenter',()=>{ btn.style.background='rgba(255,255,255,0.07)'; });
         btn.addEventListener('mouseleave',()=>{ btn.style.background='transparent'; });
         btn.addEventListener('click',()=>{
-          activeLevel=btn.dataset.level; cardIndex=0; flipped=false; searchQuery='';
+          activeLevel=btn.dataset.level; activeChapter=0; cardIndex=0; flipped=false; searchQuery='';
           const si=document.getElementById('vocab-search-input'); if(si) si.value='';
           render();
         });
