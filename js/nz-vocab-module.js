@@ -1,15 +1,102 @@
 // ============================================================
 // FILE: js/nz-vocab-module.js
-// NihongoZen — Vocabulary Module (Clean — data-free core)
+// NihongoZen — Vocabulary Module (Core logic — data-free)
 //
-// Required load order in index.html:
-//   <script src="js/chapters.js"></script>      ← chapter metadata
-//   <script src="js/vocabLevel.js"></script>    ← word arrays (N5-N1)
-//   <script src="js/nz-vocab-module.js"></script> ← this file
+// DATA DEPENDENCIES (auto-loaded below if not already present):
+//   js/chapters.js     → window.NZChapterData        (chapter metadata N5-N1)
+//   js/vocabLevel.js   → window.NZChapterVocabWords  (word arrays N5-N1)
 //
-// All styling uses existing CSS variables (--bg, --fg, --primary, --border, etc.)
-// No new classes introduced beyond those in the original module.
+// RECOMMENDED explicit load order in index.html (avoids the dynamic loader):
+//   <script src="js/chapters.js"></script>
+//   <script src="js/vocabLevel.js"></script>
+//   <script src="js/nz-vocab-module.js"></script>
+//
+// If this file is loaded standalone (e.g. lazy bundle), the dynamic loader
+// at the top of this file will inject the two data scripts automatically,
+// resolve the merge, and then init the UI — no manual intervention needed.
+//
+// All styling uses existing CSS variables (--bg, --fg, --primary, --border …)
+// No new CSS classes introduced beyond those in the original module.
 // ============================================================
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   DATA IMPORT BOOTSTRAP
+   Ensures chapters.js and vocabLevel.js are on the page before any UI code
+   in this module tries to read window.NZChapterData or NZChapterVocabWords.
+
+   Resolution order:
+     1. Both already on window  → merge already done by chapters.js, proceed.
+     2. One or both missing     → inject their <script> tags, wait for load,
+                                   then trigger the merge manually and proceed.
+   ───────────────────────────────────────────────────────────────────────────── */
+(function NZDataBootstrap() {
+  'use strict';
+
+  /* Paths relative to this script's own location.
+     Adjust if your repository uses a different folder structure.          */
+  const BASE_PATH   = (function() {
+    const scripts = document.querySelectorAll('script[src]');
+    for (const s of scripts) {
+      if (s.src && s.src.includes('nz-vocab-module')) {
+        return s.src.replace(/nz-vocab-module[^/]*\.js[^/]*$/, '');
+      }
+    }
+    return 'js/';   // fallback: assume scripts live in js/
+  })();
+
+  const CHAPTERS_URL   = BASE_PATH + 'chapters.js';
+  const VOCAB_LVL_URL  = BASE_PATH + 'vocabLevel.js';
+
+  /* ── Helper: inject a <script> tag and resolve when loaded ── */
+  function loadScript(url) {
+    return new Promise((resolve, reject) => {
+      if (document.querySelector(`script[src="${url}"]`)) {
+        resolve(); return;           // already in DOM — script ran or is running
+      }
+      const s = document.createElement('script');
+      s.src   = url;
+      s.async = false;               // preserve execution order
+      s.onload  = resolve;
+      s.onerror = () => {
+        console.warn('[NZ] Could not load ' + url + ' — chapter vocab will be empty.');
+        resolve();                   // don't block the whole module on a 404
+      };
+      document.head.appendChild(s);
+    });
+  }
+
+  /* ── Merge: copy word arrays from NZChapterVocabWords into NZChapterData ── */
+  function runMerge() {
+    if (typeof NZChapterVocabWords === 'undefined' ||
+        typeof NZChapterData       === 'undefined') return;
+    const levels = ['N5', 'N4', 'N3', 'N2', 'N1'];
+    levels.forEach(lvl => {
+      const chaps = NZChapterData[lvl] || [];
+      const words = NZChapterVocabWords[lvl] || [];
+      chaps.forEach((ch, i) => {
+        if (!ch.words || ch.words.length === 0) {
+          ch.words = words[i] || [];
+        }
+      });
+    });
+    console.log('[NZ] nz-vocab-module.js ✓ — NZChapterData fully hydrated.');
+  }
+
+  /* ── Main: load missing scripts then merge ── */
+  const needsChapters  = (typeof NZChapterData       === 'undefined');
+  const needsVocabLvl  = (typeof NZChapterVocabWords === 'undefined');
+
+  if (!needsChapters && !needsVocabLvl) {
+    // Both already present — chapters.js merge() already ran; nothing to do.
+    return;
+  }
+
+  const loads = [];
+  if (needsChapters) loads.push(loadScript(CHAPTERS_URL));
+  if (needsVocabLvl) loads.push(loadScript(VOCAB_LVL_URL));
+
+  Promise.all(loads).then(runMerge);
+})();
 
 // ============================================================
 // Source: nz-chapter-reading.js
@@ -2394,7 +2481,7 @@ const NZChapterVocab = (() => {
 
   /* ── Current chapter data ────────────────────────────── */
   function getCurrentChapter() {
-    const chapters = NZChapterData[activeLevel] || [];
+    const chapters = (window.NZChapterData && window.NZChapterData[activeLevel]) || [];
     return chapters[activeChapter] || chapters[0];
   }
 
@@ -2468,7 +2555,7 @@ const NZChapterVocab = (() => {
   function renderSidebar() {
     const sb = document.getElementById('nzcv-sidebar');
     if (!sb) return;
-    const chapters = NZChapterData[activeLevel] || [];
+    const chapters = (window.NZChapterData && window.NZChapterData[activeLevel]) || [];
     const color = COLORS[activeLevel];
     sb.innerHTML = chapters.map((ch, i) => {
       const label = activeLevel === 'N4'
@@ -2570,7 +2657,7 @@ const NZChapterVocab = (() => {
           <button id="nzcv-next-ch" class="nzcv-nav-btn"
             style="padding:7px;border-radius:10px;background:var(--card-elevated);
                    border:1px solid var(--border);cursor:pointer;color:var(--fg);transition:border-color 0.15s;"
-            ${activeChapter>=(NZChapterData[activeLevel]||[]).length-1?'disabled style="opacity:0.3;pointer-events:none;"':''}>
+            ${activeChapter>=((window.NZChapterData && window.NZChapterData[activeLevel])||[]).length-1?'disabled style="opacity:0.3;pointer-events:none;"':''}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
           </button>
         </div>
@@ -2583,7 +2670,7 @@ const NZChapterVocab = (() => {
       }
     });
     document.getElementById('nzcv-next-ch')?.addEventListener('click', () => {
-      const chapters = NZChapterData[activeLevel] || [];
+      const chapters = (window.NZChapterData && window.NZChapterData[activeLevel]) || [];
       if (activeChapter < chapters.length-1) {
         activeChapter++; cardIndex=0; flipped=false;
         renderSidebar(); renderAll();
