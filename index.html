@@ -797,10 +797,10 @@ Pages.kanji = function () {
             'color:' + color + ';background:none;border:none;cursor:pointer;padding:0;" ' +
             'title="Hear pronunciation">' + H(k.kanji) + '</button>' +
           '<div>' +
-            '<span style="display:inline-block;font-size:10px;font-weight:800;color:' + color + ';' +
+            '<span style="display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:800;color:' + color + ';' +
               'background:' + color + '18;border:1px solid ' + color + ';padding:2px 8px;' +
               'border-radius:5px;font-family:\'JetBrains Mono\',monospace;margin-bottom:6px;">' +
-              H(activeTab) + '</span>' +
+              jlptIcon(activeTab) + ' ' + H(activeTab) + '</span>' +
             '<p style="font-family:\'JetBrains Mono\',monospace;font-size:13px;' +
               'color:var(--fg-muted);margin:0 0 4px;">' + H(k.reading) + '</p>' +
             '<p style="font-size:14px;font-weight:700;color:var(--fg);margin:0;">' +
@@ -811,7 +811,7 @@ Pages.kanji = function () {
           kanjiCell('On 音',   k.on,         true) +
           kanjiCell('Kun 訓',  k.kun || '—', true) +
           kanjiCell('Meaning', k.meaning,    false) +
-          kanjiCell('JLPT',    activeTab,    false) +
+          kanjiCell('JLPT',    jlptIcon(activeTab) + ' ' + activeTab, false) +
         '</div>' +
         '<div class="nz-cardu" style="padding:12px;margin-bottom:13px;">' +
           '<div style="display:flex;justify-content:space-between;align-items:center;' +
@@ -906,11 +906,11 @@ Pages.kanji = function () {
           var act = t === 'N5';
           return '<button id="kj-tab-' + t + '" onclick="nzKanjiTab(\'' + t + '\')" ' +
             'style="padding:10px 15px;font-size:13px;font-weight:700;font-family:inherit;' +
-            'cursor:pointer;border:none;' +
+            'cursor:pointer;border:none;display:inline-flex;align-items:center;gap:6px;' +
             'border-bottom:2px solid ' + (act ? c : 'transparent') + ';' +
             'background:' + (act ? c + '18' : 'transparent') + ';' +
             'color:' + (act ? c : 'var(--fg-muted)') + ';' +
-            'transition:all .15s;">' + t + '</button>';
+            'transition:all .15s;">' + jlptIcon(t) + ' ' + t + '</button>';
         }).join('') +
       '</div>' +
       '<div style="position:relative;flex:1;max-width:270px;">' +
@@ -1785,7 +1785,7 @@ Pages.progress = function () {
         var cnt  = typeof kanjiData !== 'undefined' ? (kanjiData[lv] || []).length : 0;
         return '<div style="margin-bottom:13px;">' +
           '<div style="display:flex;justify-content:space-between;margin-bottom:5px;">' +
-            '<span style="font-size:13px;font-weight:700;color:' + c + ';">' + lv + '</span>' +
+            '<span style="font-size:13px;font-weight:700;color:' + c + ';">' + jlptIcon(lv) + ' ' + lv + '</span>' +
             '<span style="font-size:12px;color:var(--fg-muted);">' +
               cnt + ' characters</span>' +
           '</div>' +
@@ -3095,7 +3095,7 @@ function injectKanjiSRSButtons() {
         'style="padding:6px 14px;border-radius:8px;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;' +
         'border:1px solid ' + c + ';background:' + c + '18;color:' + c + ';transition:all .15s;" ' +
         'onmouseover="this.style.background=\'' + c + '\';this.style.color=\'#fff\'" ' +
-        'onmouseout="this.style.background=\'' + c + '18\';this.style.color=\'' + c + '\'">' + lv + '</button>';
+        'onmouseout="this.style.background=\'' + c + '18\';this.style.color=\'' + c + '\'">' + jlptIcon(lv) + ' ' + lv + '</button>';
     }).join('');
   var second = page.children[1];
   if (second) page.insertBefore(srsRow, second); else page.appendChild(srsRow);
@@ -3286,12 +3286,12 @@ function injectVocabSRSButtons() {
       var c = jlptColor(lv);
       return '<button onclick="window.nzVocabLevelSRS(\'' + lv + '\')" ' +
         'style="padding:7px 16px;border-radius:9px;font-size:13px;font-weight:800;font-family:inherit;cursor:pointer;' +
-        'letter-spacing:.02em;' +
+        'letter-spacing:.02em;display:inline-flex;align-items:center;gap:6px;' +
         'border:1.5px solid ' + c + ';background:transparent;color:' + c + ';' +
         'transition:all .15s;box-shadow:0 0 0 0 ' + c + '40;" ' +
         'onmouseover="this.style.background=\'' + c + '\';this.style.color=\'#fff\';this.style.boxShadow=\'0 0 12px ' + c + '60\'" ' +
         'onmouseout="this.style.background=\'transparent\';this.style.color=\'' + c + '\';this.style.boxShadow=\'0 0 0 0 ' + c + '40\'">' +
-        lv + '</button>';
+        jlptIcon(lv) + ' ' + lv + '</button>';
     }).join('');
 
   /* Insert SRS row after the header block */
