@@ -123,6 +123,20 @@ function jlptColor(lv) {
            N2: 'var(--n2)', N1: 'var(--n1)' }[lv] || 'var(--primary)';
 }
 
+/* Shared level icons used across Vocabulary, Grammar, Listening, Reading,
+   Conversation, Pronunciation, and the JLPT Practice sidebar. */
+function jlptIcon(lv) {
+  return { All: '✨', N5: '🌱', N4: '🌿', N3: '🌳', N2: '🏯', N1: '🗻' }[lv] || '📘';
+}
+window.jlptIcon = jlptIcon;
+
+/* New JLPT Practice difficulty labels */
+function jlptLabel(lv) {
+  return { N5: 'Basic', N4: 'Advanced', N3: 'Intermediate',
+           N2: 'Hard/Advanced', N1: 'Expert/Advanced' }[lv] || lv;
+}
+window.jlptLabel = jlptLabel;
+
 function speak(text, rate) {
   if (!window.speechSynthesis || !text) return;
   window.speechSynthesis.cancel();
@@ -592,8 +606,8 @@ function jlptLink(route, lv) {
   var c = jlptColor(lv);
   return '<a href="#' + route + '" data-route="' + route + '" class="nz-navlink">' +
     '<span class="nz-jbadge" style="color:' + c + ';background:' + c + '18;' +
-      'border:1px solid ' + c + ';">' + lv + '</span>' +
-    '<span class="nz-navlabel">' + lv + ' Practice</span>' +
+      'border:1px solid ' + c + ';">' + jlptIcon(lv) + '</span>' +
+    '<span class="nz-navlabel">' + lv + ' · ' + jlptLabel(lv) + '</span>' +
     '</a>';
 }
 
@@ -679,11 +693,10 @@ Pages.dashboard = function () {
     '<div style="display:flex;gap:9px;flex-wrap:wrap;">' +
       ['N5','N4','N3','N2','N1'].map(function (lv) {
         var c  = jlptColor(lv);
-        var lb = {N5:'Beginner',N4:'Elementary',N3:'Intermediate',
-                  N2:'Upper-Int.',N1:'Advanced'}[lv];
+        var lb = jlptLabel(lv);
         return '<button class="nz-btn" onclick="window.Router.go(\'jlpt-' + lv.toLowerCase() + '\')" ' +
           'style="background:' + c + '18;color:' + c + ';border:1px solid ' + c + ';' +
-          'font-weight:800;">' + lv + ' — ' + lb + '</button>';
+          'font-weight:800;">' + jlptIcon(lv) + ' ' + lv + ' — ' + lb + '</button>';
       }).join('') +
     '</div>' +
     '</div>'
@@ -967,7 +980,7 @@ Pages.pronunciation = function () {
 Pages.grammar = function () {
   var activeLv  = 'All';
   var expanded  = new Set(['g-001']);
-  var LEVELS    = ['All', 'N5', 'N4', 'N3'];
+  var LEVELS    = ['All', 'N5', 'N4', 'N3', 'N2', 'N1'];
 
   function getFiltered() {
     if (typeof grammarPoints === 'undefined') return [];
@@ -1086,7 +1099,7 @@ Pages.grammar = function () {
           'background:' + (act ? 'var(--primary)' : 'var(--card-elevated)') + ';' +
           'color:' + (act ? '#fff' : 'var(--fg-muted)') + ';' +
           'border:1px solid ' + (act ? 'var(--primary)' : 'var(--border)') + ';">' +
-          lv + '</button>';
+          jlptIcon(lv) + ' ' + lv + '</button>';
       }).join('') +
     '</div>' +
     '<div id="gr-list"></div>' +
@@ -1102,9 +1115,12 @@ Pages.listening = function () {
   var isPlaying   = false;
   var quizAns     = {};
   var showResults = false;
+  var activeLv    = 'All';
+  var LI_LEVELS   = ['All', 'N5', 'N4', 'N3', 'N2', 'N1'];
 
   function renderList() {
     var dlgs = typeof dialogues !== 'undefined' ? dialogues : [];
+    var filtered = activeLv === 'All' ? dlgs : dlgs.filter(function (d) { return d.level === activeLv; });
     setHTML(
       '<div class="nz-page nz-fadein">' +
       '<div style="margin-bottom:20px;">' +
@@ -1113,18 +1129,32 @@ Pages.listening = function () {
         '<p style="font-size:13px;color:var(--fg-muted);margin:0;">' +
           'Practice listening comprehension with real dialogues</p>' +
       '</div>' +
+      '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;">' +
+        LI_LEVELS.map(function (lv) {
+          var act = lv === activeLv;
+          var c   = lv === 'All' ? 'var(--primary)' : jlptColor(lv);
+          return '<button data-li-lv="' + lv + '" ' +
+            'style="padding:9px 18px;border-radius:10px;font-size:13px;font-weight:700;' +
+            'font-family:inherit;cursor:pointer;transition:all .15s;' +
+            'background:' + (act ? (lv === 'All' ? 'var(--primary)' : c + '18') : 'var(--card-elevated)') + ';' +
+            'color:' + (act ? (lv === 'All' ? '#fff' : c) : 'var(--fg-muted)') + ';' +
+            'border:1px solid ' + (act ? (lv === 'All' ? 'var(--primary)' : c) : 'var(--border)') + ';">' +
+            jlptIcon(lv) + ' ' + lv + '</button>';
+        }).join('') +
+      '</div>' +
       '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(265px,1fr));' +
         'gap:13px;">' +
-        dlgs.map(function (dlg, i) {
+        filtered.map(function (dlg, i) {
           var c = jlptColor(dlg.level);
+          var realIdx = dlgs.indexOf(dlg);
           return '<div class="nz-card nz-hoverable" style="padding:20px;' +
-            'border-top:3px solid ' + c + ';" onclick="nzOpenDlg(' + i + ')">' +
+            'border-top:3px solid ' + c + ';" onclick="nzOpenDlg(' + realIdx + ')">' +
             '<div style="display:flex;justify-content:space-between;align-items:center;' +
               'margin-bottom:9px;">' +
               '<span style="font-size:10px;font-weight:800;color:' + c + ';' +
                 'background:' + c + '18;border:1px solid ' + c + ';' +
-                'padding:2px 8px;border-radius:5px;' +
-                'font-family:\'JetBrains Mono\',monospace;">' + dlg.level + '</span>' +
+                'padding:2px 8px;border-radius:5px;display:inline-flex;align-items:center;gap:5px;' +
+                'font-family:\'JetBrains Mono\',monospace;">' + jlptIcon(dlg.level) + ' ' + dlg.level + '</span>' +
               '<span style="font-size:11px;color:var(--fg-muted);">' +
                 dlg.lineCount + ' lines</span>' +
             '</div>' +
@@ -1138,8 +1168,21 @@ Pages.listening = function () {
               'background:' + c + ';color:#fff;">🎧 Start Listening</button>' +
             '</div>';
         }).join('') +
-      '</div></div>'
+      '</div>' +
+      (filtered.length === 0
+        ? '<div class="card" style="padding:40px;text-align:center;color:var(--fg-muted);margin-top:13px;">' +
+            '<p style="font-size:28px;margin:0 0 8px;">' + jlptIcon(activeLv) + '</p>' +
+            '<p style="font-size:13px;margin:0;">No ' + activeLv + ' listening dialogues yet — check back soon!</p>' +
+          '</div>'
+        : '') +
+      '</div>'
     );
+    document.querySelectorAll('[data-li-lv]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        activeLv = btn.getAttribute('data-li-lv');
+        renderList();
+      });
+    });
     window.nzOpenDlg = function (i) {
       selected    = dlgs[i];
       quizAns     = {};
@@ -1263,8 +1306,12 @@ Pages.reading = function () {
   var quizAns      = {};
   var showResults  = false;
 
+  var activeLv  = 'All';
+  var RD_LEVELS = ['All', 'N5', 'N4', 'N3', 'N2', 'N1'];
+
   function renderList() {
     var psg = typeof passages !== 'undefined' ? passages : [];
+    var filtered = activeLv === 'All' ? psg : psg.filter(function (p) { return p.level === activeLv; });
     setHTML(
       '<div class="nz-page nz-fadein">' +
       '<div style="margin-bottom:20px;">' +
@@ -1273,18 +1320,32 @@ Pages.reading = function () {
         '<p style="font-size:13px;color:var(--fg-muted);margin:0;">' +
           'Improve reading comprehension with graded passages</p>' +
       '</div>' +
+      '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;">' +
+        RD_LEVELS.map(function (lv) {
+          var act = lv === activeLv;
+          var c   = lv === 'All' ? 'var(--primary)' : jlptColor(lv);
+          return '<button data-rd-lv="' + lv + '" ' +
+            'style="padding:9px 18px;border-radius:10px;font-size:13px;font-weight:700;' +
+            'font-family:inherit;cursor:pointer;transition:all .15s;' +
+            'background:' + (act ? (lv === 'All' ? 'var(--primary)' : c + '18') : 'var(--card-elevated)') + ';' +
+            'color:' + (act ? (lv === 'All' ? '#fff' : c) : 'var(--fg-muted)') + ';' +
+            'border:1px solid ' + (act ? (lv === 'All' ? 'var(--primary)' : c) : 'var(--border)') + ';">' +
+            jlptIcon(lv) + ' ' + lv + '</button>';
+        }).join('') +
+      '</div>' +
       '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(265px,1fr));' +
         'gap:13px;">' +
-        psg.map(function (p, i) {
+        filtered.map(function (p, i) {
           var c = jlptColor(p.level);
+          var realIdx = psg.indexOf(p);
           return '<div class="nz-card nz-hoverable" style="padding:20px;' +
-            'border-top:3px solid ' + c + ';" onclick="nzOpenPassage(' + i + ')">' +
+            'border-top:3px solid ' + c + ';" onclick="nzOpenPassage(' + realIdx + ')">' +
             '<div style="display:flex;justify-content:space-between;align-items:center;' +
               'margin-bottom:9px;">' +
               '<span style="font-size:10px;font-weight:800;color:' + c + ';' +
                 'background:' + c + '18;border:1px solid ' + c + ';' +
-                'padding:2px 8px;border-radius:5px;' +
-                'font-family:\'JetBrains Mono\',monospace;">' + p.level + '</span>' +
+                'padding:2px 8px;border-radius:5px;display:inline-flex;align-items:center;gap:5px;' +
+                'font-family:\'JetBrains Mono\',monospace;">' + jlptIcon(p.level) + ' ' + p.level + '</span>' +
               '<span style="font-size:11px;color:var(--fg-muted);">' +
                 p.wordCount + ' words</span>' +
             '</div>' +
@@ -1298,8 +1359,21 @@ Pages.reading = function () {
               'background:' + c + ';color:#fff;">📖 Start Reading</button>' +
             '</div>';
         }).join('') +
-      '</div></div>'
+      '</div>' +
+      (filtered.length === 0
+        ? '<div class="card" style="padding:40px;text-align:center;color:var(--fg-muted);margin-top:13px;">' +
+            '<p style="font-size:28px;margin:0 0 8px;">' + jlptIcon(activeLv) + '</p>' +
+            '<p style="font-size:13px;margin:0;">No ' + activeLv + ' reading passages yet — check back soon!</p>' +
+          '</div>'
+        : '') +
+      '</div>'
     );
+    document.querySelectorAll('[data-rd-lv]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        activeLv = btn.getAttribute('data-rd-lv');
+        renderList();
+      });
+    });
     window.nzOpenPassage = function (i) {
       selected     = psg[i];
       quizAns      = {};
@@ -1453,11 +1527,11 @@ Pages.jlptLevel = function (lvl) {
   var lv    = lvl.toUpperCase();
   var color = jlptColor(lv);
   var desc  = {
-    N5: 'Beginner · Basic expressions and vocabulary',
-    N4: 'Elementary · Everyday topics and grammar',
-    N3: 'Intermediate · Complex sentence structures',
-    N2: 'Upper-Intermediate · Broad vocabulary range',
-    N1: 'Advanced · Near-native comprehension'
+    N5: jlptLabel('N5') + ' · Basic expressions and vocabulary',
+    N4: jlptLabel('N4') + ' · Everyday topics and grammar',
+    N3: jlptLabel('N3') + ' · Complex sentence structures',
+    N2: jlptLabel('N2') + ' · Broad vocabulary range',
+    N1: jlptLabel('N1') + ' · Near-native comprehension'
   }[lv] || '';
 
   var kList  = (typeof kanjiData !== 'undefined' ? kanjiData[lv] : null) || [];
@@ -1472,10 +1546,10 @@ Pages.jlptLevel = function (lvl) {
       '<div style="display:flex;align-items:center;gap:12px;margin-bottom:6px;">' +
         '<span style="font-size:13px;font-weight:800;color:' + color + ';' +
           'background:' + color + '18;border:1px solid ' + color + ';' +
-          'padding:4px 14px;border-radius:8px;' +
-          'font-family:\'JetBrains Mono\',monospace;">' + lv + '</span>' +
+          'padding:4px 14px;border-radius:8px;display:inline-flex;align-items:center;gap:6px;' +
+          'font-family:\'JetBrains Mono\',monospace;">' + jlptIcon(lv) + ' ' + lv + '</span>' +
         '<h1 style="font-size:22px;font-weight:800;color:var(--fg);' +
-          'margin:0;letter-spacing:-.4px;">JLPT ' + lv + ' Practice</h1>' +
+          'margin:0;letter-spacing:-.4px;">JLPT ' + lv + ' Practice — ' + jlptLabel(lv) + '</h1>' +
       '</div>' +
       '<p style="font-size:13px;color:var(--fg-muted);margin:0;">' + H(desc) + '</p>' +
     '</div>' +
@@ -1866,7 +1940,8 @@ function lvBadge(color, lv) {
   return '<span style="font-size:10px;font-weight:800;color:' + color + ';' +
     'background:' + color + '18;border:1px solid ' + color + ';' +
     'padding:3px 10px;border-radius:6px;font-family:\'JetBrains Mono\',monospace;' +
-    'flex-shrink:0;">' + lv + '</span>';
+    'display:inline-flex;align-items:center;gap:5px;' +
+    'flex-shrink:0;">' + jlptIcon(lv) + ' ' + lv + '</span>';
 }
 
 function phraseCard(p) {
