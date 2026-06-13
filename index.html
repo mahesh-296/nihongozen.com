@@ -87,7 +87,7 @@
 <script src="js/nz-vocab-module.js" defer></script>
 <script src="js/nz-daily-tracker.js" defer></script>
 <script src="js/nz-conversation-module.js" defer></script>
-<script src="js/nz-vocab-pronunciation-conjugation.js" defer></script>
+<script src="js/nz-pronunciation-module.js" defer></script>
 <script src="js/pomodoro.js" defer></script>
 
 <!-- ══════════════════════════════════════════════════════════
@@ -96,7 +96,7 @@
      Depends on: core.js, nz-data.js, nz-kana.js,
                  nz-vocab-module.js, nz-daily-tracker.js,
                  nz-conversation-module.js,
-                 nz-vocab-pronunciation-conjugation.js,
+                 nz-pronunciation-module.js,
                  pomodoro.js (all deferred above)
 ═══════════════════════════════════════════════════════════ -->
 <script defer>
@@ -176,6 +176,9 @@ var NzRouter = (function () {
       }
       if (window.ConversationPage && typeof ConversationPage.cleanup === 'function') {
         try { ConversationPage.cleanup(); } catch (e) {}
+      }
+      if (window.PronunciationPage && typeof PronunciationPage.cleanup === 'function') {
+        try { PronunciationPage.cleanup(); } catch (e) {}
       }
       document.querySelectorAll('[data-route]').forEach(function (el) {
         el.classList.toggle('nz-active', el.dataset.route === name);
@@ -525,6 +528,7 @@ function renderShell() {
         navLink('kanji',     '漢', 'Kanji') +
         navLink('vocab',     '語', 'Vocabulary') +
         navLink('conversation', '💬', 'Conversation') +
+        navLink('pronunciation', '🔊', 'Pronunciation') +
         navLink('grammar',   '文', 'Grammar') +
         navLink('listening', '🎧', 'Listening') +
         navLink('reading',   '📖', 'Reading') +
@@ -943,6 +947,19 @@ Pages.conversation = function () {
     if (root) root.innerHTML =
       '<div style="padding:40px;text-align:center;color:var(--fg-muted);">' +
       'Conversation module loading…</div>';
+  }
+};
+
+/* ── PRONUNCIATION ── */
+Pages.pronunciation = function () {
+  setHTML('<div id="nz-pron-root" style="min-height:60vh;"></div>');
+  if (window.PronunciationPage && typeof PronunciationPage.mount === 'function') {
+    PronunciationPage.mount('nz-pron-root');
+  } else {
+    var root = $id('nz-pron-root');
+    if (root) root.innerHTML =
+      '<div style="padding:40px;text-align:center;color:var(--fg-muted);">' +
+      'Pronunciation module loading…</div>';
   }
 };
 
@@ -3295,6 +3312,7 @@ document.addEventListener('nz:userReady', function() {
     window.Router.register('kanji',     function(){ Pages.kanji(); });
     window.Router.register('vocab',     function(){ Pages.vocab(); });
     window.Router.register('conversation', function(){ Pages.conversation(); });
+    window.Router.register('pronunciation', function(){ Pages.pronunciation(); });
     window.Router.register('grammar',   function(){ Pages.grammar(); });
     window.Router.register('listening', function(){ Pages.listening(); });
     window.Router.register('reading',   function(){ Pages.reading(); });
