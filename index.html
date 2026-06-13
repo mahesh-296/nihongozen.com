@@ -85,13 +85,19 @@
 <script src="js/nz-data.js" defer></script>
 <script src="js/nz-kana.js" defer></script>
 <script src="js/nz-vocab-module.js" defer></script>
+<script src="js/nz-daily-tracker.js" defer></script>
+<script src="js/nz-conversation-module.js" defer></script>
+<script src="js/nz-vocab-pronunciation-conjugation.js" defer></script>
 <script src="js/pomodoro.js" defer></script>
 
 <!-- ══════════════════════════════════════════════════════════
      NZ-PAGES.JS — inlined (merged from nz-pages.js)
      Full SPA renderer: Shell, Router, all Pages.
      Depends on: core.js, nz-data.js, nz-kana.js,
-                 nz-vocab-module.js, pomodoro.js (all deferred above)
+                 nz-vocab-module.js, nz-daily-tracker.js,
+                 nz-conversation-module.js,
+                 nz-vocab-pronunciation-conjugation.js,
+                 pomodoro.js (all deferred above)
 ═══════════════════════════════════════════════════════════ -->
 <script defer>
 'use strict';
@@ -167,6 +173,9 @@ var NzRouter = (function () {
       if (window.speechSynthesis) window.speechSynthesis.cancel();
       if (window.VocabPage && typeof VocabPage.cleanup === 'function') {
         try { VocabPage.cleanup(); } catch (e) {}
+      }
+      if (window.ConversationPage && typeof ConversationPage.cleanup === 'function') {
+        try { ConversationPage.cleanup(); } catch (e) {}
       }
       document.querySelectorAll('[data-route]').forEach(function (el) {
         el.classList.toggle('nz-active', el.dataset.route === name);
@@ -515,6 +524,7 @@ function renderShell() {
         navLink('dashboard', '🏠', 'Dashboard') +
         navLink('kanji',     '漢', 'Kanji') +
         navLink('vocab',     '語', 'Vocabulary') +
+        navLink('conversation', '💬', 'Conversation') +
         navLink('grammar',   '文', 'Grammar') +
         navLink('listening', '🎧', 'Listening') +
         navLink('reading',   '📖', 'Reading') +
@@ -920,6 +930,19 @@ Pages.vocab = function () {
     if (root) root.innerHTML =
       '<div style="padding:40px;text-align:center;color:var(--fg-muted);">' +
       'Vocabulary module loading…</div>';
+  }
+};
+
+/* ── CONVERSATION ── */
+Pages.conversation = function () {
+  setHTML('<div id="nz-conv-root" style="min-height:60vh;"></div>');
+  if (window.ConversationPage && typeof ConversationPage.mount === 'function') {
+    ConversationPage.mount('nz-conv-root');
+  } else {
+    var root = $id('nz-conv-root');
+    if (root) root.innerHTML =
+      '<div style="padding:40px;text-align:center;color:var(--fg-muted);">' +
+      'Conversation module loading…</div>';
   }
 };
 
@@ -3271,6 +3294,7 @@ document.addEventListener('nz:userReady', function() {
     window.Router.register('dashboard', function(){ Pages.dashboard(); });
     window.Router.register('kanji',     function(){ Pages.kanji(); });
     window.Router.register('vocab',     function(){ Pages.vocab(); });
+    window.Router.register('conversation', function(){ Pages.conversation(); });
     window.Router.register('grammar',   function(){ Pages.grammar(); });
     window.Router.register('listening', function(){ Pages.listening(); });
     window.Router.register('reading',   function(){ Pages.reading(); });
