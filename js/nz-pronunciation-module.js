@@ -2,7 +2,7 @@
    NZ PRONUNCIATION MODULE
    発音 — Pronunciation Practice
    Sidebar page (placed directly below "Conversation"). Lets the
-   learner pick a JLPT level (with theme icons: N5🌱 N4🍃 N3🌳 N2🏢 N1⛰),
+   learner pick a JLPT level (with theme icons: N5🌱 N4🌿 N3🌳 N2🏯 N1🗻),
    flip through flashcards for vocabulary or verb-conjugation forms,
    hear them via speechSynthesis at adjustable speed, and practice
    speaking them back via the microphone (SpeechRecognition).
@@ -24,7 +24,7 @@
   function getUD() { return (window.getUD && window.getUD()) || window._nzUserData || {}; }
 
   /* Theme-consistent level icons, shared with SRS Review pills */
-  var LEVEL_ICON = { N5: '🌱', N4: '🍃', N3: '🌳', N2: '🏢', N1: '⛰️' };
+  var LEVEL_ICON = { N5: '🌱', N4: '🌿', N3: '🌳', N2: '🏯', N1: '🗻' };
   var LEVELS = ['N5', 'N4', 'N3', 'N2', 'N1'];
 
   function getCurrentJLPTLevel() {
