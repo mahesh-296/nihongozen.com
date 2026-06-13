@@ -3593,7 +3593,7 @@ var VocabPage = (() => {
   const LEVEL_COLORS = { N5:'#22c55e', N4:'#06b6d4', N3:'#eab308', N2:'#a855f7', N1:'#ef4444' };
 
   /* ── Theme-consistent level icons (shared with Pronunciation page) ── */
-  const LEVEL_ICONS = { N5:'🌱', N4:'🍃', N3:'🌳', N2:'🏢', N1:'⛰️' };
+  const LEVEL_ICONS = { N5:'🌱', N4:'🌿', N3:'🌳', N2:'🏯', N1:'🗻' };
 
   /* ── SRS level pills ─────────────────────────────────── */
   function renderSRSPills() {
