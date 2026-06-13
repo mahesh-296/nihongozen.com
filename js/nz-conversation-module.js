@@ -209,8 +209,8 @@
               'border:1px solid ' + (active ? c : 'var(--border)') + ';">' +
               '<span>' + LEVEL_ICON[lv] + '</span>' + lv + '</button>';
           }).join('') +
-          '<button data-conv-to-vocab class="nz-btn nz-btn-ghost" style="font-size:12px;padding:9px 14px;margin-left:auto;">' +
-            '語 Pronunciation &amp; Conjugation →</button>' +
+          '<button data-conv-to-pron class="nz-btn nz-btn-ghost" style="font-size:12px;padding:9px 14px;margin-left:auto;">' +
+            '🔊 Pronunciation Practice →</button>' +
         '</div>' +
 
         '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px;">' +
@@ -254,11 +254,11 @@
         renderList(root);
       });
     });
-    var toVocab = root.querySelector('[data-conv-to-vocab]');
-    if (toVocab) {
-      toVocab.addEventListener('click', function () {
+    var toPron = root.querySelector('[data-conv-to-pron]');
+    if (toPron) {
+      toPron.addEventListener('click', function () {
         if (window.Router && typeof window.Router.go === 'function') {
-          window.Router.go('vocab');
+          window.Router.go('pronunciation');
         }
       });
     }
