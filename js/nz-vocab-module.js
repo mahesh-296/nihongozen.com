@@ -3592,16 +3592,37 @@ var VocabPage = (() => {
   /* ── Level colors (matching reference photo exactly) ─── */
   const LEVEL_COLORS = { N5:'#22c55e', N4:'#06b6d4', N3:'#eab308', N2:'#a855f7', N1:'#ef4444' };
 
+  /* ── Theme-consistent level icons (shared with Pronunciation page) ── */
+  const LEVEL_ICONS = { N5:'🌱', N4:'🍃', N3:'🌳', N2:'🏢', N1:'⛰️' };
+
   /* ── SRS level pills ─────────────────────────────────── */
-  function renderSRSPills(container) {
-    return ['N5','N4','N3','N2','N1'].map(lvl => `
-      <button class="srs-pill-${lvl}"
-        style="padding:6px 14px;border-radius:8px;font-size:13px;font-weight:700;
-               background:transparent;border:1px solid ${LEVEL_COLORS[lvl]};
-               color:${LEVEL_COLORS[lvl]};cursor:pointer;font-family:inherit;
-               transition:background 0.15s;">
-        ${lvl}
-      </button>`).join('');
+  function renderSRSPills() {
+    const wrap = document.getElementById('vocab-srs-pills');
+    if (!wrap) return;
+    wrap.innerHTML = ['N5','N4','N3','N2','N1'].map(lvl => {
+      const active = activeLevel === lvl;
+      const col = LEVEL_COLORS[lvl];
+      return `
+      <button class="srs-pill-${lvl} ${active?'active':''}"
+        data-level="${lvl}"
+        style="display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:8px;
+               font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;
+               background:${active ? col : 'transparent'};border:1px solid ${col};
+               color:${active ? '#fff' : col};transition:all 0.15s;">
+        <span>${LEVEL_ICONS[lvl]}</span>${lvl}
+      </button>`;
+    }).join('');
+    wrap.querySelectorAll('button').forEach(btn=>{
+      const lvl = btn.dataset.level;
+      const col = LEVEL_COLORS[lvl];
+      btn.addEventListener('mouseenter',()=>{ if(activeLevel!==lvl) btn.style.background=col+'22'; });
+      btn.addEventListener('mouseleave',()=>{ if(activeLevel!==lvl) btn.style.background='transparent'; });
+      btn.addEventListener('click',()=>{
+        activeLevel=lvl; activeChapter=0; cardIndex=0; flipped=false; searchQuery=''; mode='grid';
+        const si=document.getElementById('vocab-search-input'); if(si) si.value='';
+        render();
+      });
+    });
   }
 
   /* ── Level tabs (N5 N4 N3 N2 N1 row with green underline) */
@@ -3611,11 +3632,11 @@ var VocabPage = (() => {
     wrap.innerHTML = ['N5','N4','N3','N2','N1'].map(lvl => `
       <button class="nz-lvl-tab ${activeLevel===lvl?'active':''}"
         data-level="${lvl}"
-        style="padding:10px 18px;font-size:14px;font-weight:700;
+        style="display:inline-flex;align-items:center;gap:6px;padding:10px 18px;font-size:14px;font-weight:700;
                background:transparent;border:none;
                color:${activeLevel===lvl?'var(--fg)':'var(--fg-muted)'};
                cursor:pointer;font-family:inherit;transition:color 0.15s;">
-        ${lvl}
+        <span>${LEVEL_ICONS[lvl]}</span>${lvl}
       </button>`).join('');
     wrap.querySelectorAll('.nz-lvl-tab').forEach(btn=>{
       btn.addEventListener('click',()=>{
@@ -3850,6 +3871,7 @@ var VocabPage = (() => {
   /* ── Full render ─────────────────────────────────────── */
   function render() {
     renderModeBtns();
+    renderSRSPills();
     renderLevelTabs();
     renderChapterBtns();
     updateChapterInfo();
@@ -3920,27 +3942,7 @@ var VocabPage = (() => {
   <div id="vocab-main-area"></div>
 </div>`;
 
-    /* SRS pills click → jump to level */
-    const srsWrap=document.getElementById('vocab-srs-pills');
-    if(srsWrap){
-      srsWrap.innerHTML=['N5','N4','N3','N2','N1'].map(lvl=>`
-        <button class="srs-pill-${lvl}"
-          data-level="${lvl}"
-          style="padding:6px 14px;border-radius:8px;font-size:13px;font-weight:700;
-                 background:transparent;border:1px solid currentColor;
-                 cursor:pointer;font-family:inherit;transition:background 0.15s;">
-          ${lvl}
-        </button>`).join('');
-      srsWrap.querySelectorAll('button').forEach(btn=>{
-        btn.addEventListener('mouseenter',()=>{ btn.style.background='rgba(255,255,255,0.07)'; });
-        btn.addEventListener('mouseleave',()=>{ btn.style.background='transparent'; });
-        btn.addEventListener('click',()=>{
-          activeLevel=btn.dataset.level; activeChapter=0; cardIndex=0; flipped=false; searchQuery='';
-          const si=document.getElementById('vocab-search-input'); if(si) si.value='';
-          render();
-        });
-      });
-    }
+    /* SRS pills are now rendered (with icons + active state) by render() → renderSRSPills() */
 
     /* Search */
     container.querySelector('#vocab-search-input').addEventListener('input',e=>{
