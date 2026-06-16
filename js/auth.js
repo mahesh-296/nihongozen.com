@@ -1,34 +1,23 @@
 // ============================================================
-// NihongoZen — auth.js  (js/auth.js)
+// NihongoZen — auth.js  (js/auth.js)  — UPDATED
 // Protects: index.html, jlpt-practice.html
-// Unauthenticated users → redirected to login.html instantly
-// Calls window._nzBootstrap() once user + Firestore data ready
+// (login.html has its own self-contained auth flow — see login.html
+//  inline <script type="module"> block — and does NOT load this file.)
 //
-// ── FIXES APPLIED ────────────────────────────────────────────
-//  FIX-A  Duplicate-app crash
-//         initializeApp() uses getApps()/getApp() guard.
-//
-//  FIX-B  Fallback timer raised 6 s → 20 s (conservative),
-//         and now ONLY starts on protected pages (not login.html).
-//
-//  FIX-C  _nzBootstrapReady flag is set before calling _nzBootstrap().
-//
-//  FIX-D  CRITICAL: catch block no longer blindly redirects to login.
-//         Only a missing/unauthenticated user causes a redirect.
-//         Firestore errors log to console but do NOT kick the user out.
-//         A user who just authenticated should never be bounced by a
-//         transient DB error.
-//
-//  FIX-E  CRITICAL: auth.js now dispatches the "nz:userReady" event
-//         after bootstrap, so the index.html router can register routes.
-//         Previously the event was never fired from auth.js, causing
-//         the route-registration listener in index.html to never run.
+// FIXES IN THIS VERSION:
+//  FIX-A  Duplicate-app crash: initializeApp() uses getApps()/getApp()
+//  FIX-B  Fallback timer raised to 20 s; only on protected pages
+//  FIX-C  _nzBootstrapReady set BEFORE calling _nzBootstrap()
+//  FIX-D  Firestore errors are non-fatal — don't bounce authenticated users
+//  FIX-E  nz:userReady is dispatched after renderShell() in bootstrap
+//  FIX-G  Auth persistence set to LOCAL so session survives page refresh
 // ============================================================
 
 import { initializeApp, getApps, getApp }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
-  getAuth, onAuthStateChanged, signOut
+  getAuth, onAuthStateChanged, signOut,
+  setPersistence, browserLocalPersistence
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {
   getFirestore, doc, getDoc, setDoc, updateDoc, serverTimestamp
@@ -50,21 +39,24 @@ const app  = getApps().length ? getApp() : initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db   = getFirestore(app);
 
+// FIX-G: Set persistence to LOCAL so auth state survives refreshes.
+// This prevents the jarring re-auth-check on every page load.
+setPersistence(auth, browserLocalPersistence).catch(function(err) {
+  console.warn("[NihongoZen] Could not set auth persistence:", err);
+});
+
 // ── Boot-once guard ───────────────────────────────────────────
 let _bootstrapped = false;
 
 // FIX-B: Only start the fallback timer on protected pages.
-// login.html does NOT load auth.js, so this check is mainly
-// a safety net for future pages. The timer is also raised to 20 s
-// to safely cover slow connections with multiple Firestore round-trips.
 const IS_LOGIN_PAGE = window.location.pathname.endsWith("login.html");
 
 const fallbackTimer = IS_LOGIN_PAGE ? null : setTimeout(() => {
-  // Only redirect if we genuinely haven't bootstrapped yet.
   if (!_bootstrapped) {
+    console.warn("[NihongoZen] Auth timed out — redirecting to login.");
     window.location.replace("login.html");
   }
-}, 20000); // FIX-B: raised from 6 000 ms → 20 000 ms
+}, 20000);
 
 // ── Auth State Check ──────────────────────────────────────────
 onAuthStateChanged(auth, async (user) => {
@@ -75,7 +67,9 @@ onAuthStateChanged(auth, async (user) => {
 
   if (!user) {
     // Not logged in → go to login immediately
-    window.location.replace("login.html");
+    if (!IS_LOGIN_PAGE) {
+      window.location.replace("login.html");
+    }
     return;
   }
 
@@ -95,10 +89,8 @@ onAuthStateChanged(auth, async (user) => {
   };
 
   // ── Load or create Firestore user document ────────────────
-  // FIX-D: Firestore errors are caught SEPARATELY and do NOT
-  // redirect to login. The user is authenticated — a DB hiccup
-  // should not undo that. We fall through with empty userData
-  // and let the app handle missing fields gracefully.
+  // FIX-D: Firestore errors are caught separately — a DB hiccup must
+  // never bounce an authenticated user back to the login page.
   try {
     const userRef  = doc(db, "users", user.uid);
     const userSnap = await getDoc(userRef);
@@ -152,9 +144,7 @@ onAuthStateChanged(auth, async (user) => {
     window._nzUserData = freshSnap.data();
 
   } catch (firestoreErr) {
-    // FIX-D: Log Firestore errors but DO NOT redirect to login.
-    // The user is authenticated. A transient DB error must never
-    // destroy the session. Set minimal userData from the auth object.
+    // FIX-D: Non-fatal — keep the user in the app with minimal data
     console.error("[NihongoZen] Firestore error (non-fatal):", firestoreErr);
     window._nzUserData = {
       uid:         user.uid,
@@ -169,17 +159,14 @@ onAuthStateChanged(auth, async (user) => {
   // ── Mark bootstrapped before calling into the app ─────────
   _bootstrapped = true;
 
-  // FIX-C: Signal that auth + Firestore data are ready.
+  // FIX-C: Signal ready BEFORE calling _nzBootstrap
   window._nzBootstrapReady = true;
 
   // ── Call the bootstrap function defined in index.html ─────
-  // index.html's _nzBootstrap is responsible for dispatching "nz:userReady"
-  // AFTER renderShell() completes, ensuring the DOM is ready for route
-  // registration. auth.js must NOT dispatch it here — that would fire it
-  // before renderShell runs, causing routes to register against a blank DOM.
   if (typeof window._nzBootstrap === "function") {
     window._nzBootstrap();
   } else {
+    // Wait for deferred scripts to define _nzBootstrap
     const waitForBootstrap = setInterval(() => {
       if (typeof window._nzBootstrap === "function") {
         clearInterval(waitForBootstrap);
