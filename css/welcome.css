@@ -1,0 +1,73 @@
+body {
+  margin: 0;
+  font-family: 'Plus Jakarta Sans', Arial, sans-serif;
+  background: #0B0C12;
+  background-image:
+    radial-gradient(circle at 15% 0%, rgba(255,77,126,0.22) 0%, transparent 45%),
+    radial-gradient(circle at 85% 20%, rgba(124,77,216,0.18) 0%, transparent 45%),
+    radial-gradient(circle at 50% 100%, rgba(255,180,84,0.10) 0%, transparent 50%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  text-align: center;
+  color: #F2F2F8;
+}
+
+.welcome-container {
+  animation: fadeIn 1.5s ease;
+  padding: 32px 28px;
+  background: rgba(22,24,35,0.7);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 22px;
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  box-shadow: 0 20px 70px rgba(0,0,0,0.55);
+  max-width: 360px;
+}
+
+.welcome-logo {
+  width: 120px;
+  margin-bottom: 20px;
+  filter: drop-shadow(0 6px 18px rgba(255,77,126,0.35));
+}
+
+.welcome-container h1 {
+  font-size: 28px;
+  font-weight: 800;
+  background: linear-gradient(135deg, #FF4D7E 0%, #C9457A 50%, #7C4DD8 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  margin: 0 0 8px;
+}
+
+.welcome-container p {
+  color: #8888AC;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.start-btn {
+  margin-top: 22px;
+  padding: 13px 28px;
+  background: linear-gradient(135deg, #FF4D7E 0%, #C9457A 50%, #7C4DD8 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 6px 22px rgba(255,77,126,0.35);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.start-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(255,77,126,0.45);
+}
+.start-btn:active { transform: scale(0.97); }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px);}
+  to { opacity: 1; transform: translateY(0);}
+}
