@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="theme-color" content="#0B0C12"/>
+<title>Choose Your Language — NihongoZen</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Noto+Serif+JP:wght@400;700&family=Noto+Sans+JP:wght@400;500;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+
+<!-- Reuse the exact existing design system -->
+<link rel="stylesheet" href="css/tokens.css"/>
+<link rel="stylesheet" href="css/components.css"/>
+
+<!-- 🔒 Central Config -->
+<script src="config/config.js"></script>
+
+<style>
+  /* ===== Onboarding-only layout (uses tokens.css variables — no new palette) ===== */
+  body.ob-body {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  .ob-wrap { width: 100%; max-width: 640px; }
+
+  .ob-progress {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 28px;
+    justify-content: center;
+  }
+  .ob-progress .dot {
+    width: 8px; height: 8px; border-radius: 99px;
+    background: var(--border-strong);
+    transition: all var(--duration) var(--ease);
+  }
+  .ob-progress .dot.active { width: 28px; background: var(--gradient-brand); }
+
+  .ob-header { text-align: center; margin-bottom: 32px; }
+  .ob-logo {
+    width: 44px; height: 44px; border-radius: var(--radius-lg);
+    margin: 0 auto 18px; display: block; object-fit: cover;
+    box-shadow: 0 0 22px rgba(255,77,126,0.35);
+  }
+  .ob-title {
+    font-size: 26px; font-weight: 800; letter-spacing: -0.5px;
+    color: var(--fg); margin-bottom: 8px;
+  }
+  .ob-subtitle { font-size: 14px; color: var(--fg-muted); }
+
+  .lang-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+  @media (min-width: 560px) {
+    .lang-grid { grid-template-columns: repeat(4, 1fr); }
+  }
+
+  .lang-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 20px 10px;
+    cursor: pointer;
+    user-select: none;
+    animation: obFadeIn 0.4s var(--ease) backwards;
+  }
+  .lang-card .flag { font-size: 28px; line-height: 1; }
+  .lang-card .name { font-size: 13px; font-weight: 700; color: var(--fg); }
+  .lang-card.selected {
+    border-color: var(--primary);
+    background: linear-gradient(180deg, var(--primary-dim) 0%, var(--card) 100%);
+    box-shadow: var(--shadow-glow);
+    transform: translateY(-2px);
+  }
+  .lang-card .check {
+    position: absolute; top: 8px; right: 8px;
+    width: 18px; height: 18px; border-radius: 99px;
+    background: var(--gradient-brand);
+    display: none; align-items: center; justify-content: center;
+  }
+  .lang-card.selected .check { display: flex; }
+
+  .ob-actions { display: flex; justify-content: flex-end; }
+  .ob-actions .btn { min-width: 140px; padding: 12px 22px; font-size: 14px; }
+
+  @keyframes obFadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  #ob-loading {
+    position: fixed; inset: 0; z-index: 50;
+    background: var(--bg);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .ob-spinner {
+    width: 34px; height: 34px; border-radius: 50%;
+    border: 3px solid var(--border);
+    border-top-color: var(--primary);
+    animation: obspin 0.8s linear infinite;
+  }
+  @keyframes obspin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body class="ob-body">
+
+<div id="ob-loading"><div class="ob-spinner"></div></div>
+
+<div class="ob-wrap card" style="padding:36px 28px; display:none;" id="ob-content">
+  <div class="ob-progress">
+    <div class="dot active"></div>
+    <div class="dot"></div>
+  </div>
+
+  <div class="ob-header">
+    <img class="ob-logo" src="assets/logo-index.jpg" alt="NihongoZen"/>
+    <h1 class="ob-title">Choose Your Language</h1>
+    <p class="ob-subtitle">Which language would you like to learn Japanese through?</p>
+  </div>
+
+  <div class="lang-grid" id="lang-grid">
+    <!-- populated by JS -->
+  </div>
+
+  <div class="ob-actions">
+    <button class="btn btn-primary" id="btn-continue" disabled>Continue</button>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp, getApps, getApp }
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, onAuthStateChanged }
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, doc, getDoc, updateDoc }
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = window.NZ_CONFIG ? window.NZ_CONFIG.firebase : {
+  apiKey:            "AIzaSyCP2Uwo1lx996q0l3nkC7RhAesVuIHEXiA",
+  authDomain:        "nihongo-zen-cd97d.firebaseapp.com",
+  projectId:         "nihongo-zen-cd97d",
+  storageBucket:     "nihongo-zen-cd97d.firebasestorage.app",
+  messagingSenderId: "513320956483",
+  appId:             "1:513320956483:web:a1069825e0df3587f65af6",
+  measurementId:     "G-1WTJ5ML3R2"
+};
+
+const app  = getApps().length ? getApp() : initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db   = getFirestore(app);
+
+const LANGUAGES = [
+  { code: "en", name: "English", flag: "🇬🇧" },
+  { code: "hi", name: "Hindi",   flag: "🇮🇳" },
+  { code: "ko", name: "Korean",  flag: "🇰🇷" },
+  { code: "de", name: "German",  flag: "🇩🇪" },
+  { code: "it", name: "Italian", flag: "🇮🇹" },
+  { code: "fr", name: "French",  flag: "🇫🇷" },
+  { code: "es", name: "Spanish", flag: "🇪🇸" },
+  { code: "th", name: "Thai",    flag: "🇹🇭" }
+];
+
+let selected = null;
+let currentUser = null;
+
+const grid       = document.getElementById("lang-grid");
+const continueBtn = document.getElementById("btn-continue");
+const loadingEl   = document.getElementById("ob-loading");
+const contentEl   = document.getElementById("ob-content");
+
+function renderGrid() {
+  grid.innerHTML = LANGUAGES.map((l, i) => `
+    <div class="card card-hover lang-card${selected === l.code ? ' selected' : ''}"
+         style="animation-delay:${i * 0.04}s"
+         data-code="${l.code}">
+      <div class="check">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3">
+          <path d="M20 6 9 17l-5-5"/>
+        </svg>
+      </div>
+      <span class="flag">${l.flag}</span>
+      <span class="name">${l.name}</span>
+    </div>
+  `).join("");
+
+  grid.querySelectorAll(".lang-card").forEach(card => {
+    card.addEventListener("click", () => {
+      selected = card.dataset.code;
+      continueBtn.disabled = false;
+      renderGrid();
+    });
+  });
+}
+
+renderGrid();
+
+onAuthStateChanged(auth, async (user) => {
+  if (!user) {
+    window.location.replace("login.html");
+    return;
+  }
+  currentUser = user;
+
+  try {
+    const userRef  = doc(db, "users", user.uid);
+    const userSnap = await getDoc(userRef);
+    const data     = userSnap.exists() ? userSnap.data() : {};
+
+    // Already finished onboarding before — don't show it again.
+    if (data.onboardingComplete) {
+      window.location.replace("index.html");
+      return;
+    }
+
+    if (data.language) {
+      selected = data.language;
+      continueBtn.disabled = false;
+      renderGrid();
+    }
+  } catch (err) {
+    console.error("[NihongoZen] Onboarding load error:", err);
+  }
+
+  loadingEl.style.display = "none";
+  contentEl.style.display = "block";
+});
+
+continueBtn.addEventListener("click", async () => {
+  if (!selected || !currentUser) return;
+  continueBtn.disabled = true;
+  continueBtn.innerHTML = `<div class="spinner" style="width:14px;height:14px;border:2px solid rgba(255,255,255,0.35);border-top-color:#fff;border-radius:50%;animation:obspin 0.7s linear infinite;"></div>`;
+
+  try {
+    const userRef = doc(db, "users", currentUser.uid);
+    await updateDoc(userRef, { language: selected });
+    window.location.href = "onboarding-level.html";
+  } catch (err) {
+    console.error("[NihongoZen] Failed to save language:", err);
+    continueBtn.disabled = false;
+    continueBtn.textContent = "Continue";
+    alert("Something went wrong saving your language. Please try again.");
+  }
+});
+</script>
+</body>
+</html>
