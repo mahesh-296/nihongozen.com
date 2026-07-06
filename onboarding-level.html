@@ -149,7 +149,7 @@ import { initializeApp, getApps, getApp }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, getDoc, updateDoc }
+import { getFirestore, doc, getDoc, setDoc }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = window.NZ_CONFIG ? window.NZ_CONFIG.firebase : {
@@ -261,16 +261,16 @@ continueBtn.addEventListener("click", async () => {
 
   try {
     const userRef = doc(db, "users", currentUser.uid);
-    await updateDoc(userRef, {
+    await setDoc(userRef, {
       jlptGoalLevel: selected,
       onboardingComplete: true
-    });
+    }, { merge: true });
     window.location.href = "index.html";
   } catch (err) {
     console.error("[NihongoZen] Failed to save level:", err);
     continueBtn.disabled = false;
     continueBtn.textContent = "Continue";
-    alert("Something went wrong saving your level. Please try again.");
+    alert("Couldn't save your level.\n\nError: " + (err.code || err.message || err));
   }
 });
 </script>
