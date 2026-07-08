@@ -1,0 +1,13 @@
+<!-- PASTE THIS in <head>, BEFORE any <link rel="stylesheet">, on every page. -->
+<script>
+(function () {
+  try {
+    var t = localStorage.getItem('nz-theme');
+    var cls = (t === 'light') ? 'nz-light' : (t === 'light-orange') ? 'nz-light-orange' : '';
+    if (cls) document.documentElement.classList.add(cls);
+  } catch (e) {}
+})();
+</script>
+
+<!-- Then, AFTER css/tokens.css is linked, add this near the end of <head> or before </body>: -->
+<script src="js/theme.js"></script>
