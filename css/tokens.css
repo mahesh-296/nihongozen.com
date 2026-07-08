@@ -54,6 +54,11 @@
   --shadow-lg:           0 10px 44px rgba(0,0,0,.6);
   --shadow-xl:           0 20px 70px rgba(0,0,0,.7);
   --shadow-glow:         0 0 0 1px rgba(255,77,126,0.25), 0 8px 30px rgba(255,77,126,0.25);
+  --shadow-primary:      0 4px 16px rgba(255,77,126,0.3);
+  --shadow-primary-hover:0 6px 22px rgba(255,77,126,0.4);
+  --danger:              #FF5C5C;
+  --danger-dim:          rgba(255,92,92,0.14);
+  --danger-hover:        #E64545;
   /* Fonts */
   --font-sans:           'Plus Jakarta Sans', system-ui, sans-serif;
   --font-jp:             'Noto Serif JP', serif;
@@ -65,6 +70,101 @@
   --duration:            200ms;
   --duration-slow:       350ms;
 }
+/* ==================================================
+   THEME ENGINE — Light Pink & Light Orange overrides
+   Every token defined in :root above is re-declared
+   here for each theme, so nothing "bleeds through"
+   from Dark mode. Applied via html.nz-light /
+   html.nz-light-orange (toggled by js/theme.js).
+   This is the single source of truth for theming —
+   do not add theme colors anywhere else.
+==================================================== */
+html.nz-light {
+  --bg:                  #FFF5F7;
+  --bg-secondary:        #FFE8EE;
+  --card:                #FFFFFF;
+  --card-elevated:       #FFF0F4;
+  --input:               #FFFBFC;
+  --fg:                  #1A0A10;
+  --fg-muted:            #6B3A4A;
+  --fg-subtle:           #9B6070;
+  --primary:             #C8305A;
+  --primary-dim:         #F8D0DC;
+  --primary-hover:       #A02040;
+  --accent:              #E07030;
+  --accent-dim:          rgba(224,112,48,0.14);
+  --gradient-brand:      linear-gradient(135deg, #C8305A 0%, #B8305A 50%, #7C4DD8 100%);
+  --gradient-bg-glow:    radial-gradient(circle at 15% 0%, rgba(200,48,90,0.08) 0%, transparent 45%),
+                         radial-gradient(circle at 85% 20%, rgba(124,77,216,0.06) 0%, transparent 45%),
+                         radial-gradient(circle at 50% 100%, rgba(224,112,48,0.05) 0%, transparent 50%);
+  --n5:                  #2E8B57;
+  --n5-dim:              rgba(46,139,87,0.13);
+  --n4:                  #2E6DA4;
+  --n4-dim:              rgba(46,109,164,0.13);
+  --n3:                  #A67A1E;
+  --n3-dim:              rgba(166,122,30,0.13);
+  --n2:                  #7A4DB8;
+  --n2-dim:              rgba(122,77,184,0.13);
+  --n1:                  #C8305A;
+  --n1-dim:              rgba(200,48,90,0.13);
+  --border:              #F0C0CC;
+  --border-strong:       #E090A8;
+  --shadow-sm:           0 2px 10px rgba(200,48,90,.08);
+  --shadow:              0 4px 24px rgba(200,48,90,.10);
+  --shadow-lg:           0 8px 40px rgba(200,48,90,.15);
+  --shadow-xl:           0 16px 60px rgba(200,48,90,.18);
+  --shadow-glow:         0 0 0 1px rgba(200,48,90,0.20), 0 8px 30px rgba(200,48,90,0.20);
+  --shadow-primary:      0 4px 16px rgba(200,48,90,0.25);
+  --shadow-primary-hover:0 6px 22px rgba(200,48,90,0.35);
+  --danger:              #D8324A;
+  --danger-dim:          rgba(216,50,74,0.14);
+  --danger-hover:        #B81F35;
+}
+html.nz-light-orange {
+  --bg:                  #FFF6EC;
+  --bg-secondary:        #FCE9D2;
+  --card:                #FFFFFF;
+  --card-elevated:       #FFF1DE;
+  --input:               #FFFCF7;
+  --fg:                  #2B1707;
+  --fg-muted:            #7A5A3A;
+  --fg-subtle:           #A9835A;
+  --primary:             #C4691E;
+  --primary-dim:         #F5DFC0;
+  --primary-hover:       #A5560F;
+  --accent:              #B8632C;
+  --accent-dim:          rgba(184,99,44,0.14);
+  --gradient-brand:      linear-gradient(135deg, #C4691E 0%, #B8632C 50%, #7C4DD8 100%);
+  --gradient-bg-glow:    radial-gradient(circle at 15% 0%, rgba(196,105,30,0.08) 0%, transparent 45%),
+                         radial-gradient(circle at 85% 20%, rgba(124,77,216,0.06) 0%, transparent 45%),
+                         radial-gradient(circle at 50% 100%, rgba(184,99,44,0.05) 0%, transparent 50%);
+  --n5:                  #2E8B57;
+  --n5-dim:              rgba(46,139,87,0.13);
+  --n4:                  #2E6DA4;
+  --n4-dim:              rgba(46,109,164,0.13);
+  --n3:                  #9A6A1E;
+  --n3-dim:              rgba(154,106,30,0.13);
+  --n2:                  #7A4DB8;
+  --n2-dim:              rgba(122,77,184,0.13);
+  --n1:                  #C4691E;
+  --n1-dim:              rgba(196,105,30,0.13);
+  --border:              #F0D6AC;
+  --border-strong:       #E3B876;
+  --shadow-sm:           0 2px 10px rgba(196,105,30,.08);
+  --shadow:              0 4px 24px rgba(196,105,30,.10);
+  --shadow-lg:           0 8px 40px rgba(196,105,30,.15);
+  --shadow-xl:           0 16px 60px rgba(196,105,30,.18);
+  --shadow-glow:         0 0 0 1px rgba(196,105,30,0.20), 0 8px 30px rgba(196,105,30,0.20);
+  --shadow-primary:      0 4px 16px rgba(196,105,30,0.25);
+  --shadow-primary-hover:0 6px 22px rgba(196,105,30,0.35);
+  --danger:              #D8324A;
+  --danger-dim:          rgba(216,50,74,0.14);
+  --danger-hover:        #B81F35;
+}
+html.nz-light body,
+html.nz-light-orange body { background: var(--bg); }
+html.nz-light #nz-sb, html.nz-light #nz-topbar,
+html.nz-light-orange #nz-sb, html.nz-light-orange #nz-topbar { background: var(--bg-secondary); }
 /* ==================== RESET ==================== */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { font-size: 16px; scroll-behavior: smooth; }
@@ -137,8 +237,14 @@ ul, ol { list-style: none; }
   box-shadow: var(--shadow-lg);
   border-color: var(--border-strong);
 }
-/* ==================== BUTTONS ==================== */
+/* ==================== UNIVERSAL BUTTON SYSTEM ====================
+   Every button in the app should use these classes. All colors come
+   from design tokens above, so every button auto-adapts to Dark /
+   Light Pink / Light Orange with zero extra code. Do not hardcode
+   button colors anywhere else — add a token here instead. */
 .btn {
+  position: relative;
+  isolation: isolate;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -147,41 +253,120 @@ ul, ol { list-style: none; }
   border-radius: var(--radius);
   font-size: 13px;
   font-weight: 600;
+  font-family: var(--font-sans);
   border: 1px solid transparent;
-  transition: all var(--duration) var(--ease);
+  cursor: pointer;
+  overflow: hidden;
   white-space: nowrap;
+  user-select: none;
+  transition: transform var(--duration) var(--ease),
+              box-shadow var(--duration) var(--ease),
+              background-color var(--duration) var(--ease),
+              border-color var(--duration) var(--ease),
+              color var(--duration) var(--ease),
+              filter var(--duration) var(--ease);
 }
+.btn > * { position: relative; z-index: 1; }
 .btn:active { transform: scale(0.97); }
+.btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+
+/* Pure-CSS ripple — no JS wiring required on existing buttons */
+.btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  background: radial-gradient(circle, rgba(255,255,255,0.35) 0%, transparent 70%);
+  opacity: 0;
+  transform: scale(0.4);
+  transition: opacity 0.45s var(--ease), transform 0.45s var(--ease);
+  pointer-events: none;
+}
+.btn:active::after { opacity: 1; transform: scale(1.7); transition: 0s; }
+
+/* ---- Sizes ---- */
+.btn-sm { padding: 5px 12px; font-size: 12px; gap: 4px; border-radius: var(--radius-sm); }
+.btn-lg { padding: 12px 22px; font-size: 15px; gap: 8px; border-radius: var(--radius-lg); }
+.btn-block { width: 100%; }
+
+/* ---- Primary ---- */
 .btn-primary {
   background: var(--gradient-brand);
   color: #fff;
   border-color: transparent;
-  box-shadow: 0 4px 16px rgba(255,77,126,0.3);
+  box-shadow: var(--shadow-primary);
 }
-.btn-primary:hover { filter: brightness(1.08); transform: translateY(-1px); box-shadow: 0 6px 22px rgba(255,77,126,0.4); }
+.btn-primary:hover  { filter: brightness(1.08); transform: translateY(-1px); box-shadow: var(--shadow-primary-hover); }
+.btn-primary:active { filter: brightness(0.97); }
+
+/* ---- Secondary ---- */
 .btn-secondary {
   background: var(--card-elevated);
   color: var(--fg);
   border-color: var(--border);
 }
-.btn-secondary:hover { border-color: var(--primary); }
+.btn-secondary:hover { border-color: var(--primary); color: var(--primary); }
+
+/* ---- Outline ---- */
+.btn-outline {
+  background: transparent;
+  color: var(--primary);
+  border-color: var(--primary);
+}
+.btn-outline:hover { background: var(--primary-dim); }
+
+/* ---- Ghost ---- */
 .btn-ghost {
   background: transparent;
   color: var(--fg-muted);
   border-color: transparent;
 }
 .btn-ghost:hover { background: var(--card-elevated); color: var(--fg); }
+
+/* ---- Danger / destructive ---- */
+.btn-danger {
+  background: var(--danger);
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 4px 16px var(--danger-dim);
+}
+.btn-danger:hover { background: var(--danger-hover); transform: translateY(-1px); }
+
+/* ---- Icon-only ---- */
 .btn-icon {
   padding: 8px;
   background: var(--card-elevated);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   color: var(--fg-muted);
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
 }
 .btn-icon:hover { border-color: var(--primary); color: var(--primary); }
+.btn-icon.btn-sm { padding: 6px; }
+.btn-icon.btn-lg { padding: 11px; }
+
+/* ---- Loading state (add .btn-loading via JS while an action is in flight) ---- */
+.btn-loading { color: transparent !important; pointer-events: none; }
+.btn-loading::before {
+  content: '';
+  position: absolute;
+  z-index: 2;
+  width: 14px;
+  height: 14px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  color: inherit;
+  opacity: 0.9;
+  animation: spin 0.6s linear infinite;
+}
+.btn-primary.btn-loading::before,
+.btn-danger.btn-loading::before { color: #fff; }
+
+/* ---- Disabled (applies to every variant) ---- */
 .btn:disabled { opacity: 0.45; cursor: not-allowed; pointer-events: none; }
 /* ==================== INPUTS ==================== */
 .input {
@@ -507,3 +692,4 @@ ul, ol { list-style: none; }
 .toast-success { background: var(--n5); }
 .toast-error   { background: var(--primary); }
 .toast-info    { background: var(--n4); }
+
