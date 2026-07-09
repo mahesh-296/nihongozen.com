@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="theme-color" content="#0B0C12"/>
+<title>What's Your Level? — NihongoZen</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Noto+Serif+JP:wght@400;700&family=Noto+Sans+JP:wght@400;500;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+
+<!-- Reuse the exact existing design system -->
+<link rel="stylesheet" href="css/tokens.css"/>
+<link rel="stylesheet" href="css/components.css"/>
+<link rel="manifest" href="manifest.json"/>
+<meta name="theme-color" content="#f2a7b8"/>
+
+<!-- Theme boot: applies saved theme before paint so there's no flash -->
+<script>
+(function () {
+  try {
+    var t = localStorage.getItem('nz-theme');
+    var cls = (t === 'light') ? 'nz-light' : (t === 'light-orange') ? 'nz-light-orange' : '';
+    if (cls) document.documentElement.classList.add(cls);
+  } catch (e) {}
+})();
+</script>
+
+<!-- 🔒 Central Config -->
+<script src="config/config.js"></script>
+
+<style>
+  body.ob-body {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  .ob-wrap { width: 100%; max-width: 560px; }
+
+  .ob-progress {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 28px;
+    justify-content: center;
+  }
+  .ob-progress .dot {
+    width: 8px; height: 8px; border-radius: 99px;
+    background: var(--border-strong);
+    transition: all var(--duration) var(--ease);
+  }
+  .ob-progress .dot.active { width: 28px; background: var(--gradient-brand); }
+
+  .ob-header { text-align: center; margin-bottom: 32px; }
+  .ob-logo {
+    width: 44px; height: 44px; border-radius: var(--radius-lg);
+    margin: 0 auto 18px; display: block; object-fit: cover;
+    box-shadow: 0 0 22px rgba(255,77,126,0.35);
+  }
+  .ob-title {
+    font-size: 26px; font-weight: 800; letter-spacing: -0.5px;
+    color: var(--fg); margin-bottom: 8px;
+  }
+  .ob-subtitle { font-size: 14px; color: var(--fg-muted); }
+
+  .level-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 28px;
+  }
+
+  .level-card {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 18px;
+    cursor: pointer;
+    user-select: none;
+    animation: obFadeIn 0.4s var(--ease) backwards;
+  }
+  .level-card .lvl-badge {
+    flex-shrink: 0;
+    width: 42px; height: 42px;
+    border-radius: var(--radius);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-mono); font-weight: 700; font-size: 13px;
+  }
+  .level-card .lvl-body { flex: 1; min-width: 0; }
+  .level-card .lvl-name { font-size: 14px; font-weight: 700; color: var(--fg); }
+  .level-card .lvl-desc { font-size: 12px; color: var(--fg-muted); margin-top: 2px; }
+  .level-card .check {
+    width: 20px; height: 20px; border-radius: 99px;
+    border: 1.5px solid var(--border-strong);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .level-card.selected {
+    border-color: var(--primary);
+    background: linear-gradient(180deg, var(--primary-dim) 0%, var(--card) 100%);
+    box-shadow: var(--shadow-glow);
+  }
+  .level-card.selected .check {
+    background: var(--gradient-brand);
+    border-color: transparent;
+  }
+
+  .ob-actions { display: flex; justify-content: space-between; gap: 10px; }
+  .ob-actions .btn { min-width: 120px; padding: 12px 22px; font-size: 14px; }
+
+  @keyframes obFadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  #ob-loading {
+    position: fixed; inset: 0; z-index: 50;
+    background: var(--bg);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .ob-spinner {
+    width: 34px; height: 34px; border-radius: 50%;
+    border: 3px solid var(--border);
+    border-top-color: var(--primary);
+    animation: obspin 0.8s linear infinite;
+  }
+  @keyframes obspin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body class="ob-body">
+
+<div id="ob-loading"><div class="ob-spinner"></div></div>
+
+<div class="ob-wrap card" style="padding:36px 28px; display:none;" id="ob-content">
+  <div class="ob-progress">
+    <div class="dot"></div>
+    <div class="dot active"></div>
+  </div>
+
+  <div class="ob-header">
+    <img class="ob-logo" src="assets/logo-index.jpg" alt="NihongoZen"/>
+    <h1 class="ob-title">What's Your Level?</h1>
+    <p class="ob-subtitle">This helps us tailor lessons and JLPT practice to you</p>
+  </div>
+
+  <div class="level-list" id="level-list">
+    <!-- populated by JS -->
+  </div>
+
+  <div class="ob-actions">
+    <button class="btn btn-secondary" id="btn-back">Back</button>
+    <button class="btn btn-primary" id="btn-continue" disabled>Continue</button>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp, getApps, getApp }
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, onAuthStateChanged }
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc }
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = window.NZ_CONFIG ? window.NZ_CONFIG.firebase : {
+  apiKey:            "AIzaSyCP2Uwo1lx996q0l3nkC7RhAesVuIHEXiA",
+  authDomain:        "nihongo-zen-cd97d.firebaseapp.com",
+  projectId:         "nihongo-zen-cd97d",
+  storageBucket:     "nihongo-zen-cd97d.firebasestorage.app",
+  messagingSenderId: "513320956483",
+  appId:             "1:513320956483:web:a1069825e0df3587f65af6",
+  measurementId:     "G-1WTJ5ML3R2"
+};
+
+const app  = getApps().length ? getApp() : initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db   = getFirestore(app);
+
+// Maps onboarding's plain-language levels to JLPT goal levels used
+// throughout the rest of the app (n5 = beginner … n1 = advanced).
+const LEVELS = [
+  { code: "n5", name: "Complete Beginner",  desc: "New to Japanese — start with hiragana & katakana", color: "var(--n5)", dim: "var(--n5-dim)" },
+  { code: "n4", name: "Elementary",         desc: "Know the basics — JLPT N5–N4 range",                color: "var(--n4)", dim: "var(--n4-dim)" },
+  { code: "n3", name: "Intermediate",       desc: "Comfortable with daily conversation — JLPT N3",     color: "var(--n3)", dim: "var(--n3-dim)" },
+  { code: "n2", name: "Upper Intermediate", desc: "Reading & listening with confidence — JLPT N2",     color: "var(--n2)", dim: "var(--n2-dim)" },
+  { code: "n1", name: "Advanced",           desc: "Near-native fluency goals — JLPT N1",               color: "var(--n1)", dim: "var(--n1-dim)" }
+];
+
+let selected = null;
+let currentUser = null;
+
+const list        = document.getElementById("level-list");
+const continueBtn = document.getElementById("btn-continue");
+const backBtn     = document.getElementById("btn-back");
+const loadingEl   = document.getElementById("ob-loading");
+const contentEl   = document.getElementById("ob-content");
+
+function renderList() {
+  list.innerHTML = LEVELS.map((l, i) => `
+    <div class="card card-hover level-card${selected === l.code ? ' selected' : ''}"
+         style="animation-delay:${i * 0.05}s"
+         data-code="${l.code}">
+      <div class="lvl-badge" style="color:${l.color};background:${l.dim};">${l.code.toUpperCase()}</div>
+      <div class="lvl-body">
+        <div class="lvl-name">${l.name}</div>
+        <div class="lvl-desc">${l.desc}</div>
+      </div>
+      <div class="check">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3">
+          <path d="M20 6 9 17l-5-5"/>
+        </svg>
+      </div>
+    </div>
+  `).join("");
+
+  list.querySelectorAll(".level-card").forEach(card => {
+    card.addEventListener("click", () => {
+      selected = card.dataset.code;
+      continueBtn.disabled = false;
+      renderList();
+    });
+  });
+}
+
+renderList();
+
+onAuthStateChanged(auth, async (user) => {
+  if (!user) {
+    window.location.replace("login.html");
+    return;
+  }
+  currentUser = user;
+
+  try {
+    const userRef  = doc(db, "users", user.uid);
+    const userSnap = await getDoc(userRef);
+    const data     = userSnap.exists() ? userSnap.data() : {};
+
+    if (data.onboardingComplete) {
+      window.location.replace("index.html");
+      return;
+    }
+
+    // Must have picked a language first.
+    if (!data.language) {
+      window.location.replace("onboarding-language.html");
+      return;
+    }
+
+    if (data.jlptGoalLevel) {
+      selected = data.jlptGoalLevel;
+      continueBtn.disabled = false;
+      renderList();
+    }
+  } catch (err) {
+    console.error("[NihongoZen] Onboarding load error:", err);
+  }
+
+  loadingEl.style.display = "none";
+  contentEl.style.display = "block";
+});
+
+backBtn.addEventListener("click", () => {
+  window.location.href = "onboarding-language.html";
+});
+
+continueBtn.addEventListener("click", async () => {
+  if (!selected || !currentUser) return;
+  continueBtn.disabled = true;
+  continueBtn.innerHTML = `<div class="spinner" style="width:14px;height:14px;border:2px solid rgba(255,255,255,0.35);border-top-color:#fff;border-radius:50%;animation:obspin 0.7s linear infinite;"></div>`;
+
+  try {
+    const userRef = doc(db, "users", currentUser.uid);
+    await setDoc(userRef, {
+      jlptGoalLevel: selected,
+      onboardingComplete: true
+    }, { merge: true });
+    window.location.href = "index.html";
+  } catch (err) {
+    console.error("[NihongoZen] Failed to save level:", err);
+    continueBtn.disabled = false;
+    continueBtn.textContent = "Continue";
+    alert("Couldn't save your level.\n\nError: " + (err.code || err.message || err));
+  }
+});
+</script>
+
+<script src="js/theme.js"></script>
+<script src="js/pwa-register.js" defer></script>
+</body>
+</html>
