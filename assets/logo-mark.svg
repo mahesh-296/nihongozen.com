@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs>
+    <linearGradient id="nzLogoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#E8447A"/>
+      <stop offset="55%" stop-color="#D63C74"/>
+      <stop offset="100%" stop-color="#B02F63"/>
+    </linearGradient>
+  </defs>
+  <rect width="128" height="128" rx="30" fill="url(#nzLogoGrad)"/>
+  <!-- subtle blossom watermark, bottom-right -->
+  <g opacity="0.16" fill="#FFFFFF">
+    <ellipse cx="99" cy="99" rx="8" ry="13" transform="rotate(0 99 99)"/>
+    <ellipse cx="99" cy="99" rx="8" ry="13" transform="rotate(72 99 99)"/>
+    <ellipse cx="99" cy="99" rx="8" ry="13" transform="rotate(144 99 99)"/>
+    <ellipse cx="99" cy="99" rx="8" ry="13" transform="rotate(216 99 99)"/>
+    <ellipse cx="99" cy="99" rx="8" ry="13" transform="rotate(288 99 99)"/>
+  </g>
+  <!-- 禅 kanji -->
+  <text x="64" y="86" text-anchor="middle"
+        font-family="'Noto Serif JP','Noto Sans JP',serif" font-size="66" font-weight="700"
+        fill="#FFFFFF">禅</text>
+</svg>
