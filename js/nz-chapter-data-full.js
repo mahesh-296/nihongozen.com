@@ -6172,7 +6172,7 @@ const NZChapterData = {
       ]
     },
     {
-      ch: 6, 1:週目 , week: 1, day: 6, label: '1.6', title: 'Managing money',
+      ch: 6,  week: 1, day: 6, label: '1.6', title: 'Managing money',
       topic: '第1週 6日目',
       words: [
         { jp: '紙幣 / お札(しへい / おさつ)', romaji: 'shihei / osatsu', en: 'A bill (paper money)' },
