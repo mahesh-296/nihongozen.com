@@ -61,9 +61,12 @@ service cloud.firestore {
         request.auth.uid == request.resource.data.followerUid;
     }
 
-    // Friend requests — sender creates, either party can update (accept/decline)
+    // Friend requests — sender creates, either party can read/update (accept/decline).
+    // SECURITY FIX: read was previously open to ANY signed-in user, leaking every
+    // pending friend request in the app. Now scoped to sender/recipient only.
     match /friend_requests/{reqId} {
-      allow read: if request.auth != null;
+      allow read: if request.auth != null &&
+        (request.auth.uid == resource.data.fromUid || request.auth.uid == resource.data.toUid);
       allow create: if request.auth != null &&
         request.auth.uid == request.resource.data.fromUid;
       allow update: if request.auth != null &&
@@ -95,12 +98,19 @@ service cloud.firestore {
         (request.auth.uid == resource.data.ownerUid || request.auth.uid in resource.data.members);
       allow delete: if request.auth != null && request.auth.uid == resource.data.ownerUid;
     }
+    // SECURITY FIX: messages/polls were previously readable by ANY signed-in
+    // user, not just group members — meaning every "private" study group's
+    // chat was effectively public. Now scoped to the group's owner/members.
+    function isGroupMember(groupId) {
+      let g = get(/databases/$(database)/documents/groups/$(groupId)).data;
+      return request.auth.uid == g.ownerUid || request.auth.uid in g.members;
+    }
     match /groups/{groupId}/messages/{msgId} {
-      allow read, create: if request.auth != null;
+      allow read, create: if request.auth != null && isGroupMember(groupId);
       allow update, delete: if request.auth != null && request.auth.uid == resource.data.uid;
     }
     match /groups/{groupId}/polls/{pollId} {
-      allow read, create, update: if request.auth != null;
+      allow read, create, update: if request.auth != null && isGroupMember(groupId);
       allow delete: if request.auth != null && request.auth.uid == resource.data.createdBy;
     }
 

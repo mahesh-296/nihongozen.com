@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /index.html
+Disallow: /onboarding-language.html
+Disallow: /onboarding-level.html
+Disallow: /config/
+
+Sitemap: https://nihongozen.com/sitemap.xml
