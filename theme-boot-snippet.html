@@ -1,0 +1,19 @@
+<!-- PASTE THIS in <head>, BEFORE any <link rel="stylesheet">, on every page.
+     Only two themes exist: Light and Dark, both using the same Calm
+     cream/green look. First-ever visit (no saved choice) respects the OS
+     dark-mode preference instead of forcing Light. -->
+<script>
+(function () {
+  try {
+    var t = localStorage.getItem('nz-theme');
+    var cls;
+    if (t === 'light') cls = 'nz-light';
+    else if (t === 'dark') cls = '';
+    else { var sysDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches; cls = sysDark ? '' : 'nz-light'; }
+    if (cls) document.documentElement.classList.add(cls);
+  } catch (e) {}
+})();
+</script>
+
+<!-- Then, AFTER css/tokens.css is linked, add this near the end of <head> or before </body>: -->
+<script src="js/theme.js"></script>
